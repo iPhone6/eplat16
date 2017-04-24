@@ -19,9 +19,11 @@ public class DateUtil {
 	
 	public static final String DU_YMD = "yyyy-MM-dd";
 	public static final String DU_YMD_HMS = "yyyy-MM-dd HH:mm:ss";
+	public static final String DU_YMD_HMS_NO_COLON = "yyyy-MM-dd HHmmss";
 	
 	private static SimpleDateFormat sdf_ymd = new SimpleDateFormat(DU_YMD);	// “年-月-日”格式的日期格式化对象（对应日期格式的类型 type = 1）
 	private static SimpleDateFormat sdf_hms = new SimpleDateFormat(DU_YMD_HMS);	// “年-月-日 时:分:秒”格式的日期格式化对象（对应日期格式的类型 type = 2）
+	private static SimpleDateFormat sdf_hms_no_colon = new SimpleDateFormat(DU_YMD_HMS_NO_COLON);	// “年-月-日 时:分:秒”格式的日期格式化对象（对应日期格式的类型 type = 2）
 	
 	public static final long ONE_DAY_TIME_MILLS = 24*60*60*1000;	// 表示一天时间对应的时间毫秒数
 	
@@ -570,12 +572,12 @@ public class DateUtil {
 	/**
 	 * 将一个日期对象转换成对应格式的日期字符串
 	 * 
-	 * @param type 日期格式的类型（1 代表“yyyy-MM-dd”格式，2 代表“yyyy-MM-dd HH:mm:ss”格式）
+	 * @param type 日期格式的类型（1 代表“yyyy-MM-dd”格式，2 代表“yyyy-MM-dd HH:mm:ss”格式，3代表“yyyy-MM-dd HHmmss”）
 	 * @param date 要转换的日期对象
 	 * @return 如果转换正常，则返回一个日期字符串；如果有任何异常，则返回null
 	 */
 	public static String formatDate(int type, Date date) {
-		if(type != 1 && type != 2) {	// 如果日期格式类型既不是1也不是2，则表示日期格式类型错误，直接返回null
+		if(type != 1 && type != 2 && type != 3) {	// 如果日期格式类型既不是1也不是2，则表示日期格式类型错误，直接返回null
 			return null;
 		}
 		
@@ -593,7 +595,12 @@ public class DateUtil {
 			return hms_str;
 		}
 		
-		return null;	// 如果日期格式类型既不是1也不是2，则返回null
+		if(type == 3) {	// 如果选择的是第三种日期格式（yyyy-MM-dd HHmmss），则返回该日期格式的日期字符串
+			String hms_no_colon_str = sdf_hms_no_colon.format(date);
+			return hms_no_colon_str;
+		}
+		
+		return null;	// 如果日期格式类型既不是1也不是2，也不是3，则返回null
 	}
 	
 	

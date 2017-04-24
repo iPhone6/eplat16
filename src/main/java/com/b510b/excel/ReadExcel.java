@@ -408,7 +408,7 @@ public class ReadExcel {
     			if (hssfRow != null) {
     				EpUser epu = new EpUser();
     				
-    				epu.setNotes("row_no=" + rowNum);
+    				epu.setNotes("row_no=" + (rowNum+1));	// Excel中所显示的行号（从1开始）为程序中rowNum（从0开始）的值+1
     				
     				HSSFCell work_no = hssfRow.getCell(0);	// 工号
     				HSSFCell name = hssfRow.getCell(1);		// 姓名
@@ -417,19 +417,32 @@ public class ReadExcel {
     				HSSFCell email = hssfRow.getCell(4);	// 邮箱
     				HSSFCell dept_name = hssfRow.getCell(5);	// 部门
     				HSSFCell project_name = hssfRow.getCell(6);	// 项目组
+    				HSSFCell company_code = hssfRow.getCell(7);	// 公司编号（company_code）
     				
-    				epu.setWork_no(getValue_str(work_no));
+    				String work_no_ret = getValue_str(work_no);
+    				if(StringUtils.isBlank(work_no_ret)) {
+    					epu.setWork_no(null);	// 工号字段为空，用null作为占位符进行标记
+    				} else {
+    					if(work_no_ret.contains(".")) {	// 如果工号中包含小数点，则截取小数点之前的字符串作为工号
+    						int dot_index = work_no_ret.indexOf('.');
+    						String real_work_no = work_no_ret.substring(0, dot_index);
+    						epu.setWork_no(real_work_no);
+    					} else {
+    						epu.setWork_no(work_no_ret);
+    					}
+    				}
     				String name_str = getValue_str(name);
     				if(StringUtils.isNotBlank(name_str)) {
     					epu.setName(name_str);
     				} else {
     					epu.setName("<EMPTY>");	// 名字为空时，用“<EMPTY>”标记填充（因为要求name字段非空）
     				}
-    				epu.setDept_name(getValue_str(dept_name));
-    				epu.setProject_name(getValue_str(project_name));
-    				epu.setEmail(getValue_str(email));
     				epu.setIdentity_no(getValue_str(id_no));	// 身份证号
     				epu.setBase_place(getValue_str(base_place));	// base地
+    				epu.setEmail(getValue_str(email));
+    				epu.setDept_name(getValue_str(dept_name));
+    				epu.setProject_name(getValue_str(project_name));
+    				epu.setCompany_code(getValue_str(company_code));	// 公司编号
     				epu.setMobile_phone("<NONE>");	// TODO: Excel表格数据中暂未提供手机号字段的值，用“<NONE>”标记标记
     				// 设置默认初始密码为111111
     				epu.setPwd("96E79218965EB72C92A549DD5A330112");
@@ -619,13 +632,14 @@ public class ReadExcel {
     	if(hssfCell == null) {
     		return null;
     	}
-    	if (hssfCell.getCellType() == hssfCell.CELL_TYPE_BOOLEAN) {
+    	if (hssfCell.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
     		return String.valueOf(hssfCell.getBooleanCellValue());
-    	} else if (hssfCell.getCellType() == hssfCell.CELL_TYPE_NUMERIC) {
+    	} else if (hssfCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
     		return String.valueOf(hssfCell.getNumericCellValue());
     	} else {
-    		hssfCell.setCellType(hssfCell.CELL_TYPE_STRING);
-    		return String.valueOf(hssfCell.getStringCellValue());
+    		hssfCell.setCellType(Cell.CELL_TYPE_STRING);
+    		String str = String.valueOf(hssfCell.getStringCellValue());
+    		return StringUtils.isBlank(str)?null:str;
     	}
     }
     

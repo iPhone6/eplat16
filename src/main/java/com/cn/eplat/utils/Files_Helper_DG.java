@@ -19,6 +19,8 @@ public final class Files_Helper_DG {
 	private Files_Helper_DG() {
 		throw new Error("The class Cannot be instance !");
 	}
+	
+	private static final String IMP_EMP_INFO_DIR = "D:\\EPlatform\\import_emp_info";	// 用来存放新导入的员工信息Excel文件的目录
 
 	/**
 	 * spring mvc files Upload method (transferTo method) spring mvc 中的文件上传方法
@@ -37,21 +39,26 @@ public final class Files_Helper_DG {
 		String DatePath = new SimpleDateFormat("yyyyMMdd").format(new Date());
 		// get server path (real path)
 		String savePath = request.getSession().getServletContext().getRealPath(filePath) + File.separator + DatePath;
+		savePath = IMP_EMP_INFO_DIR + File.separator + DatePath;
 		// if dir not exists , mkdir
 		System.out.println(savePath);
 		File saveDir = new File(savePath);
 		if (!saveDir.exists() || !saveDir.isDirectory()) {
 			// create dir
-			saveDir.mkdir();
+//			saveDir.mkdir();
+			saveDir.mkdirs();
 		}
 		if (multipartFile != null) {
 			// get files suffix
-			String suffix = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+			String original_file_name = multipartFile.getOriginalFilename();
+			int dot_index = original_file_name.lastIndexOf(".");
+			String suffix = original_file_name.substring(dot_index);
 			// use UUID get uuid string
 			String uuidName = UUID.randomUUID().toString() + suffix;// make new
 																	// file name
 			// filePath+fileName the complex file Name
-			String fileName = savePath + File.separator + uuidName;
+			String fileName = savePath + File.separator + DateUtil.formatDate(3, new Date()) + "_" + original_file_name.substring(0, dot_index) + "_" + uuidName;
+			fileName = fileName.replace(' ', '_');	// 将文件名中的空格替换成下划线
 			// return relative Path
 			String relativePath = filePath + File.separator + DatePath + File.separator + uuidName;
 			try {

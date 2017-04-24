@@ -1107,60 +1107,95 @@ public class EpDataController {
 				
 				EpUser epu_by_wn = EpAttenController.getEpUserByWorkNoMach(epu.getWork_no());
 				
+				String message = null;
 				if(epu_by_wn != null) {
 					String epu_notes = epu_by_wn.getNotes();
                 	if(!StringUtils.isBlank(epu_notes) && epu_notes.startsWith("query_result=")) {
                 		// query_result=匹配该工号的用户数量为0
                 		if(epu_notes.equals("query_result=匹配该工号的用户数量为0")) {
-                			EpUser epu_add = new EpUser();
-                			epu_add.setWork_no(epu.getWork_no());
-                			epu_add.setName(epu.getName());
-                			epu_add.setMobile_phone(epu.getMobile_phone());
-                			epu_add.setDept_name(epu.getDept_name());
-                			epu_add.setProject_name(epu.getProject_name());
-                			epu_add.setEmail(epu.getEmail());
-                			epu_add.setIdentity_no(epu.getIdentity_no());	// 身份证号
-                			epu_add.setBase_place(epu.getBase_place());		// base地
-                			epu_add.setPwd(epu.getPwd());
-                			epu_add.setOrigin_pwd(epu.getPwd());
-                			epu_add.setMima(epu.getMima());
-                			epu_add.setType("2");	// “2”表示有小周末的员工类型
-                			epu_add.setPush2hw_atten(true);		// true表示要推华为考勤系统
-                			int add_ret = epUserService.addEpUser(epu_add);
-                			if(add_ret <= 0) {
-                				failed_emp_info.put("name", epu.getName());
-                    			failed_emp_info.put("work_no", epu.getWork_no());
-                    			failed_emp_info.put("notes", epu.getNotes() + ", " + epu_notes);
-                    			failed_emp_info.put("message", "添加用户信息出现异常");
-                    			failed_emps.add(failed_emp_info);
+                			if(StringUtils.isBlank(epu.getIdentity_no()) || StringUtils.isBlank(epu.getName()) || "<EMPTY>".equals(epu.getName())) {	//身份证号或姓名字段的值为空
+//                				failed_emp_info.put("name", epu.getName());
+//                    			failed_emp_info.put("work_no", epu.getWork_no());
+//                    			failed_emp_info.put("notes", epu.getNotes() + ", " + epu_notes);
+//                    			failed_emp_info.put("message", "身份证号或姓名为空");
+//                    			failed_emps.add(failed_emp_info);
+                				message = "身份证号或姓名为空";
+                				if(StringUtils.isBlank(epu.getCompany_code())) {	// 公司编号字段的值为空
+                					message += "，或公司编号字段为空";
+                				} else {
+                					// 
+                				}
+            					procFailedEmpInfo(failed_emps, failed_emp_info, message, epu, epu_notes);
+                    			is_success = false;
+                			} else if(StringUtils.isBlank(epu.getCompany_code())) {	// 公司编号字段的值为空
+//                				failed_emp_info.put("name", epu.getName());
+//                    			failed_emp_info.put("work_no", epu.getWork_no());
+//                    			failed_emp_info.put("notes", epu.getNotes() + ", " + epu_notes);
+//                    			failed_emp_info.put("message", "公司编号字段为空");
+//                    			failed_emps.add(failed_emp_info);
+                				message = "公司编号字段为空";
+            					procFailedEmpInfo(failed_emps, failed_emp_info, message, epu, epu_notes);
                     			is_success = false;
                 			} else {
-//                				logger.info("添加用户信息成功！");
+                				EpUser epu_add = new EpUser();
+                				epu_add.setWork_no(epu.getWork_no());
+                				epu_add.setName(epu.getName());
+                				epu_add.setMobile_phone(epu.getMobile_phone());
+                				epu_add.setDept_name(epu.getDept_name());
+                				epu_add.setProject_name(epu.getProject_name());
+                				epu_add.setEmail(epu.getEmail());
+                				epu_add.setIdentity_no(epu.getIdentity_no());	// 身份证号
+                				epu_add.setBase_place(epu.getBase_place());		// base地
+                				epu_add.setCompany_code(epu.getCompany_code());	// 公司编号
+                				epu_add.setPwd(epu.getPwd());
+                				epu_add.setOrigin_pwd(epu.getPwd());
+                				epu_add.setMima(epu.getMima());
+                				epu_add.setType("2");	// “2”表示有小周末的员工类型
+                				epu_add.setPush2hw_atten(true);		// true表示要推华为考勤系统
+                				int add_ret = epUserService.addEpUser(epu_add);
+                				if(add_ret <= 0) {
+//                				failed_emp_info.put("name", epu.getName());
+//                    			failed_emp_info.put("work_no", epu.getWork_no());
+//                    			failed_emp_info.put("notes", epu.getNotes() + ", " + epu_notes);
+//                    			failed_emp_info.put("message", "添加用户信息出现异常");
+//                    			failed_emps.add(failed_emp_info);
+                					message = "添加用户信息出现异常";
+                					procFailedEmpInfo(failed_emps, failed_emp_info, message, epu, epu_notes);
+                					is_success = false;
+                				} else {
+//                					logger.info("添加用户信息成功！");
+                				}
                 			}
                 		} else {
                 			System.out.println("根据工号查询用户信息出现异常：work_no = " + epu_by_wn.getWork_no() + ", " + epu_notes);
-                			failed_emp_info.put("name", epu.getName());
-                			failed_emp_info.put("work_no", epu.getWork_no());
-                			failed_emp_info.put("notes", epu.getNotes() + ", " + epu_notes);
-                			failed_emp_info.put("message", "已存在该用户但该用户信息异常，或查询数据库异常");
-                			failed_emps.add(failed_emp_info);
+//                			failed_emp_info.put("name", epu.getName());
+//                			failed_emp_info.put("work_no", epu.getWork_no());
+//                			failed_emp_info.put("notes", epu.getNotes() + ", " + epu_notes);
+//                			failed_emp_info.put("message", "已存在该用户但该用户信息异常，或查询数据库异常");
+//                			failed_emps.add(failed_emp_info);
+                			message = "已存在该用户但该用户信息异常，或查询数据库异常";
+        					procFailedEmpInfo(failed_emps, failed_emp_info, message, epu, epu_notes);
                 			is_success = false;
                 		}
                 	} else {
                 		// // 已存在该用户信息。。。
-                		failed_emp_info.put("name", epu.getName());
-                		failed_emp_info.put("work_no", epu.getWork_no());
-                		failed_emp_info.put("notes", epu.getNotes());
-                		failed_emp_info.put("message", "已存在该用户信息");
-                		failed_emps.add(failed_emp_info);
+//                		failed_emp_info.put("name", epu.getName());
+//                		failed_emp_info.put("work_no", epu.getWork_no());
+//                		failed_emp_info.put("notes", epu.getNotes());
+//                		failed_emp_info.put("message", "已存在该用户信息");
+//                		failed_emps.add(failed_emp_info);
+                		message = "已存在该用户信息";
+    					procFailedEmpInfo(failed_emps, failed_emp_info, message, epu, "._.");
                 		is_success = false;
                 	}
 				} else {
-					failed_emp_info.put("name", epu.getName());
-					failed_emp_info.put("work_no", epu.getWork_no());
-					failed_emp_info.put("row_no", epu.getNotes());
-					failed_emp_info.put("message", "工号为空白字符串");
-					failed_emps.add(failed_emp_info);
+//					failed_emp_info.put("name", epu.getName());
+//					failed_emp_info.put("work_no", epu.getWork_no());
+//					failed_emp_info.put("row_no", epu.getNotes());
+//					failed_emp_info.put("message", "工号为空白字符串");
+//					failed_emps.add(failed_emp_info);
+					message = "工号为空白字符串";
+					procFailedEmpInfo(failed_emps, failed_emp_info, message, epu, null);
 					is_success = false;
 				}
 				
@@ -1181,10 +1216,30 @@ public class EpDataController {
 			json_obj.put("ret_code", -1);
 			json_obj.put("failed_emps_info", failed_emps);
 			json_obj.put("failed_count", failed_emps.size());
-			json_obj.put("ret_msg", "员工基本信息导入失败");
+			json_obj.put("ret_msg", "部分员工信息导入失败");
 		}
 		
 		return json_obj;
+	}
+	
+	/**
+	 * 处理导入失败的员工信息
+	 * @param failed_emps	导入失败的员工信息数组
+	 * @param failed_emp_info	导入失败的员工信息
+	 * @param message	用于返回的提示信息
+	 * @param epu	员工实体信息
+	 * @param epu_notes	附加的备注信息
+	 */
+	private void procFailedEmpInfo(JSONArray failed_emps, JSONObject failed_emp_info, String message, EpUser epu, String epu_notes) {
+		failed_emp_info.put("name", epu.getName());
+		failed_emp_info.put("work_no", epu.getWork_no());
+		if(StringUtils.isNotBlank(epu_notes)) {
+			failed_emp_info.put("notes", epu.getNotes() + ", " + epu_notes);
+		} else {
+			failed_emp_info.put("row_no", epu.getNotes());
+		}
+		failed_emp_info.put("message", message);
+		failed_emps.add(failed_emp_info);
 	}
 	
 	
