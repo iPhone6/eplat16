@@ -30,14 +30,20 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.b510b.excel.ReadExcel;
 import com.b510b.excel.vo.Employee;
+import com.cn.eplat.consts.Constants;
 import com.cn.eplat.dao.IEpAttenDao;
+import com.cn.eplat.dao.IMsUserDao;
 import com.cn.eplat.dao.IPushToHwDao;
+import com.cn.eplat.datasource.DataSourceContextHolder;
+import com.cn.eplat.datasource.DataSourceType;
 import com.cn.eplat.model.DeptClue;
 import com.cn.eplat.model.DeptIdClue;
 import com.cn.eplat.model.DeptUser;
 import com.cn.eplat.model.EpData;
 import com.cn.eplat.model.EpDept;
 import com.cn.eplat.model.EpUser;
+import com.cn.eplat.model.MsUser;
+import com.cn.eplat.model.MsUserSSO;
 import com.cn.eplat.model.PushFilterLog;
 import com.cn.eplat.model.PushToHw;
 import com.cn.eplat.service.IDeptClueService;
@@ -92,6 +98,9 @@ public class EpDataController {
 	private IPushToHwDao pushToHwDao;
 	@Resource
 	private PushToHwTask pushToHwTask;
+	@Resource
+	private IMsUserDao msUserDao;
+	
 	
 	@RequestMapping(params = "getData", produces = "application/json; charset=UTF-8")
 	@ResponseBody
@@ -1153,6 +1162,18 @@ public class EpDataController {
                 				epu_add.setType("2");	// “2”表示有小周末的员工类型
                 				epu_add.setPush2hw_atten(true);		// true表示要推华为考勤系统
                 				int add_ret = epUserService.addEpUser(epu_add);
+                				
+                				// TODO: 在考勤系统中新添加了一条用户信息后，还需要同步在SSO系统中添加一条相同的用户信息
+                				syncInsertMsSsoUserInfo(epu_add);
+                				
+                				// TODO: 测试代码
+//                				try {
+//									EpUser epUserByEmail = epUserService.getEpUserByEmail("tanyx@e-lead.cn");
+//									System.out.println("epUserByEmail = " + epUserByEmail);
+//								} catch (Exception e) {
+//									System.err.println("出现异常：error_info = " + e.getLocalizedMessage());
+//								}
+                				
                 				if(add_ret <= 0) {
 //                				failed_emp_info.put("name", epu.getName());
 //                    			failed_emp_info.put("work_no", epu.getWork_no());
@@ -1221,6 +1242,49 @@ public class EpDataController {
 		
 		return json_obj;
 	}
+	
+	/**
+	 * 同步向微服务SSO系统中添加一条新用户信息
+	 * @param epu	原考勤系统的用户信息
+	 * @param mu	SSO系统中的用户信息
+	 * @param mus	SSO系统中相对应的用户密码相关信息
+	 */
+	private void syncInsertMsSsoUserInfo(EpUser epu) {
+		if(epu != null) {
+			MsUser mu = new MsUser();
+			mu.setName(epu.getName());
+			mu.setMobile(epu.getMobile_phone());
+			mu.setEm_uid(epu.getEm_uid());
+			mu.setWorkPlace(epu.getBase_place());
+			mu.setEmail(epu.getEmail());
+			mu.setJobnumber(epu.getWork_no());
+			mu.setCompany_code(epu.getCompany_code());
+			mu.setDept_name(epu.getDept_name());
+			mu.setProject_name(epu.getProject_name());
+			mu.setIdentity_no(epu.getIdentity_no());
+			mu.setType(epu.getType());
+			mu.setPush2hw_atten(epu.getPush2hw_atten());
+			
+			MsUserSSO mus = new MsUserSSO();
+			mus.setUserid(mu.getId());
+			mus.setPassword(epu.getPwd());
+			mus.setOrigin_pwd(epu.getOrigin_pwd());
+			mus.setVer_code(epu.getVer_code());
+			mus.setVercode_time(epu.getVercode_time());
+			
+			DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(Constants.RUN_ENVIRONMENT, DataSourceType.DB_MS));
+			msUserDao.insertMsUser(mu);
+			msUserDao.insertMsSSO(mus);
+			
+			logger.info("同步向微服务SSO系统中添加一条新用户信息，操作成功");
+			
+		} else {
+			logger.error("原考勤系统的用户信息为null异常");
+		}
+		// 操作完成之后，将数据库连接类型改回为考勤系统数据库连接类型
+		DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(Constants.RUN_ENVIRONMENT, DataSourceType.DB_ATTEN));
+	}
+	
 	
 	/**
 	 * 处理导入失败的员工信息

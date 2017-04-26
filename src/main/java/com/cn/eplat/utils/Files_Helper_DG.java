@@ -20,7 +20,7 @@ public final class Files_Helper_DG {
 		throw new Error("The class Cannot be instance !");
 	}
 	
-	private static final String IMP_EMP_INFO_DIR = "D:\\EPlatform\\import_emp_info";	// 用来存放新导入的员工信息Excel文件的目录
+	private static final String IMP_EMP_INFO_DIR = "D:\\Datas\\EPlatform\\import_emp_info";	// 用来存放新导入的员工信息Excel文件的目录
 
 	/**
 	 * spring mvc files Upload method (transferTo method) spring mvc 中的文件上传方法
