@@ -90,7 +90,8 @@ public class EpUserController {
 		return em_user_api;
 	}
 	
-	private static final String environment = DataSourceType.EVIRONMENT_PROD;	// 运行环境类型
+	private static final String environment = DataSourceType.EVIRONMENT_LOCAL;	// 本地运行环境类型
+//	private static final String environment = DataSourceType.EVIRONMENT_PROD;	// 生产运行环境类型
 	
 	public static String getEnvironment() {
 		return environment;
