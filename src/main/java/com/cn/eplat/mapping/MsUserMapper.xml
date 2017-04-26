@@ -44,6 +44,16 @@
 		where u.id = s.userid
 	</select>
 	
+	<select id="getAllMsUsersWithoutMsSSO" resultType="com.cn.eplat.model.MsUser" >
+		<include refid="select_all_fields"></include>
+		FROM ms_user u
+		WHERE not exists ( 
+			select 1
+			from ms_sso s
+			where s.userid = u.`id`
+		)
+	</select>
+	
 	<select id="getAllMsUsersByLeftJoinMsSSO" resultType="com.cn.eplat.model.MsUserSSO" >
 		<include refid="select_all_fields_with_mssso"></include>
 		from ms_user u left join ms_sso s 

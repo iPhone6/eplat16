@@ -106,12 +106,15 @@ public class EpUserController {
 		JSONObject json_ret = new JSONObject();	// 用做返回信息的Json对象
 		
 //		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_MS);
-		DataSourceContextHolder.setDbType(DataSourceType.getProdDsType(environment, DataSourceType.DB_MS));
-		List<MsUserSSO> msus = msUserDao.getAllMsUsersWithMsSSO();	// 查出所有微服务SSO系统那边的所有用户信息
-		logger.info("共查出(" + msus.size() + ")条SSO系统用户信息。");
+		DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(environment, DataSourceType.DB_MS));
+		List<MsUserSSO> msus = msUserDao.getAllMsUsersWithMsSSO();	// 查出所有微服务SSO系统那边的所有用户信息（有对应密码的sso用户）
+		logger.info("共查出(" + msus.size() + ")条SSO系统用户信息（有对应密码的sso用户）。");
+		List<MsUser> mus_no_pwd = msUserDao.getAllMsUsersWithoutMsSSO();	// 查出所有SSO系统中没有对应密码的用户信息
+		logger.info("共查出(" + mus_no_pwd.size() + ")条SSO系统用户信息（无对应密码的sso用户）。");
+		
 		
 		Map<String, MsUserSSO> msus_map = new TreeMap<String, MsUserSSO>();	// 准备用于建立微服务SSO系统中，从用户工号-->用户信息的映射（作用相当于一个索引，可以根据工号快速找出对应的用户信息）
-		logger.info("建立SSO系统的“用户工号-->用户信息”的映射/索引过程开始");
+		logger.info("建立SSO系统的“用户工号-->用户信息”的映射/索引过程开始（有对应密码的sso用户）");
 		for(MsUserSSO mus:msus) {
 			String job_num = mus.getJobnumber();
 			if(org.apache.commons.lang3.StringUtils.isNotBlank(job_num)) {
@@ -120,175 +123,102 @@ public class EpUserController {
 				logger.error("SSO系统用户中，出现工号为空异常：mus = " + mus);
 			}
 		}
-		logger.info("建立SSO系统的“用户工号-->用户信息”的映射/索引已完成");
+		logger.info("建立SSO系统的“用户工号-->用户信息”的映射/索引已完成（有对应密码的sso用户）");
+		
+		logger.info("建立SSO系统的“用户工号-->用户信息”的映射/索引过程开始（无对应密码的sso用户）");
+		Map<String, MsUser> mus_nopwd_map = new TreeMap<String, MsUser>();
+		for(MsUser mu:mus_no_pwd) {
+			String job_num = mu.getJobnumber();
+			if(org.apache.commons.lang3.StringUtils.isNotBlank(job_num)) {
+				mus_nopwd_map.put(job_num, mu);
+			} else {
+				logger.error("SSO系统用户中，出现工号为空异常：mu = " + mu);
+			}
+		}
+		logger.info("建立SSO系统的“用户工号-->用户信息”的映射/索引已完成（无对应密码的sso用户）");
 		
 //		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-		DataSourceContextHolder.setDbType(DataSourceType.getProdDsType(environment, DataSourceType.DB_ATTEN));
+		DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(environment, DataSourceType.DB_ATTEN));
 		List<EpUser> epus = epUserDao.queryEpUserByCriteria(null);	// 查出所有考勤系统这边的所有用户信息
 		logger.info("共查出(" + epus.size() + ")条考勤系统用户信息。");
 		
+		int times_count = 0;	// 用于计数第几次同步操作
 		int success_count = 0;	// 同步成功的用户信息条数计数
 		int fail_count = 0;	// 同步失败的用户信息条数计数
 		
 		for(EpUser epu:epus) {
+			times_count++;
 			String work_no = epu.getWork_no();
 			if(org.apache.commons.lang3.StringUtils.isNotBlank(work_no)) {
 				MsUserSSO sso_user = msus_map.get(work_no);
 				if(sso_user != null) {
-					// 1. 同步两边系统用户姓名字段信息
-					String epu_name = epu.getName();
-					if(org.apache.commons.lang3.StringUtils.isNotBlank(epu_name)) {
-						if(epu_name.equals(sso_user.getName())) {
-							// 如果两边系统用户姓名相同，则不做处理
-						} else {	// 如果两边系统用户姓名不同，则以原考勤系统的用户姓名为准
-							sso_user.setName(epu_name);
-						}
-					} else {
-						logger.error("考勤系统中出现用户姓名为空的异常：epu = " + epu);
-					}
-					// 2. 同步两边系统用户密码字段信息
-					if(ObjCmpUtil.compare(epu.getPwd(), sso_user.getPassword())) {
-						// 如果两边系统的用户密码相同，则不做处理
-					} else {	// 如果两边系统的用户密码不同，则以SSO系统的用户密码为准（因为用户登录和用户密码相关的接口已经迁移至SSO系统了）
-//						String sso_user_password = sso_user.getPassword();
-//						if(org.apache.commons.lang3.StringUtils.isNotBlank(sso_user_password)) {
-//							epu.setPwd(sso_user_password);
-//							epu.setMima("<MODIFIED>");	// 用“<MODIFIED>”占位符来标记当前考勤系统的用户密码已修改为与SSO系统用户密码同步
-//						} else {
-//							logger.error("SSO系统中出现用户密码为空的异常：sso_user = " + sso_user);
-//						}
-						epu.setPwd(sso_user.getPassword());
-						epu.setMima("<MODIFIED>");	// 用“<MODIFIED>”占位符来标记当前考勤系统的用户密码已修改为与SSO系统用户密码同步
-					}
-					// 3. 同步两边系统的环信用户id字段信息
-					if(ObjCmpUtil.compare(epu.getEm_uid(), sso_user.getEm_uid())) {
-						// 如果两边系统的环信用户id相同，则不做处理
-					} else {	// 如果两边系统的环信用户id不同，则以SSO系统的环信用户id为准
-//						Integer sso_em_uid = sso_user.getEm_uid();
-//						if(sso_em_uid != null) {
-//							epu.setEm_uid(sso_em_uid);
-//						} else {
-//							logger.error("SSO系统中出现用户的环信用户id为空的异常：sso_user = " + sso_user);
-//						}
-						epu.setEm_uid(sso_user.getEm_uid());
-					}
-					// 4. 同步两边系统的手机号字段信息
-					if(ObjCmpUtil.compare(epu.getMobile_phone(), sso_user.getMobile())) {
-						// 如果两边系统的手机号相同，则不作处理
-					} else {	// 如果两边系统的手机号不同，则以原考勤系统的用户手机号为准
-//						String epu_mobile_phone = epu.getMobile_phone();
-//						if(org.apache.commons.lang3.StringUtils.isNotBlank(epu_mobile_phone)) {
-//							sso_user.setMobile(epu_mobile_phone);
-//						} else {
-//							logger.error("考勤系统中出现用户手机号为空的异常：epu = " + epu);
-//						}
-						sso_user.setMobile(epu.getMobile_phone());
-					}
-					// 5. 同步两边系统的邮箱字段信息
-					if(ObjCmpUtil.compare(epu.getEmail(), sso_user.getEmail())) {
-						// 如果两边系统的邮箱相同，则不作处理
-					} else {	// 如果两边系统的邮箱不同，则以原考勤系统的用户的邮箱为准
-						String epu_email = epu.getEmail();
-						sso_user.setEmail(epu_email);
-					}
-					// 6. 同步两边系统的Base地/工作地点字段信息
-					if(ObjCmpUtil.compare(epu.getBase_place(), sso_user.getWorkPlace())) {
-						// 如果两边系统的Base地相同，则不作处理
-					} else {	// 如果两边系统的Base地不同，则以原考勤系统的用户的Base地为准
-						sso_user.setWorkPlace(epu.getBase_place());
-					}
-					// 7. 同步两边系统的部门名称字段信息
-					if(ObjCmpUtil.compare(epu.getDept_name(), sso_user.getDept_name())) {
-						// ...
-					} else {	// ...以原考勤系统的部门名称为准
-						sso_user.setDept_name(epu.getDept_name());
-					}
-					// 8. 同步两边系统的项目名称
-					if(ObjCmpUtil.compare(epu.getProject_name(), sso_user.getProject_name())) {
-						// ...
-					} else {	// ...以原考勤系统的项目名称为准
-						sso_user.setProject_name(epu.getProject_name());
-					}
-					// 9. 同步两边系统的原始密码
-					if(ObjCmpUtil.compare(epu.getOrigin_pwd(), sso_user.getOrigin_pwd())) {
-						// ...
-					} else {	// ...以SSO系统的原始密码为准
-						epu.setOrigin_pwd(sso_user.getOrigin_pwd());
-					}
-					// 10. 同步两边系统的身份证号
-					if(ObjCmpUtil.compare(epu.getIdentity_no(), sso_user.getIdentity_no())) {
-						// ...
-					} else {	// ...以考勤系统的身份证号为准
-						sso_user.setIdentity_no(epu.getIdentity_no());
-					}
-					// 11. 同步两边系统的验证码
-					if(ObjCmpUtil.compare(epu.getVer_code(), sso_user.getVer_code())) {
-						// ...
-					} else {	// ...以SSO系统的验证码为准
-						epu.setVer_code(sso_user.getVer_code());
-					}
-					// 12. 同步两边系统的验证码生成时间
-					if(ObjCmpUtil.compare(epu.getVercode_time(), sso_user.getVercode_time())) {
-						// ...
-					} else {	// ...以SSO系统的验证码为准
-						epu.setVercode_time(sso_user.getVercode_time());
-					}
-					// 13. 同步两边系统的用户类型
-					if(ObjCmpUtil.compare(epu.getType(), sso_user.getType())) {
-						// ...
-					} else {	// ...以考勤系统的用户类型为准
-						sso_user.setType(epu.getType());
-					}
-					// 14. 同步两边系统的是否推送华为考勤标志字段
-					if(ObjCmpUtil.compare(epu.getPush2hw_atten(), sso_user.getPush2hw_atten())) {
-						// ...
-					} else {	// ...以考勤系统为准
-						sso_user.setPush2hw_atten(epu.getPush2hw_atten());
-					}
-					// 15. 同步公司编号
-					if(ObjCmpUtil.compare(epu.getCompany_code(), sso_user.getCompany_code())) {
-						// ...
-					} else {	// ...以考勤系统为准
-						sso_user.setCompany_code(epu.getCompany_code());
-					}
+					syncEpAttenAndSsoSystemUsersInfo(epu, sso_user);
 					// 开始同步更新两边系统的用户表
-					logger.info("开始同步更新两边系统的用户表");
+					logger.info("第(" + times_count + ")次，开始同步更新两边系统的用户表");
 //					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-					DataSourceContextHolder.setDbType(DataSourceType.getProdDsType(environment, DataSourceType.DB_ATTEN));
+					DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(environment, DataSourceType.DB_ATTEN));
 					epUserDao.updateSomeFieldsOfEpUser(epu);
 //					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_MS);
-					DataSourceContextHolder.setDbType(DataSourceType.getProdDsType(environment, DataSourceType.DB_MS));
+					DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(environment, DataSourceType.DB_MS));
 					msUserDao.updateSomeFieldsOfMsUser(sso_user);
 					
 					success_count++;	// 同步成功用户信息条数加1
-					logger.info("同步更新两边系统用户表信息成功");
+					logger.info("第(" + times_count + ")次，同步更新两边系统用户表信息成功");
 				} else {
 					logger.info("SSO系统中不存在工号为（" + work_no + "）的用户，开始从原考勤系统中同步该用户信息");
-					// 对于SSO系统中不存在的用户信息，需要以考勤系统用户信息为准进行新增
-					MsUser mu_add = new MsUser();
-					mu_add.setName(epu.getName());
-					mu_add.setMobile(epu.getMobile_phone());
-					mu_add.setEm_uid(epu.getEm_uid());
-					mu_add.setWorkPlace(epu.getBase_place());
-					mu_add.setEmail(epu.getEmail());
-					mu_add.setJobnumber(epu.getWork_no());
-					mu_add.setCompany_code(epu.getCompany_code());
 					
-					MsUserSSO mus_add = new MsUserSSO();
-					mus_add.setPassword(epu.getPwd());
-					mus_add.setOrigin_pwd(epu.getOrigin_pwd());
-					mus_add.setVer_code(epu.getVer_code());
-					mus_add.setVercode_time(epu.getVercode_time());
+					MsUser mu_nopwd = mus_nopwd_map.get(work_no);
+					if(mu_nopwd != null) {
+						logger.info("在SSO系统用户表中找到有原考勤系统工号，但没有对应密码的用户信息");
+						logger.info("第(" + times_count + ")次，开始从原考勤系统同步密码信息到SSO系统中...");
+						
+						MsUserSSO sso_user_nopwd = new MsUserSSO(mu_nopwd);
+						syncEpAttenToSsoSystemUsersInfo(epu, sso_user_nopwd);
+						
+						DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(environment, DataSourceType.DB_MS));
+						msUserDao.updateSomeFieldsOfMsUser(sso_user_nopwd);
+						
+						MsUserSSO sso_add = new MsUserSSO();
+						sso_add.setUserid(mu_nopwd.getId());
+						sso_add.setPassword(epu.getPwd());
+						sso_add.setOrigin_pwd(epu.getOrigin_pwd());
+						sso_add.setVer_code(epu.getVer_code());
+						sso_add.setVercode_time(epu.getVercode_time());
+						
+						DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(environment, DataSourceType.DB_MS));
+						msUserDao.insertMsSSO(sso_add);
+						
+						success_count++;
+						logger.info("第(" + times_count + ")次，从原考勤系统同步密码信息到SSO系统完成");
+					} else {
+						// 对于SSO系统中不存在的用户信息，需要以考勤系统用户信息为准进行新增
+						MsUser mu_add = new MsUser();
+						mu_add.setName(epu.getName());
+						mu_add.setMobile(epu.getMobile_phone());
+						mu_add.setEm_uid(epu.getEm_uid());
+						mu_add.setWorkPlace(epu.getBase_place());
+						mu_add.setEmail(epu.getEmail());
+						mu_add.setJobnumber(epu.getWork_no());
+						mu_add.setCompany_code(epu.getCompany_code());
+						
+						MsUserSSO mus_add = new MsUserSSO();
+						mus_add.setUserid(mu_add.getId());
+						mus_add.setPassword(epu.getPwd());
+						mus_add.setOrigin_pwd(epu.getOrigin_pwd());
+						mus_add.setVer_code(epu.getVer_code());
+						mus_add.setVercode_time(epu.getVercode_time());
+						
+						DataSourceContextHolder.setDbType(DataSourceType.getDataSourceType(environment, DataSourceType.DB_MS));
+						msUserDao.insertMsUser(mu_add);
+						msUserDao.insertMsSSO(mus_add);
+						
+						success_count++;
+					}
+					logger.info("第(" + times_count + ")次，从原考勤系统同步新用户信息成功");
 					
-					DataSourceContextHolder.setDbType(DataSourceType.getProdDsType(environment, DataSourceType.DB_MS));
-					msUserDao.insertMsUser(mu_add);
-					msUserDao.insertMsSSO(mus_add);
-					
-					success_count++;
-					logger.info("从原考勤系统同步新用户信息成功");
 				}
 			} else {
-				logger.error("考勤系统中，出现用户工号为空的异常：epu = " + epu);
+				logger.error("第(" + times_count + ")次，考勤系统中，出现用户工号为空的异常：epu = " + epu);
 				fail_count++;	// 失败条数加1
 			}
 		}
@@ -301,6 +231,235 @@ public class EpUserController {
 		return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 	}
 	
+	
+	/**
+	 * 同步两边系统（原考勤系统和新的SSO系统）用户信息的方法
+	 * @param epu
+	 * @param sso_user
+	 */
+	private void syncEpAttenAndSsoSystemUsersInfo(EpUser epu, MsUserSSO sso_user) {
+		// 1. 同步两边系统用户姓名字段信息
+		String epu_name = epu.getName();
+		if(org.apache.commons.lang3.StringUtils.isNotBlank(epu_name)) {
+			if(epu_name.equals(sso_user.getName())) {
+				// 如果两边系统用户姓名相同，则不做处理
+			} else {	// 如果两边系统用户姓名不同，则以原考勤系统的用户姓名为准
+				sso_user.setName(epu_name);
+			}
+		} else {
+			logger.error("考勤系统中出现用户姓名为空的异常：epu = " + epu);
+		}
+		// 2. 同步两边系统用户密码字段信息
+		if(ObjCmpUtil.compare(epu.getPwd(), sso_user.getPassword())) {
+			// 如果两边系统的用户密码相同，则不做处理
+		} else {	// 如果两边系统的用户密码不同，则以SSO系统的用户密码为准（因为用户登录和用户密码相关的接口已经迁移至SSO系统了）
+//			String sso_user_password = sso_user.getPassword();
+//			if(org.apache.commons.lang3.StringUtils.isNotBlank(sso_user_password)) {
+//				epu.setPwd(sso_user_password);
+//				epu.setMima("<MODIFIED>");	// 用“<MODIFIED>”占位符来标记当前考勤系统的用户密码已修改为与SSO系统用户密码同步
+//			} else {
+//				logger.error("SSO系统中出现用户密码为空的异常：sso_user = " + sso_user);
+//			}
+			epu.setPwd(sso_user.getPassword());
+			epu.setMima("<MODIFIED>");	// 用“<MODIFIED>”占位符来标记当前考勤系统的用户密码已修改为与SSO系统用户密码同步
+		}
+		// 3. 同步两边系统的环信用户id字段信息
+		if(ObjCmpUtil.compare(epu.getEm_uid(), sso_user.getEm_uid())) {
+			// 如果两边系统的环信用户id相同，则不做处理
+		} else {	// 如果两边系统的环信用户id不同，则以SSO系统的环信用户id为准
+//			Integer sso_em_uid = sso_user.getEm_uid();
+//			if(sso_em_uid != null) {
+//				epu.setEm_uid(sso_em_uid);
+//			} else {
+//				logger.error("SSO系统中出现用户的环信用户id为空的异常：sso_user = " + sso_user);
+//			}
+			epu.setEm_uid(sso_user.getEm_uid());
+		}
+		// 4. 同步两边系统的手机号字段信息
+		if(ObjCmpUtil.compare(epu.getMobile_phone(), sso_user.getMobile())) {
+			// 如果两边系统的手机号相同，则不作处理
+		} else {	// 如果两边系统的手机号不同，则以原考勤系统的用户手机号为准
+//			String epu_mobile_phone = epu.getMobile_phone();
+//			if(org.apache.commons.lang3.StringUtils.isNotBlank(epu_mobile_phone)) {
+//				sso_user.setMobile(epu_mobile_phone);
+//			} else {
+//				logger.error("考勤系统中出现用户手机号为空的异常：epu = " + epu);
+//			}
+			sso_user.setMobile(epu.getMobile_phone());
+		}
+		// 5. 同步两边系统的邮箱字段信息
+		if(ObjCmpUtil.compare(epu.getEmail(), sso_user.getEmail())) {
+			// 如果两边系统的邮箱相同，则不作处理
+		} else {	// 如果两边系统的邮箱不同，则以原考勤系统的用户的邮箱为准
+			String epu_email = epu.getEmail();
+			sso_user.setEmail(epu_email);
+		}
+		// 6. 同步两边系统的Base地/工作地点字段信息
+		if(ObjCmpUtil.compare(epu.getBase_place(), sso_user.getWorkPlace())) {
+			// 如果两边系统的Base地相同，则不作处理
+		} else {	// 如果两边系统的Base地不同，则以原考勤系统的用户的Base地为准
+			sso_user.setWorkPlace(epu.getBase_place());
+		}
+		// 7. 同步两边系统的部门名称字段信息
+		if(ObjCmpUtil.compare(epu.getDept_name(), sso_user.getDept_name())) {
+			// ...
+		} else {	// ...以原考勤系统的部门名称为准
+			sso_user.setDept_name(epu.getDept_name());
+		}
+		// 8. 同步两边系统的项目名称
+		if(ObjCmpUtil.compare(epu.getProject_name(), sso_user.getProject_name())) {
+			// ...
+		} else {	// ...以原考勤系统的项目名称为准
+			sso_user.setProject_name(epu.getProject_name());
+		}
+		// 9. 同步两边系统的原始密码
+		if(ObjCmpUtil.compare(epu.getOrigin_pwd(), sso_user.getOrigin_pwd())) {
+			// ...
+		} else {	// ...以SSO系统的原始密码为准
+			epu.setOrigin_pwd(sso_user.getOrigin_pwd());
+		}
+		// 10. 同步两边系统的身份证号
+		if(ObjCmpUtil.compare(epu.getIdentity_no(), sso_user.getIdentity_no())) {
+			// ...
+		} else {	// ...以考勤系统的身份证号为准
+			sso_user.setIdentity_no(epu.getIdentity_no());
+		}
+		// 11. 同步两边系统的验证码
+		if(ObjCmpUtil.compare(epu.getVer_code(), sso_user.getVer_code())) {
+			// ...
+		} else {	// ...以SSO系统的验证码为准
+			epu.setVer_code(sso_user.getVer_code());
+		}
+		// 12. 同步两边系统的验证码生成时间
+		if(ObjCmpUtil.compare(epu.getVercode_time(), sso_user.getVercode_time())) {
+			// ...
+		} else {	// ...以SSO系统的验证码为准
+			epu.setVercode_time(sso_user.getVercode_time());
+		}
+		// 13. 同步两边系统的用户类型
+		if(ObjCmpUtil.compare(epu.getType(), sso_user.getType())) {
+			// ...
+		} else {	// ...以考勤系统的用户类型为准
+			sso_user.setType(epu.getType());
+		}
+		// 14. 同步两边系统的是否推送华为考勤标志字段
+		if(ObjCmpUtil.compare(epu.getPush2hw_atten(), sso_user.getPush2hw_atten())) {
+			// ...
+		} else {	// ...以考勤系统为准
+			sso_user.setPush2hw_atten(epu.getPush2hw_atten());
+		}
+		// 15. 同步公司编号
+		if(ObjCmpUtil.compare(epu.getCompany_code(), sso_user.getCompany_code())) {
+			// ...
+		} else {	// ...以考勤系统为准
+			sso_user.setCompany_code(epu.getCompany_code());
+		}
+	}
+	
+	/**
+	 * 同步两边系统（原考勤系统和新的SSO系统）用户信息的方法（此方法只更新SSO系统的用户信息）
+	 * @param epu
+	 * @param sso_user
+	 */
+	private void syncEpAttenToSsoSystemUsersInfo(EpUser epu, MsUserSSO sso_user) {
+		// 1. 同步两边系统用户姓名字段信息
+		String epu_name = epu.getName();
+		if(org.apache.commons.lang3.StringUtils.isNotBlank(epu_name)) {
+			if(epu_name.equals(sso_user.getName())) {
+				// 如果两边系统用户姓名相同，则不做处理
+			} else {	// 如果两边系统用户姓名不同，则以原考勤系统的用户姓名为准
+				sso_user.setName(epu_name);
+			}
+		} else {
+			logger.error("考勤系统中出现用户姓名为空的异常：epu = " + epu);
+		}
+		// 2. 同步两边系统用户密码字段信息
+/*		if(ObjCmpUtil.compare(epu.getPwd(), sso_user.getPassword())) {
+			// 如果两边系统的用户密码相同，则不做处理
+		} else {	// 如果两边系统的用户密码不同，则以SSO系统的用户密码为准（因为用户登录和用户密码相关的接口已经迁移至SSO系统了）
+			epu.setPwd(sso_user.getPassword());
+			epu.setMima("<MODIFIED>");	// 用“<MODIFIED>”占位符来标记当前考勤系统的用户密码已修改为与SSO系统用户密码同步
+		}*/
+		// 3. 同步两边系统的环信用户id字段信息
+/*		if(ObjCmpUtil.compare(epu.getEm_uid(), sso_user.getEm_uid())) {
+			// 如果两边系统的环信用户id相同，则不做处理
+		} else {	// 如果两边系统的环信用户id不同，则以SSO系统的环信用户id为准
+			epu.setEm_uid(sso_user.getEm_uid());
+		}*/
+		// 4. 同步两边系统的手机号字段信息
+		if(ObjCmpUtil.compare(epu.getMobile_phone(), sso_user.getMobile())) {
+			// 如果两边系统的手机号相同，则不作处理
+		} else {	// 如果两边系统的手机号不同，则以原考勤系统的用户手机号为准
+			sso_user.setMobile(epu.getMobile_phone());
+		}
+		// 5. 同步两边系统的邮箱字段信息
+		if(ObjCmpUtil.compare(epu.getEmail(), sso_user.getEmail())) {
+			// 如果两边系统的邮箱相同，则不作处理
+		} else {	// 如果两边系统的邮箱不同，则以原考勤系统的用户的邮箱为准
+			String epu_email = epu.getEmail();
+			sso_user.setEmail(epu_email);
+		}
+		// 6. 同步两边系统的Base地/工作地点字段信息
+		if(ObjCmpUtil.compare(epu.getBase_place(), sso_user.getWorkPlace())) {
+			// 如果两边系统的Base地相同，则不作处理
+		} else {	// 如果两边系统的Base地不同，则以原考勤系统的用户的Base地为准
+			sso_user.setWorkPlace(epu.getBase_place());
+		}
+		// 7. 同步两边系统的部门名称字段信息
+		if(ObjCmpUtil.compare(epu.getDept_name(), sso_user.getDept_name())) {
+			// ...
+		} else {	// ...以原考勤系统的部门名称为准
+			sso_user.setDept_name(epu.getDept_name());
+		}
+		// 8. 同步两边系统的项目名称
+		if(ObjCmpUtil.compare(epu.getProject_name(), sso_user.getProject_name())) {
+			// ...
+		} else {	// ...以原考勤系统的项目名称为准
+			sso_user.setProject_name(epu.getProject_name());
+		}
+		// 9. 同步两边系统的原始密码
+/*		if(ObjCmpUtil.compare(epu.getOrigin_pwd(), sso_user.getOrigin_pwd())) {
+			// ...
+		} else {	// ...以SSO系统的原始密码为准
+			epu.setOrigin_pwd(sso_user.getOrigin_pwd());
+		}*/
+		// 10. 同步两边系统的身份证号
+		if(ObjCmpUtil.compare(epu.getIdentity_no(), sso_user.getIdentity_no())) {
+			// ...
+		} else {	// ...以考勤系统的身份证号为准
+			sso_user.setIdentity_no(epu.getIdentity_no());
+		}
+		// 11. 同步两边系统的验证码
+/*		if(ObjCmpUtil.compare(epu.getVer_code(), sso_user.getVer_code())) {
+			// ...
+		} else {	// ...以SSO系统的验证码为准
+			epu.setVer_code(sso_user.getVer_code());
+		}*/
+		// 12. 同步两边系统的验证码生成时间
+/*		if(ObjCmpUtil.compare(epu.getVercode_time(), sso_user.getVercode_time())) {
+			// ...
+		} else {	// ...以SSO系统的验证码为准
+			epu.setVercode_time(sso_user.getVercode_time());
+		}*/
+		// 13. 同步两边系统的用户类型
+		if(ObjCmpUtil.compare(epu.getType(), sso_user.getType())) {
+			// ...
+		} else {	// ...以考勤系统的用户类型为准
+			sso_user.setType(epu.getType());
+		}
+		// 14. 同步两边系统的是否推送华为考勤标志字段
+		if(ObjCmpUtil.compare(epu.getPush2hw_atten(), sso_user.getPush2hw_atten())) {
+			// ...
+		} else {	// ...以考勤系统为准
+			sso_user.setPush2hw_atten(epu.getPush2hw_atten());
+		}
+		// 15. 同步公司编号
+		if(ObjCmpUtil.compare(epu.getCompany_code(), sso_user.getCompany_code())) {
+			// ...
+		} else {	// ...以考勤系统为准
+			sso_user.setCompany_code(epu.getCompany_code());
+		}
+	}
 	
 	
 	@RequestMapping(params = "loginCheck", produces = "application/json; charset=UTF-8")

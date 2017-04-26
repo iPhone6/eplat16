@@ -7,7 +7,19 @@ package com.cn.eplat.utils;
  */
 public class ObjCmpUtil {
 	
+	/**
+	 * 比较两个对象是否相同
+	 * @param obj1	对象1
+	 * @param obj2	对象2
+	 * @return	(1) 如果两个对象都是null，则返回true；<br/>
+	 * (2) 如果两个对象中有一个是null，另一个不是null，则返回false；<br/>
+	 * (3) 如果两个对象都不是null，则返回调用对象1的equals()方法比较对象2的结果。<br/>
+	 */
 	public static boolean compare(Object obj1, Object obj2) {
+		if(obj1 == null && obj2 == null) {
+			return true;
+		}
+		
 		if(obj1 == null || obj2 == null) {
 			return false;
 		}

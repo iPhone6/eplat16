@@ -21,6 +21,34 @@ public class MsUserSSO extends MsUser {
 		sso_id = UUID.randomUUID().toString().replace("-", "");
 	}
 	
+	public MsUserSSO(MsUser mu) {
+		super();
+		if(mu != null) {
+			this.setId(mu.getId());
+			this.setName(mu.getName());
+			this.setOrderInDepts(mu.getOrderInDepts());
+			this.setPosition(mu.getPosition());
+			this.setMobile(mu.getMobile());
+			this.setEm_uid(mu.getEm_uid());
+			this.setTel(mu.getTel());
+			this.setWorkPlace(mu.getWorkPlace());
+			this.setRemark(mu.getRemark());
+			this.setEmail(mu.getEmail());
+			this.setJobnumber(mu.getJobnumber());
+			this.setIsHide(mu.getIsHide());
+			this.setIsSenior(mu.getIsSenior());
+			this.setExtattr(mu.getExtattr());
+			this.setEnabled(mu.getEnabled());
+			this.setCreate_time(mu.getCreate_time());
+			this.setCreate_people(mu.getCreate_people());
+			this.setUpdate_time(mu.getUpdate_time());
+			this.setUpdate_people(mu.getUpdate_people());
+			this.setOrgid(mu.getOrgid());
+			this.setLevel(mu.getLevel());
+			this.setCompany_code(mu.getCompany_code());
+		}
+	}
+	
 	public String getSso_id() {
 		return sso_id;
 	}

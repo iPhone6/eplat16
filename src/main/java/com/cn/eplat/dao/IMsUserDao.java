@@ -14,10 +14,18 @@ public interface IMsUserDao {
 	List<MsUser> getAllMsUsers();
 	
 	/**
-	 * 获得所有微服务系统用户信息（联合 ms_sso表）
+	 * 获得所有微服务系统用户信息（联合 ms_sso表，有对应密码的用户）
 	 * @return
 	 */
 	List<MsUserSSO> getAllMsUsersWithMsSSO();
+	
+	/**
+	 * 获得所有微服务系统用户信息（联合 ms_sso表，没有对应密码的用户）
+	 * @return
+	 */
+	List<MsUser> getAllMsUsersWithoutMsSSO();
+	
+	
 	
 	/**
 	 * 获得所有微服务系统用户信息2（ms_user表左连接 ms_sso表）

@@ -1,5 +1,6 @@
 package org.zsl.testmybatis;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -10,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.cn.eplat.controller.EpUserController;
 import com.cn.eplat.dao.IEpAttenDao;
 import com.cn.eplat.dao.IEpUserDao;
 import com.cn.eplat.dao.IMsUserDao;
@@ -17,6 +19,7 @@ import com.cn.eplat.datasource.DataSourceContextHolder;
 import com.cn.eplat.datasource.DataSourceType;
 import com.cn.eplat.model.MsUser;
 import com.cn.eplat.model.MsUserSSO;
+import com.cn.eplat.utils.DateUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)		//表示继承了SpringJUnit4ClassRunner类
 @ContextConfiguration(locations = {"classpath:spring-mybatis.xml"})
@@ -30,11 +33,60 @@ public class TestMsUserDao {
 	private IEpAttenDao epAttenDao;
 	@Resource
 	private IMsUserDao msUserDao;
+	@Resource
+	private EpUserController epUserController;
 	
 	
 	
 	
 	
+	
+	
+	/**
+	 * 测试同步原考勤系统和新的微服务SSO系统两边用户表中的用户信息的方法
+	 */
+	@Test
+	public void testSyncEpUserWithMsUser() {
+		
+		logger.info("开始同步操作...");
+		long start = System.currentTimeMillis();
+		logger.info("开始时间：" + DateUtil.formatDate(2, new Date()));
+		
+		String sync_result = epUserController.syncEpUserWithMsUser();
+		logger.info("结束时间：" + DateUtil.formatDate(2, new Date()));
+		long end = System.currentTimeMillis();
+		
+		logger.info("同步结果：" + sync_result);
+		logger.info("同步过程总耗时：" + DateUtil.timeMills2ReadableStr(end - start));
+		
+	}
+	
+	
+	
+	@Test
+	public void testgetAllMsUsersWithoutMsSSO() {
+		
+		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_MS);
+		
+		List<MsUser> results = null;
+		try {
+			results = msUserDao.getAllMsUsersWithoutMsSSO();
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("查询失败！error_info = " + e.getLocalizedMessage());
+		}
+		
+		logger.info("查询成功！results.size() = " + results.size());
+		
+		if(results.size() > 0) {
+			for(int i=0; i<10 && i<results.size(); i++) {
+				System.out.println(results.get(i));
+			}
+		} else {
+			logger.error("结果集为空");
+		}
+		
+	}
 	
 	
 	@Test

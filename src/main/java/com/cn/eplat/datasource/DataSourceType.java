@@ -34,7 +34,13 @@ public class DataSourceType {
 	// D:/TempDataDpan/19.test_mdb/att2000.mdb
 	public static final String SOURCE_ACCESS = "ds_access";
 	
-	public static final String getProdDsType(String environment, String db_type) {
+	/**
+	 * 根据环境类型和数据库类型参数获取所要连接的数据源类型
+	 * @param environment
+	 * @param db_type
+	 * @return
+	 */
+	public static final String getDataSourceType(String environment, String db_type) {
 		if(EVIRONMENT_LOCAL.equals(environment)) {
 			if(DB_ATTEN.equals(db_type)) {
 				return SOURCE_ADMIN;
