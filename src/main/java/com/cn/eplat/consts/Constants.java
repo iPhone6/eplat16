@@ -11,6 +11,6 @@ public class Constants {
 //	public static final String ANDROID_APKS_URL = ANDROID_APKS_URL_TEST;
 	public static final String ANDROID_APKS_URL = ANDROID_APKS_URL_ALUYUN;
 	
-	public static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_LOCAL;	// 本地运行环境类型
-//	private static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_PROD;	// 生产运行环境类型
+//	public static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_LOCAL;	// 本地运行环境类型
+	public static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_PROD;	// 生产运行环境类型
 }
