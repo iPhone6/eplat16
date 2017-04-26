@@ -70,7 +70,7 @@ public class PushToHwTask {
 		this.pths = pths;
 	}
 	
-//	@Scheduled(cron = "0 30 1 * * ? ") // "0 30 1 * * ?"      // （每天凌晨1点30分开始执行）(正式上线时用的定时设置)
+	@Scheduled(cron = "0 30 1 * * ? ") // "0 30 1 * * ?"      // （每天凌晨1点30分开始执行）(正式上线时用的定时设置)
 //	@Scheduled(cron = "0/8 * * * * ? ")     // （快速测试用定时设置。。。）
 	public void pushDatasToHw() { // 将从数据库里查出来的数据组装成推送需要的数据
 		long start_time = System.currentTimeMillis();	// 记录推送开始时间毫秒数
