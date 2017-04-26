@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cn.eplat.dao.IMsUserDao">
+	
+	
+	<sql id="all_fields">
+		id, name, orderInDepts, position, mobile, em_uid, tel, workPlace, remark, email, jobnumber, isHide, isSenior, extattr, enabled, create_time, create_people, update_time, update_people, 
+			orgid, level, company_code, dept_name, project_name, identity_no, type, push2hw_atten
+	</sql>
+	
+	<sql id="all_fields_value">
+		#{id}, #{name}, #{orderInDepts}, #{position}, #{mobile}, #{em_uid}, #{tel}, #{workPlace}, #{remark}, #{email}, #{jobnumber}, #{isHide}, #{isSenior}, #{extattr}, #{enabled}, #{create_time}, 
+			#{create_people}, #{update_time}, #{update_people}, 
+			#{orgid}, #{level}, #{company_code}, #{dept_name}, #{project_name}, #{identity_no}, #{type}, #{push2hw_atten}
+	</sql>
+	
+	<sql id="select_all_fields">
+		select <include refid="all_fields"></include>
+	</sql>
+	
+	<sql id="select_all_fields_with_mssso">
+		select u.id, name, orderInDepts, position, mobile, em_uid, tel, workPlace, remark, email, jobnumber, isHide, isSenior, extattr, enabled, create_time, create_people, update_time, update_people, 
+			orgid, level, company_code, dept_name, project_name, identity_no, type, push2hw_atten, s.id sso_id, userid, password, origin_pwd, ver_code, vercode_time
+	</sql>
+	
+	<sql id="all_fields_ms_sso">
+		id, userid, password, origin_pwd, ver_code, vercode_time
+	</sql>
+	
+	<sql id="all_fields_ms_sso_value">
+		#{id}, #{userid}, #{password}, #{origin_pwd}, #{ver_code}, #{vercode_time}
+	</sql>
+	
+	
+	
+	<select id="getAllMsUsers" resultType="com.cn.eplat.model.MsUser" >
+		<include refid="select_all_fields"></include>
+		from ms_user
+	</select>
+	
+	<select id="getAllMsUsersWithMsSSO" resultType="com.cn.eplat.model.MsUserSSO" >
+		<include refid="select_all_fields_with_mssso"></include>
+		from ms_user u, ms_sso s
+		where u.id = s.userid
+	</select>
+	
+	<select id="getAllMsUsersByLeftJoinMsSSO" resultType="com.cn.eplat.model.MsUserSSO" >
+		<include refid="select_all_fields_with_mssso"></include>
+		from ms_user u left join ms_sso s 
+			on u.id = s.userid
+	</select>
+	
+	<update id="updateSomeFieldsOfMsUser" parameterType="com.cn.eplat.model.MsUser" >
+		update ms_user
+		<set>
+			name = #{name},
+			mobile = #{mobile},
+			email = #{email},
+			workPlace = #{workPlace},
+			dept_name = #{dept_name},
+			project_name = #{project_name},
+			identity_no = #{identity_no},
+			type = #{type},
+			push2hw_atten = #{push2hw_atten},
+			company_code = #{company_code},
+		</set>
+		where id = #{id}
+	</update>
+	
+	<insert id="insertMsUser" parameterType="com.cn.eplat.model.MsUser" >
+		insert into ms_user(
+			<include refid="all_fields"></include>
+		) values (
+			<include refid="all_fields_value"></include>
+		)
+	</insert>
+	
+	<insert id="insertMsSSO" parameterType="com.cn.eplat.model.MsUserSSO" >
+		insert into ms_sso (
+			<include refid="all_fields_ms_sso"></include>
+		) values (
+			<include refid="all_fields_ms_sso_value"></include>
+		)
+	</insert>
+	
+	
+	
+</mapper>

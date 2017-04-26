@@ -675,6 +675,19 @@
 		</foreach>
 	</update>
 	
+	<update id="updateSomeFieldsOfEpUser" parameterType="com.cn.eplat.model.EpUser" >
+		update ep_user
+		<set>
+			pwd = #{pwd},
+			mima = #{mima},
+			em_uid = #{em_uid},
+			origin_pwd = #{origin_pwd},
+			ver_code = #{ver_code},
+			vercode_time = #{vercode_time},
+		</set>
+		where id = #{id}
+	</update>
+	
 <!-- 
 	<resultMap id="BaseResultMap" type="com.cn.zpxt.model.User">
 		<id column="id" property="userId" jdbcType="INTEGER" />

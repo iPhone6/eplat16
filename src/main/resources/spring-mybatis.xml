@@ -70,6 +70,27 @@
 		<property name="minIdle" value="1"></property>
 		<property name="maxWait" value="60000"></property>
 	</bean>
+	<bean id="ds_ms" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+		<!-- 服务器上的微服务数据库
+			<property name="url" value="jdbc:mysql://120.77.50.190:3306/eplat-ms?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="username" value="root"></property>
+			<property name="password" value="@Elead2015"></property>
+		 -->
+		<!-- 本地上的微服务数据库
+		 -->
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatms_copy16?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="username" value="root"></property>
+			<property name="password" value="111111"></property>
+			
+		<property name="validationQuery" value="SELECT 1" />
+		<property name="testOnBorrow" value="true"/>
+		<property name="initialSize" value="0"></property>
+		<property name="maxActive" value="20"></property>
+		<property name="maxIdle" value="20"></property>
+		<property name="minIdle" value="1"></property>
+		<property name="maxWait" value="60000"></property>
+	</bean>
 	<bean id="ds_access" class="org.apache.commons.dbcp.BasicDataSource" >
         <property name="driverClassName" value="sun.jdbc.odbc.JdbcOdbcDriver" />  
         <!-- 
@@ -97,6 +118,7 @@
 		<property name="targetDataSources">
 			<map key-type="java.lang.String">
 				<entry value-ref="ds_mop" key="ds_mop"></entry>
+				<entry value-ref="ds_ms" key="ds_ms"></entry>
 				<entry value-ref="ds_admin" key="ds_admin"></entry>
 				<entry value-ref="ds_partner" key="ds_partner"></entry>
 				<entry value-ref="ds_access" key="ds_access"></entry>

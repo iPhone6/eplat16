@@ -48,7 +48,7 @@ public class EpUser {
 	public static final Integer DEFAULT_MAX_DEVICE_NUM = 1;	// 每个用户默认最多同时能绑定的设备个数为1
 	public static final Integer DEFAULT_BIND_LIMIT_TIME = 365;	// 每个用户默认已绑定次数有效时间为365天（即一年内累计已绑定次数不重置）
 	public static final Integer DEFAULT_MAX_BIND_TIMES = 5;	// 每个用户默认最多的累计绑定次数为5次
-	private String type;
+	private String type;	// 类型，不同的员工分属不同的类型。1-无小周末，2-有小周末
 	private Boolean push2hw_atten;	// 表示是否要将当前用户的考勤数据推送给HW考勤系统
 	private String company_code;	// 公司编号（用于推送华为考勤系统的考勤数据之用）
 	

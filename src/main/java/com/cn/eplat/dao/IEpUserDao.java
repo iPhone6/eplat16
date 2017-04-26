@@ -89,4 +89,13 @@ public interface IEpUserDao {
 	
 	//根据id查询用户工号
 	public String queryWorkNumById(int id);
+	
+	/**
+	 * 只更新EpUser中的部分字段的值，Null值也接受
+	 * @param epu
+	 * @return
+	 */
+	int updateSomeFieldsOfEpUser(EpUser epu);
+	
+	
 }
