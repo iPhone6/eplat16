@@ -31,7 +31,7 @@
 		<!-- 本地数据库连接配置 
 				注：参数zeroDateTimeBehavior的可选值: convertToNull, round, exception
 		-->
-			<property name="url" value="jdbc:mysql://localhost:3306/eplat_sit8?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplat_sit9?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		
@@ -80,7 +80,7 @@
 		
 		<!-- 本地上的微服务数据库
 		 -->
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatms_copy18?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatms_copy19?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 			

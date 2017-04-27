@@ -38,6 +38,7 @@ import com.cn.eplat.service.IEmUserService;
 import com.cn.eplat.service.IEpUserService;
 import com.cn.eplat.utils.CreatePasswordHelper;
 import com.cn.eplat.utils.CryptionUtil;
+import com.cn.eplat.utils.DateUtil;
 import com.cn.eplat.utils.EplatEmUserHelper;
 import com.cn.eplat.utils.ObjCmpUtil;
 import com.cn.eplat.utils.rsa.Base64;
@@ -1686,7 +1687,8 @@ public class EpUserController {
 	@RequestMapping(params = "changePassword", produces = "application/json; charset=utf-8")
 	@ResponseBody
 	public String changePasswordJson(HttpServletRequest request) {
-
+		logger.info("开始调用原考勤系统的修改密码功能...@" + DateUtil.formatDate(2, new Date()));
+		
 		String user_code = request.getParameter("user_code");
 		String old_pwd_encrypted = request.getParameter("old_pwd"); // 旧密码和下面的新密码都要用RSA加密处理
 		String new_pwd_encrypted = request.getParameter("new_pwd");
@@ -2072,6 +2074,8 @@ public class EpUserController {
 	@RequestMapping(params = "resetPassword", produces = "application/json; charset=UTF-8")
 	@ResponseBody
 	public String resetPasswordByEmail(HttpServletRequest request) {
+		logger.info("开始调用原考勤系统的重置密码功能...@" + DateUtil.formatDate(2, new Date()));
+		
 		String email = request.getParameter("email");
 		String ver_code = request.getParameter("ver_code");
 		String requestPwd = request.getParameter("pwd");
