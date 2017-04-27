@@ -462,7 +462,7 @@ public class EpDataController {
 //			return 0;
 		}
 		
-		// 探测是否还有已筛选出来在push_to_hw表中，但没有推送华为考勤系统的考勤数据，如果有则再次推送华为考勤系统
+		// 探测是否还有昨天之前已筛选出来在push_to_hw表中，但没有推送华为考勤系统的考勤数据，如果有则再次推送华为考勤系统
 		List<PushToHw> pths = pushToHwDao.findNotPushedDatasBeforeYesterday();
 		if(pths != null && pths.size() > 0) {
 			ret_num += pths.size();
