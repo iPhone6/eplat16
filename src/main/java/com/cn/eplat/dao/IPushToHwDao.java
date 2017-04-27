@@ -31,4 +31,10 @@ public interface IPushToHwDao {
 	 */
 	List<PushToHw> findNotPushedDatas();
 	
+	/**
+	 * 查出未推送HW考勤系统的数据（不包括昨天的，也就是昨天之前的部分）
+	 * @return
+	 */
+	List<PushToHw> findNotPushedDatasBeforeYesterday();
+	
 }

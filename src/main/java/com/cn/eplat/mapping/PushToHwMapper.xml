@@ -64,5 +64,13 @@
 		)
 	</select>
 	
+	<select id="findNotPushedDatasBeforeYesterday" resultType="com.cn.eplat.model.PushToHw" >
+		select * from push_to_hw pth
+		where pth.id not in (
+			select distinct(pth_id)
+			from push_log
+		) and pth.dayof_date &lt; DATE_FORMAT(date_add(NOW(), interval -1 day),'%Y-%m-%d')
+	</select>
+	
 	
 </mapper>

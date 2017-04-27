@@ -58,7 +58,7 @@ public class FilterPunchCardDatas {
 
 
 //	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
-//	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
+	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。");
 		
@@ -74,7 +74,7 @@ public class FilterPunchCardDatas {
 		// TODO: 临时代码 (End)
 		*/
 		
-		// // 正常情况下筛选打卡数据（正常情况下，只筛选前一天的打卡数据）
+		// // 1. 正常情况下筛选打卡数据（正常情况下，只筛选前一天的打卡数据）
 		Date earliest_pfl_time = pushFilterLogService.getEarliestPushFilterLogTime();
 		
 		if(earliest_pfl_time == null) {
@@ -120,7 +120,7 @@ public class FilterPunchCardDatas {
 			}
 		}
 		
-		// // 探测是否有异常情况（有打卡数据的proc_result字段的值为NULL时），如有异常情况，则进行重新筛选，并推送华为考勤系统
+		// // 2. 探测是否有异常情况（有打卡数据的proc_result字段的值为NULL时），如有异常情况，则进行重新筛选，并推送华为考勤系统
 		int p2hw_abnormal = epDataController.filterPush2HwAttenOperationAbnormal();
 		
 		if(p2hw_abnormal == 0) {
