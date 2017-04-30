@@ -31,7 +31,7 @@
 		<!-- 本地数据库连接配置 
 				注：参数zeroDateTimeBehavior的可选值: convertToNull, round, exception
 		-->
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy01?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy02?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		

@@ -236,6 +236,14 @@ public class ExportData2HWHelper {
 	 * @return true-成功   false-失败
 	 */
 	public boolean insert2HW(ArrayList<Map<String, String>> lists,String token){
+		
+		// TODO: 临时代码
+		if(lists != null) {
+			return true;
+		}
+		
+		// TODO: 临时代码
+		
 		String body = combinBody(lists);
 		String result = send(token, body);
 		System.out.println(result);

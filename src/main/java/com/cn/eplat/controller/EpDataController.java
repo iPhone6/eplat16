@@ -59,6 +59,7 @@ import com.cn.eplat.timedtask.PushToHwTask;
 import com.cn.eplat.utils.DateUtil;
 import com.cn.eplat.utils.FileUtil;
 import com.cn.eplat.utils.Files_Helper_DG;
+import com.cn.eplat.utils.MyListUtil;
 import com.test.maintest.DeptIdClueUtil;
 
 @Controller
@@ -328,6 +329,33 @@ public class EpDataController {
 			return -6;
 		}
 		
+		int part_num = 10;	// 将要筛选的用户按每部分part_num个进行划分，依次进行筛选操作，从而将一个大的筛选任务拆解成N个小的筛选操作（这样可以减轻数据库的操作压力，提高数据库的运行性能）
+		MyListUtil<Date> date_mlu = new MyListUtil<Date>(need_dates);
+		MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
+		
+		int ret_num = 0, results_count = 0;
+		List<Date> one_date;
+		do {
+			one_date = date_mlu.getNextNElements(1);
+			
+			List<EpUser> part_epus;
+			do {
+				part_epus = epu_mlu.getNextNElements(part_num);
+				
+				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
+				if(part_results != null && part_results.size() > 0) {
+					results_count += part_results.size();
+				}
+				
+				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date);
+				ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
+				
+			} while (part_epus != null && part_epus.size() >= part_num);
+			
+			
+		} while (one_date != null && one_date.size() >= 1);
+		
+		/*
 		List<HashMap<String, Object>> results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(need_dates, epus_valid);
 		
 		if(results == null) {
@@ -339,9 +367,15 @@ public class EpDataController {
 		}
 		
 		return procPush2HWAttenDatas(results, epus_valid_map, need_dates);
+		*/
 		
-//		return 1;
+		if(results_count == 0) {
+			return -8;
+		}
+		
+		return ret_num;
 	}
+	
 	
 	/**
 	 * 根据指定开始日期、结束日期，重新筛选从开始日期到结束日期之间的所有打卡数据
@@ -478,7 +512,7 @@ public class EpDataController {
 	/**
 	 * 处理经过筛选的考勤数据
 	 */
-	private void procFilterdEpAttens(List<HashMap<String, Object>> results, TreeMap<Integer, EpUser> epus_valid_map, List<PushToHw> pthws, List<PushFilterLog> filtered_valid, List<PushFilterLog> filtered_invalid) {
+	private void procFilterdEpAttens(List<Long> epuids, List<HashMap<String, Object>> results, TreeMap<Integer, EpUser> epus_valid_map, List<PushToHw> pthws, List<PushFilterLog> filtered_valid, List<PushFilterLog> filtered_invalid) {
 		
 		Date filter_time = new Date();
 		
@@ -494,6 +528,7 @@ public class EpDataController {
 			
 			if(ep_uid_obj instanceof Long) {
 				Long ep_uid = (Long) ep_uid_obj;
+				epuids.add(ep_uid);
 				pfl.setEp_uid(ep_uid.intValue());
 				
 				if(punch_date_obj instanceof String && first_punch_time_obj instanceof Timestamp && last_punch_time_obj instanceof Timestamp && company_code_obj instanceof String) {
@@ -547,12 +582,13 @@ public class EpDataController {
 	
 	private int procPush2HWAttenDatas(List<HashMap<String, Object>> results, TreeMap<Integer, EpUser> epus_valid_map, List<Date> need_dates) {
 		
+		List<Long> epuids = new ArrayList<Long>();
 		List<PushToHw> pthws = new ArrayList<PushToHw>();
 		List<PushFilterLog> filtered_valid = new ArrayList<PushFilterLog>();
 		List<PushFilterLog> filtered_invalid = new ArrayList<PushFilterLog>();
 		List<PushFilterLog> filtered_all = new ArrayList<PushFilterLog>();
 		
-		procFilterdEpAttens(results, epus_valid_map, pthws, filtered_valid, filtered_invalid);
+		procFilterdEpAttens(epuids, results, epus_valid_map, pthws, filtered_valid, filtered_invalid);
 		
 		if(pthws.size() == 0) {
 			logger.error("准备推送华为考勤数据条数为0");
@@ -588,7 +624,7 @@ public class EpDataController {
 		}
 		
 		// 筛选完后，修改已处理的日期下的所有打卡数据的处理结果字段的值
-		epAttenDao.updateEpAttenProcResultOfGivenDates(need_dates);
+		epAttenDao.updateEpAttenProcResultOfGivenDatesAndEpuids(need_dates, epuids);
 		
 		filtered_all.addAll(filtered_invalid);
 		filtered_all.addAll(filtered_valid);

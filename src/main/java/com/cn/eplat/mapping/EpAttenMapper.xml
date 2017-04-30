@@ -164,22 +164,28 @@
 		WHERE is_valid = TRUE
 			AND TIME IS NOT NULL
 			AND TIME &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
-			<if test="dates != null and dates.size() > 0 ">
-				and DATE_FORMAT(TIME,'%Y-%m-%d') in (
-					<foreach collection="dates" item="item" separator="," >
-						DATE_FORMAT( #{item}, '%Y-%m-%d' )
-					</foreach>
-				)
-			</if>
-			<if test="epus != null and epus.size() > 0 ">
-				and ep_uid in (
-					<foreach collection="epus" item="item" separator="," >
-						<if test="item != null and item.id > 0 ">
-							#{item.id}
-						</if>
-					</foreach>
-				)
-			</if>
+			and (
+				1 &gt; 2
+				<if test="dates != null and dates.size() > 0 ">
+					or DATE_FORMAT(TIME,'%Y-%m-%d') in (
+						<foreach collection="dates" item="item" separator="," >
+							DATE_FORMAT( #{item}, '%Y-%m-%d' )
+						</foreach>
+					)
+				</if>
+			)
+			and (
+				1 &gt; 2
+				<if test="epus != null and epus.size() > 0 ">
+					or ep_uid in (
+						<foreach collection="epus" item="item" separator="," >
+							<if test="item != null and item.id > 0 ">
+								#{item.id}
+							</if>
+						</foreach>
+					)
+				</if>
+			)
 		GROUP BY ep_uid, punch_date
 	</select>
 	
@@ -343,6 +349,32 @@
 					<foreach collection="dates" item="item" separator="," >
 						DATE_FORMAT( #{item}, '%Y-%m-%d' )
 					</foreach>
+				)
+			</if>
+	</update>
+	
+	<update id="updateEpAttenProcResultOfGivenDatesAndEpuids">
+		update ep_attendance
+		<set>
+			proc_result = 'filter_success',
+			proc_count = (ifnull(proc_count, 0) + 1),
+			proc_time = now()
+		</set>
+		where 1 &lt; 1
+			<if test="dates != null and dates.size() > 0 ">
+				or (
+					DATE_FORMAT(TIME,'%Y-%m-%d') in (
+						<foreach collection="dates" item="date" separator="," >
+							DATE_FORMAT( #{date}, '%Y-%m-%d' )
+						</foreach>
+					)
+					<if test="epuids != null and epuids.size() > 0 ">
+						and ep_uid in (
+							<foreach collection="epuids" item="epuid" separator="," >
+								#{epuid}
+							</foreach>
+						)
+					</if>
 				)
 			</if>
 	</update>

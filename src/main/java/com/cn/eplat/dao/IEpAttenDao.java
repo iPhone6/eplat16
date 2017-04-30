@@ -66,6 +66,13 @@ public interface IEpAttenDao {
 	int updateEpAttenProcResultOfGivenDates(@Param("dates") List<Date> dates);
 	
 	/**
+	 * 修改指定日期、指定用户的所有打卡数据的处理结果字段（proc_result）的值
+	 * @param dates
+	 * @return
+	 */
+	int updateEpAttenProcResultOfGivenDatesAndEpuids(@Param("dates") List<Date> dates, @Param("epuids") List<Long> epuids);
+	
+	/**
 	 * 获取尚未做筛选处理的打卡数据数量
 	 * @return
 	 */
