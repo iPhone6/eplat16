@@ -19,11 +19,13 @@ public class DateUtil {
 	
 	public static final String DU_YMD = "yyyy-MM-dd";
 	public static final String DU_YMD_HMS = "yyyy-MM-dd HH:mm:ss";
+	public static final String DU_YMD_HMS_SSS = "yyyy-MM-dd HH:mm:ss.SSS";	// 带3位毫秒数的日期时间格式
 	public static final String DU_YMD_HMS_NO_COLON = "yyyy-MM-dd HHmmss";
 	
 	private static SimpleDateFormat sdf_ymd = new SimpleDateFormat(DU_YMD);	// “年-月-日”格式的日期格式化对象（对应日期格式的类型 type = 1）
 	private static SimpleDateFormat sdf_hms = new SimpleDateFormat(DU_YMD_HMS);	// “年-月-日 时:分:秒”格式的日期格式化对象（对应日期格式的类型 type = 2）
-	private static SimpleDateFormat sdf_hms_no_colon = new SimpleDateFormat(DU_YMD_HMS_NO_COLON);	// “年-月-日 时:分:秒”格式的日期格式化对象（对应日期格式的类型 type = 2）
+	private static SimpleDateFormat sdf_hms_no_colon = new SimpleDateFormat(DU_YMD_HMS_NO_COLON);	// “年-月-日 时分秒”格式的日期格式化对象（对应日期格式的类型 type = 3）
+	private static SimpleDateFormat sdf_hms_sss = new SimpleDateFormat(DU_YMD_HMS_SSS);	// “年-月-日 时:分:秒.毫秒”格式的日期格式化对象（对应日期格式的类型 type = 4）
 	
 	public static final long ONE_DAY_TIME_MILLS = 24*60*60*1000;	// 表示一天时间对应的时间毫秒数
 	
@@ -240,7 +242,8 @@ public class DateUtil {
 			Date calc_date = new Date(calc_date_time_mills);	// 根据计算得到的时间毫秒数，将其转换成想要的日期对象，表示|x|天前或|x|天后的日期
 			return calc_date;
 		} catch (Exception e) {	// 如果计算时间毫秒数的过程中出现了如长整型数据溢出的异常时，直接返回null
-			e.printStackTrace();
+//			e.printStackTrace();
+			logger.error("计算x天之后的日期时出现异常，error_info = " + e.getLocalizedMessage());
 			return null;
 		}
 	}
@@ -471,6 +474,7 @@ public class DateUtil {
 		cld.set(Calendar.HOUR_OF_DAY, 0);
 		cld.set(Calendar.MINUTE, 0);
 		cld.set(Calendar.SECOND, 0);
+		cld.set(Calendar.MILLISECOND, 0);	// 还有别忘了，毫秒数也要设置为0才行哦~~~
 		
 		return cld.getTime();
 	}
@@ -529,14 +533,14 @@ public class DateUtil {
 	/**
 	 * 将传入的日期字符串转换成对应格式的日期
 	 * 
-	 * @param type 日期格式的类型（1 代表“yyyy-MM-dd”格式，2 代表“yyyy-MM-dd HH:mm:ss”格式）
+	 * @param type 日期格式的类型（1 代表“yyyy-MM-dd”格式，2 代表“yyyy-MM-dd HH:mm:ss”格式，3代表“yyyy-MM-dd HHmmss”格式, 4代表“yyyy-MM-dd HH:mm:ss.SSS”格式）
 	 * @param date_str 日期字符串参数
 	 * @return 如果转换正常，则返回一个日期对象；如果有任何异常，则返回null
 	 */
 	public static Date parse2date(int type, String date_str) {
-		if(type != 1 && type != 2) {	// 如果日期格式类型既不是1也不是2，则表示日期格式类型错误，直接返回null
-			return null;
-		}
+//		if(type != 1 && type != 2 && type != 3 && type != 4) {	// 如果日期格式类型不是1、2、3、4，则表示日期格式类型错误，直接返回null
+//			return null;
+//		}
 		
 		if(StringUtils.isBlank(date_str)) {	// 如果将要转换的日期字符串为空白字符串，则直接返回null
 			return null;
@@ -544,6 +548,52 @@ public class DateUtil {
 		
 		String date_str_trim = date_str.trim();
 		
+		switch(type) {
+			case 1:
+				try {
+					Date date_parse = sdf_ymd.parse(date_str_trim);
+					return date_parse;
+				} catch (ParseException e) {
+//					e.printStackTrace();
+					logger.error("按“yyyy-MM-dd”格式转换日期字符串时出现异常：" + date_str + ", [error_info = " + e.getMessage() + "]");
+					return null;	// 转换出现异常时，输出错误日志信息后，直接返回null
+				}
+//				break;
+			case 2:
+				try {
+					Date date_parse = sdf_hms.parse(date_str_trim);
+					return date_parse;
+				} catch (ParseException e) {
+//					e.printStackTrace();
+					logger.error("按“yyyy-MM-dd HH:mm:ss”格式转换日期字符串时出现异常：" + date_str + ", [error_info = " + e.getMessage() + "]");
+					return null;	// 转换出现异常时，输出错误日志信息后，直接返回null
+				}
+//				break;
+			case 3:
+				try {
+					Date date_parse = sdf_hms_no_colon.parse(date_str_trim);
+					return date_parse;
+				} catch (ParseException e) {
+//					e.printStackTrace();
+					logger.error("按“yyyy-MM-dd HHmmss”格式转换日期字符串时出现异常：" + date_str + ", [error_info = " + e.getMessage() + "]");
+					return null;	// 转换出现异常时，输出错误日志信息后，直接返回null
+				}
+//				break;
+			case 4:
+				try {
+					Date date_parse = sdf_hms_sss.parse(date_str_trim);
+					return date_parse;
+				} catch (ParseException e) {
+//					e.printStackTrace();
+					logger.error("按“yyyy-MM-dd HH:mm:ss.SSS”格式转换日期字符串时出现异常：" + date_str + ", [error_info = " + e.getMessage() + "]");
+					return null;	// 转换出现异常时，输出错误日志信息后，直接返回null
+				}
+//				break;
+			default:
+				return null;
+		}
+		
+		/*
 		if(type == 1) {	// 如果选择的是第一种日期格式（yyyy-MM-dd），则返回该日期格式的日期
 			try {
 				Date date_parse = sdf_ymd.parse(date_str_trim);
@@ -567,24 +617,43 @@ public class DateUtil {
 		}
 		
 		return null;
+		*/
+		
 	}
 	
 	/**
 	 * 将一个日期对象转换成对应格式的日期字符串
 	 * 
-	 * @param type 日期格式的类型（1 代表“yyyy-MM-dd”格式，2 代表“yyyy-MM-dd HH:mm:ss”格式，3代表“yyyy-MM-dd HHmmss”）
+	 * @param type 日期格式的类型（1 代表“yyyy-MM-dd”格式，2 代表“yyyy-MM-dd HH:mm:ss”格式，3代表“yyyy-MM-dd HHmmss”格式, 4代表“yyyy-MM-dd HH:mm:ss.SSS”格式）
 	 * @param date 要转换的日期对象
 	 * @return 如果转换正常，则返回一个日期字符串；如果有任何异常，则返回null
 	 */
 	public static String formatDate(int type, Date date) {
-		if(type != 1 && type != 2 && type != 3) {	// 如果日期格式类型既不是1也不是2，则表示日期格式类型错误，直接返回null
-			return null;
-		}
+//		if(type != 1 && type != 2 && type != 3 && type != 4) {	// 如果日期格式类型不是1、2、3、4，则表示日期格式类型错误，直接返回null
+//			return null;
+//		}
 		
 		if(date == null) {
 			return null;
 		}
 		
+		switch(type) {
+			case 1:
+				return sdf_ymd.format(date);
+//				break;
+			case 2:
+				return sdf_hms.format(date);
+//				break;
+			case 3:
+				return sdf_hms_no_colon.format(date);
+//				break;
+			case 4:
+				return sdf_hms_sss.format(date);
+//				break;
+			default:
+				return null;
+		}
+		/*
 		if(type == 1) {	// 如果选择的是第一种日期格式（yyyy-MM-dd），则返回该日期格式的日期字符串
 			String ymd_str = sdf_ymd.format(date);
 			return ymd_str;
@@ -600,11 +669,61 @@ public class DateUtil {
 			return hms_no_colon_str;
 		}
 		
+		if(type == 4) {	// 如果选择的是第四种日期格式（yyyy-MM-dd HH:mm:ss.SSS），则返回该日期格式的日期字符串
+			String hms_sss_str = sdf_hms_sss.format(date);
+			return hms_sss_str;
+		}
+		
 		return null;	// 如果日期格式类型既不是1也不是2，也不是3，则返回null
+		*/
 	}
 	
 	
 	public static void main(String[] args) {
+		
+		
+		
+		
+		/*
+		String date_str1 = "2018-05-13";
+		String date_str2 = "2018-05-14 19:56:33";
+		String date_str3 = "2018-06-15 225633";
+		String date_str4 = "2017-11-16 01:56:45.666";
+		
+		Date date1 = DateUtil.parse2date(1, date_str1);
+		Date date2 = DateUtil.parse2date(2, date_str2);
+		Date date3 = DateUtil.parse2date(3, date_str3);
+		Date date4 = DateUtil.parse2date(4, date_str4);
+		
+		System.out.println("date1 = " + DateUtil.formatDate(4, date1));
+		System.out.println("date2 = " + DateUtil.formatDate(4, date2));
+		System.out.println("date3 = " + DateUtil.formatDate(4, date3));
+		System.out.println("date4 = " + DateUtil.formatDate(4, date4));
+		*/
+		
+		
+		
+		
+		
+		Date now_date = new Date();
+		
+		Date now_date_000 = DateUtil.parse2date(1, DateUtil.formatDate(1, now_date));
+		
+		Date now_date_0000 = DateUtil.transToDateIgnoreHHmmss(now_date);
+		
+		System.out.println("compare result = " + now_date_000.compareTo(now_date_0000));
+		System.out.println("is before ? " + now_date_000.before(now_date_0000));
+		System.out.println("is after ? " + now_date_000.after(now_date_0000));
+		System.out.println("is equal ? " + now_date_000.equals(now_date_0000));
+		
+		System.out.println("now_date_000 = " + DateUtil.formatDate(4, now_date_000));
+		System.out.println("now_date_0000 = " + DateUtil.formatDate(4, now_date_0000));
+		
+		Date start_date = DateUtil.calcXDaysAfterADate(-1, now_date_0000);
+		System.out.println("start_date = " + DateUtil.formatDate(4, start_date));
+		
+		
+		
 		
 		
 		/*

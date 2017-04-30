@@ -90,4 +90,11 @@ public interface IEpAttenDao {
 	 */
 	List<Integer> getNotProcessedEpAttenEpUids();
 	
+	/**
+	 * 对剩余未做标记的考勤数据进行补充标记（以免在下次筛选操作时重复筛选这部分的考勤数据）
+	 * @param dates
+	 * @return
+	 */
+	int markRemainEpAttensByDates(@Param("dates") List<Date> dates);
+	
 }

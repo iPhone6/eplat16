@@ -19,6 +19,12 @@ public class MyListUtil<T> {
 			// 
 		}
 	}
+	public int getCurrentIndex() {
+		return currentIndex;
+	}
+	public void setCurrentIndex(int currentIndex) {
+		this.currentIndex = currentIndex;
+	}
 	
 	public MyListUtil() {
 		

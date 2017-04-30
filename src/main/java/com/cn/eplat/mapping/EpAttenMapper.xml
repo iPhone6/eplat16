@@ -391,7 +391,7 @@
 		where 
 			(
 				proc_result is null 
-				or proc_result &lt;&gt; 'filter_success'
+				or proc_result not like '%filter_success%'
 			)
 			and time &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 	</select>
@@ -403,7 +403,7 @@
 			from ep_attendance
 			where (
 				proc_result is null 
-				or proc_result &lt;&gt; 'filter_success'
+				or proc_result not like '%filter_success%'
 			)
 				and time &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 		) v
@@ -415,12 +415,34 @@
 		from ep_attendance
 		where (
 				proc_result is null 
-				or proc_result &lt;&gt; 'filter_success'
+				or proc_result not like '%filter_success%'
 			)
 			and time &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 		order by ep_uid
 	</select>
 	
+	<update id="markRemainEpAttensByDates">
+		update ep_attendance
+		<set>
+			proc_result = 'filter_success_remain',
+			proc_count = (ifnull(proc_count, 0) + 1),
+			proc_time = now()
+		</set>
+		where 1 &lt; 1
+			<if test="dates != null and dates.size() > 0 ">
+				or (
+					(
+						proc_result is null
+						or proc_result like '%remain%'
+					)
+					and DATE_FORMAT(TIME,'%Y-%m-%d') in (
+						<foreach collection="dates" item="date" separator="," >
+							DATE_FORMAT( #{date}, '%Y-%m-%d' )
+						</foreach>
+					)
+				)
+			</if>
+	</update>
 	
 	
 </mapper>

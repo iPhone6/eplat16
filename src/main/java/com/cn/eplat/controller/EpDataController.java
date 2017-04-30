@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -329,6 +330,7 @@ public class EpDataController {
 			return -6;
 		}
 		
+		int date_num = Constants.FILTER_PART_DATE_NUM;
 		int part_num = Constants.FILTER_PART_EPU_NUM;	// 将要筛选的用户按每部分part_num个进行划分，依次进行筛选操作，从而将一个大的筛选任务拆解成N个小的筛选操作（这样可以减轻数据库的操作压力，提高数据库的运行性能）
 		MyListUtil<Date> date_mlu = new MyListUtil<Date>(need_dates);
 		MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
@@ -336,28 +338,36 @@ public class EpDataController {
 		int ret_num = 0, results_count = 0;
 		List<Date> one_date;
 		do {
-			one_date = date_mlu.getNextNElements(Constants.FILTER_PART_DATE_NUM);
+			one_date = date_mlu.getNextNElements(date_num);
 			if(one_date == null || one_date.size() == 0) {
-				continue;
+				break;
 			}
 			List<EpUser> part_epus;
+			epu_mlu.setCurrentIndex(0);
 			do {
 				part_epus = epu_mlu.getNextNElements(part_num);
 				if(part_epus == null || part_epus.size() == 0) {
-					continue;
+					break;
 				}
+//				for(EpUser epu:part_epus) {
+//					if(Arrays.asList(428, 479, 827, 644).contains(epu.getId())) {
+//						System.out.println("出现可疑目标。。。epu.id = " + epu.getId());
+//					}
+//				}
 				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
 				if(part_results != null && part_results.size() > 0) {
 					results_count += part_results.size();
 				}
 				
-				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date);
+				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
 				ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				
 			} while (part_epus != null && part_epus.size() >= part_num);
 			
+			int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
+			logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
 			
-		} while (one_date != null && one_date.size() >= 1);
+		} while (one_date != null && one_date.size() >= date_num);
 		
 		/*
 		List<HashMap<String, Object>> results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(need_dates, epus_valid);
@@ -390,7 +400,7 @@ public class EpDataController {
 	@RequestMapping(params = "reFilterPush2HwAttens", produces = "application/json; charset=UTF-8")
 	@ResponseBody
 	public String reFilterPush2HwAttenOperation(HttpServletRequest request) {
-		
+		long start_tms = System.currentTimeMillis();	// 记录重新筛选操作开始时间毫秒数
 		JSONObject json_ret = new JSONObject();
 		
 		// 从接收到的请求中获得传入参数
@@ -428,6 +438,18 @@ public class EpDataController {
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
+		Date now_date_0000 = DateUtil.transToDateIgnoreHHmmss(now_date);	// 将当前系统时间转化成0时0分0秒0毫秒的日期对象，用来和传入的给定开始日期、结束日期进行比较的时间点
+		if(now_date_0000.before(start_date)) {
+			start_date = DateUtil.calcXDaysAfterADate(-1, now_date_0000);
+		} else {
+			// 
+		}
+		if(now_date_0000.before(end_date)) {
+			end_date = DateUtil.calcXDaysAfterADate(-1, now_date_0000);
+		} else {
+			// 
+		}
+		
 		List<Date> need_dates = DateUtil.calcDatesExcludeGivenDatesByStartEndDate(null, start_date, end_date);
 		
 		if(need_dates == null ) {
@@ -442,33 +464,73 @@ public class EpDataController {
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
-		List<HashMap<String, Object>> results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(need_dates, epus_valid);
+		int date_num = Constants.FILTER_PART_DATE_NUM;
+		int part_num = Constants.FILTER_PART_EPU_NUM;	// 将要筛选的用户按每部分part_num个进行划分，依次进行筛选操作，从而将一个大的筛选任务拆解成N个小的筛选操作（这样可以减轻数据库的操作压力，提高数据库的运行性能）
+		MyListUtil<Date> date_mlu = new MyListUtil<Date>(need_dates);
+		MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
 		
-		if(results == null) {
-			json_ret.put("ret_code", -7);
-			json_ret.put("ret_message", "重新筛选得到的结果为null异常");
-			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
-		}
+		int ret_num = 0, results_count = 0;
+		List<Date> one_date;
+		do {
+			one_date = date_mlu.getNextNElements(date_num);
+			if(one_date == null || one_date.size() == 0) {
+				break;
+			}
+			epu_mlu.setCurrentIndex(0);
+			List<EpUser> part_epus;
+			do {
+				part_epus = epu_mlu.getNextNElements(part_num);
+				if(part_epus == null || part_epus.size() == 0) {
+					break;
+				}
+//				for(EpUser epu:part_epus) {
+//					if(Arrays.asList(428, 479, 827, 644).contains(epu.getId())) {
+//						System.out.println("出现可疑目标。。。epu.id = " + epu.getId());
+//					}
+//				}
+				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
+				if(part_results != null && part_results.size() > 0) {
+					results_count += part_results.size();
+				}
+				
+				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, true);
+				ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
+				
+			} while (part_epus != null && part_epus.size() >= part_num);
+			
+			int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
+			logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
+			
+		} while (one_date != null && one_date.size() >= date_num);
 		
-		if(results.size() == 0) {
+//		List<HashMap<String, Object>> results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(need_dates, epus_valid);
+		
+//		if(results == null) {
+//			json_ret.put("ret_code", -7);
+//			json_ret.put("ret_message", "重新筛选得到的结果为null异常");
+//			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
+//		}
+		
+		if(results_count == 0) {
 			json_ret.put("ret_code", -8);
 			json_ret.put("ret_message", "重新筛选得到的结果个数为0异常");
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
-		int proc_ret = procPush2HWAttenDatas(results, epus_valid_map, need_dates);
+//		int proc_ret = procPush2HWAttenDatas(results, epus_valid_map, need_dates);
 		
-		if(proc_ret > 0) {
+		long end_tms = System.currentTimeMillis();	// 记录重新筛选操作结束时间毫秒数
+		if(ret_num > 0) {
 //			List<PushToHw> pths = pushToHwDao.findNotPushedDatas();
 //			pushToHwTask.setPths(pths);
 //			pushToHwTask.pushDatasToHw();
 			
 			json_ret.put("ret_code", 1);
-			json_ret.put("ret_message", "重新筛选成功，proc_ret = " + proc_ret);
+			json_ret.put("ret_message", "重新筛选成功，proc_ret = " + ret_num + "，重新筛选操作总计耗时：" + DateUtil.timeMills2ReadableStr(end_tms-start_tms));
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		} else {
 			json_ret.put("ret_code", -9);
-			json_ret.put("ret_message", "处理筛选结果集时出现异常，proc_ret = " + proc_ret);
+			json_ret.put("ret_message", "处理筛选结果集时出现异常，proc_ret = " + ret_num + "，重新筛选操作总计耗时：" + DateUtil.timeMills2ReadableStr(end_tms-start_tms));
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
@@ -500,24 +562,27 @@ public class EpDataController {
 			do {
 				one_date = date_mlu.getNextNElements(date_num);
 				if(one_date == null || one_date.size() == 0) {
-					continue;
+					break;
 				}
 				List<Integer> part_epuids;
+				epu_mlu.setCurrentIndex(0);
 				do {
 					part_epuids = epu_mlu.getNextNElements(part_num);
 					if(part_epuids == null || part_epuids.size() == 0) {
-						continue;
+						break;
 					}
 					List<HashMap<String, Object>> part_results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epuids);
 					if(part_results != null && part_results.size() > 0) {
 						results_count += part_results.size();
 					}
 					
-					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date);
+					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
 					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 					
 				} while (part_epuids != null && part_epuids.size() >= part_num);
 				
+				int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
+				logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
 				
 			} while (one_date != null && one_date.size() >= date_num);
 			
@@ -617,8 +682,15 @@ public class EpDataController {
 		
 	}
 	
-	
-	private int procPush2HWAttenDatas(List<HashMap<String, Object>> results, TreeMap<Integer, EpUser> epus_valid_map, List<Date> need_dates) {
+	/**
+	 * 
+	 * @param results
+	 * @param epus_valid_map
+	 * @param need_dates
+	 * @param is_refilter	表示是否是重新筛选操作的标志，如果是重新筛选（true），则不跳过重新推送筛选出来的昨天的考勤数据；如果不是重新筛选（false），则要跳过。
+	 * @return
+	 */
+	private int procPush2HWAttenDatas(List<HashMap<String, Object>> results, TreeMap<Integer, EpUser> epus_valid_map, List<Date> need_dates, boolean is_refilter) {
 		
 		List<Long> epuids = new ArrayList<Long>();
 		List<PushToHw> pthws = new ArrayList<PushToHw>();
@@ -652,12 +724,18 @@ public class EpDataController {
 				// 
 			}
 			
-			if(skip_push2hw) {
-				// 跳过推送只包含昨天的已筛选考勤数据的推送HW考勤系统操作
-				logger.info("跳过推送只筛选出昨天的考勤数据。。。");
-			} else {
+			if(is_refilter) {
+				logger.info("重新筛选考勤数据操作，不跳过重新推送已筛选出的昨天的考勤数据到HW考勤系统...");
 				pushToHwTask.setPths(pthws);
 				pushToHwTask.pushDatasToHw();
+			} else {
+				if(skip_push2hw) {
+					// 跳过推送只包含昨天的已筛选考勤数据的推送HW考勤系统操作
+					logger.info("跳过推送只筛选出昨天的考勤数据。。。");
+				} else {
+					pushToHwTask.setPths(pthws);
+					pushToHwTask.pushDatasToHw();
+				}
 			}
 		}
 		
