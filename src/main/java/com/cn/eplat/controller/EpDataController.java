@@ -329,14 +329,14 @@ public class EpDataController {
 			return -6;
 		}
 		
-		int part_num = 10;	// 将要筛选的用户按每部分part_num个进行划分，依次进行筛选操作，从而将一个大的筛选任务拆解成N个小的筛选操作（这样可以减轻数据库的操作压力，提高数据库的运行性能）
+		int part_num = Constants.FILTER_PART_EPU_NUM;	// 将要筛选的用户按每部分part_num个进行划分，依次进行筛选操作，从而将一个大的筛选任务拆解成N个小的筛选操作（这样可以减轻数据库的操作压力，提高数据库的运行性能）
 		MyListUtil<Date> date_mlu = new MyListUtil<Date>(need_dates);
 		MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
 		
 		int ret_num = 0, results_count = 0;
 		List<Date> one_date;
 		do {
-			one_date = date_mlu.getNextNElements(1);
+			one_date = date_mlu.getNextNElements(Constants.FILTER_PART_DATE_NUM);
 			
 			List<EpUser> part_epus;
 			do {
