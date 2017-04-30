@@ -106,7 +106,7 @@ public class PushPunchCardDatas {
 	}
 	
 	
-//	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
+	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
@@ -189,6 +189,7 @@ public class PushPunchCardDatas {
 		
 		Date tolerant_time = DateUtil.calcDatePlusGivenTimeMills(proc_time, tolerance_time_mills);
 		
+		List<MachUserInfo> all_muis = null;
 		if(system_logs.size() == 0) {
 			logger.info("打卡机系统日志中没有更多新数据了。。。");
 		} else {
@@ -209,12 +210,20 @@ public class PushPunchCardDatas {
 									need_search_missed = true;
 								}
 								msc.setStatus("已处理");
-							} else if(log_descr.contains("人员维护") || log_descr.contains("上传人员信息")) {	
+							} else if(log_descr.contains("人员维护") || log_descr.contains("上传人员信息")) {
+								int muis_count = 0;	// 打卡机用户信息条数
 								if(need_update_userinfo == false) {
 									need_update_userinfo = true;
+									DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
+									all_muis = machUserInfoService.queryAllMachUserInfos();
+									if(all_muis != null) {
+										muis_count = all_muis.size();
+									} else {
+										// 应该不可能出现为null的情况。。。
+									}
 								}
 								msc.setStatus("已处理");
-								msc.setProc_result("已更新打卡机用户信息");
+								msc.setProc_result("已更新打卡机用户信息，目前打卡机上共(" + muis_count + ")个用户。");
 							} else {	// 其余打卡机系统日志描述信息（如“从设备下载人员信息”、“管理员设置”等）则不处理
 								msc.setStatus("不处理");
 								msc.setProc_result("无处理结果");
@@ -241,8 +250,8 @@ public class PushPunchCardDatas {
 			// 针对可能出现的打卡机上的人员信息个数不变，但部分人员的信息（如工号、userid等）发生改变时，静态变量中的人员信息未同步更新导致无法通过userid找到对应的用户工号，
 			// 并最终导致上传阿里云的打卡数据出现工号为空/null的异常，从而丢失了该员工的打卡数据的情况
 			// 所以，一旦打卡机系统日志中出现了与人员维护相关的动作，则应当立即更新静态变量中的人员信息
-			DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
-			List<MachUserInfo> all_muis = machUserInfoService.queryAllMachUserInfos();
+//			DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
+//			List<MachUserInfo> all_muis = machUserInfoService.queryAllMachUserInfos();
 			if(all_muis == null || all_muis.size() == 0) {
 				logger.error("查询所有打卡机用户信息条数为0，或出现了异常2");
 			} else {
