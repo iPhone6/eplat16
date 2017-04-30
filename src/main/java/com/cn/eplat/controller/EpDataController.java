@@ -571,6 +571,7 @@ public class EpDataController {
 //					if(part_epuids == null || part_epuids.size() == 0) {
 //						break;
 //					}
+					
 					List<HashMap<String, Object>> part_results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epuids);
 					if(part_results != null && part_results.size() > 0) {
 						results_count += part_results.size();
