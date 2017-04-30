@@ -725,14 +725,15 @@ public class EpDataController {
 			}
 			
 			if(is_refilter) {
-				logger.info("重新筛选考勤数据操作，不跳过重新推送已筛选出的昨天的考勤数据到HW考勤系统...skip_push2hw = " + skip_push2hw);
+				logger.info("重新筛选考勤数据操作，不跳过重新推送已筛选出的昨天的考勤数据到HW考勤系统...(is_refilter = " + is_refilter + ", skip_push2hw = " + skip_push2hw + ")");
 				pushToHwTask.setPths(pthws);
 				pushToHwTask.pushDatasToHw();
 			} else {
 				if(skip_push2hw) {
 					// 跳过推送只包含昨天的已筛选考勤数据的推送HW考勤系统操作
-					logger.info("跳过推送只筛选出昨天的考勤数据。。。");
+					logger.info("跳过推送只筛选出昨天的考勤数据。。。(is_refilter = " + is_refilter + ", skip_push2hw = " + skip_push2hw + ")");
 				} else {
+					logger.info("不跳过推送筛选出的昨天的考勤数据。。。(is_refilter = " + is_refilter + ", skip_push2hw = " + skip_push2hw + ")");
 					pushToHwTask.setPths(pthws);
 					pushToHwTask.pushDatasToHw();
 				}
