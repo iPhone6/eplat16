@@ -235,6 +235,9 @@
 					</foreach>
 				)
 			</if>
+			<if test="dates == null or dates.size() == 0 ">
+				and 1 &lt; 1
+			</if>
 			<if test="epuids != null and epuids.size() > 0 ">
 				and ep_uid in (
 					<foreach collection="epuids" item="item" separator="," >
@@ -243,6 +246,9 @@
 						</if>
 					</foreach>
 				)
+			</if>
+			<if test="epuids == null or epuids.size() == 0 ">
+				and 1 &lt; 1
 			</if>
 		GROUP BY ep_uid, punch_date
 	</select>
@@ -382,7 +388,11 @@
 	<select id="getNotProcessedEpAttenCount" resultType="int" >
 		select count(1)
 		from ep_attendance
-		where proc_result is null
+		where 
+			(
+				proc_result is null 
+				or proc_result &lt;&gt; 'filter_success'
+			)
 			and time &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 	</select>
 	
@@ -391,7 +401,10 @@
 		from (
 			select DATE_FORMAT(TIME,'%Y-%m-%d') not_proc_date
 			from ep_attendance
-			where proc_result is null
+			where (
+				proc_result is null 
+				or proc_result &lt;&gt; 'filter_success'
+			)
 				and time &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 		) v
 		ORDER BY v.not_proc_date
@@ -400,7 +413,10 @@
 	<select id="getNotProcessedEpAttenEpUids" resultType="int" >
 		select DISTINCT( ep_uid)
 		from ep_attendance
-		where proc_result is null
+		where (
+				proc_result is null 
+				or proc_result &lt;&gt; 'filter_success'
+			)
 			and time &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 		order by ep_uid
 	</select>

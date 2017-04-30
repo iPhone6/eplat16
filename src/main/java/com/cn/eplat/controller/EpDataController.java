@@ -337,11 +337,15 @@ public class EpDataController {
 		List<Date> one_date;
 		do {
 			one_date = date_mlu.getNextNElements(Constants.FILTER_PART_DATE_NUM);
-			
+			if(one_date == null || one_date.size() == 0) {
+				continue;
+			}
 			List<EpUser> part_epus;
 			do {
 				part_epus = epu_mlu.getNextNElements(part_num);
-				
+				if(part_epus == null || part_epus.size() == 0) {
+					continue;
+				}
 				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
 				if(part_results != null && part_results.size() > 0) {
 					results_count += part_results.size();
@@ -477,6 +481,7 @@ public class EpDataController {
 	 */
 	public int filterPush2HwAttenOperationAbnormal() {
 		int ret_num = 0;	// 作为返回值的整数
+		int results_count = 0;
 		
 		int npe_count = epAttenDao.getNotProcessedEpAttenCount();
 		
@@ -484,11 +489,40 @@ public class EpDataController {
 			List<Date> npe_dates = epAttenDao.getNotProcessedEpAttenDates();
 			List<Integer> npe_epuids = epAttenDao.getNotProcessedEpAttenEpUids();
 			
-			List<HashMap<String, Object>> results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(npe_dates, npe_epuids);
+			int date_num = Constants.FILTER_PART_DATE_NUM;
+			int part_num = Constants.FILTER_PART_EPU_NUM;	// 将要筛选的用户按每部分part_num个进行划分，依次进行筛选操作，从而将一个大的筛选任务拆解成N个小的筛选操作（这样可以减轻数据库的操作压力，提高数据库的运行性能）
+			MyListUtil<Date> date_mlu = new MyListUtil<Date>(npe_dates);
+			MyListUtil<Integer> epu_mlu = new MyListUtil<Integer>(npe_epuids);
 			
 			TreeMap<Integer, EpUser> epus_valid_map = getEpusValid(null);
 			
-			ret_num += procPush2HWAttenDatas(results, epus_valid_map, npe_dates);
+			List<Date> one_date;
+			do {
+				one_date = date_mlu.getNextNElements(date_num);
+				if(one_date == null || one_date.size() == 0) {
+					continue;
+				}
+				List<Integer> part_epuids;
+				do {
+					part_epuids = epu_mlu.getNextNElements(part_num);
+					if(part_epuids == null || part_epuids.size() == 0) {
+						continue;
+					}
+					List<HashMap<String, Object>> part_results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epuids);
+					if(part_results != null && part_results.size() > 0) {
+						results_count += part_results.size();
+					}
+					
+					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date);
+					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
+					
+				} while (part_epuids != null && part_epuids.size() >= part_num);
+				
+				
+			} while (one_date != null && one_date.size() >= date_num);
+			
+//			List<HashMap<String, Object>> results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(npe_dates, npe_epuids);
+//			ret_num += procPush2HWAttenDatas(results, epus_valid_map, npe_dates);
 			
 		} else {
 			// 当尚未做筛选处理的打卡数据个数为0时，直接返回0
@@ -504,6 +538,10 @@ public class EpDataController {
 			pushToHwTask.pushDatasToHw();
 		} else {
 			logger.info("探测结果B：暂无已筛选出来但尚未推送华为考勤系统的考勤数据");
+		}
+		
+		if(results_count == 0) {
+			return -8;
 		}
 		
 		return ret_num;
