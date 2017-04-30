@@ -339,16 +339,16 @@ public class EpDataController {
 		List<Date> one_date;
 		do {
 			one_date = date_mlu.getNextNElements(date_num);
-			if(one_date == null || one_date.size() == 0) {
-				break;
-			}
+//			if(one_date == null || one_date.size() == 0) {
+//				break;
+//			}
 			List<EpUser> part_epus;
 			epu_mlu.setCurrentIndex(0);
 			do {
 				part_epus = epu_mlu.getNextNElements(part_num);
-				if(part_epus == null || part_epus.size() == 0) {
-					break;
-				}
+//				if(part_epus == null || part_epus.size() == 0) {
+//					break;
+//				}
 //				for(EpUser epu:part_epus) {
 //					if(Arrays.asList(428, 479, 827, 644).contains(epu.getId())) {
 //						System.out.println("出现可疑目标。。。epu.id = " + epu.getId());
@@ -362,12 +362,12 @@ public class EpDataController {
 				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
 				ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				
-			} while (part_epus != null && part_epus.size() >= part_num);
+			} while (part_epus != null && part_epus.size() > 0);
 			
 			int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
 			logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
 			
-		} while (one_date != null && one_date.size() >= date_num);
+		} while (one_date != null && one_date.size() > 0);
 		
 		/*
 		List<HashMap<String, Object>> results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(need_dates, epus_valid);
@@ -473,16 +473,16 @@ public class EpDataController {
 		List<Date> one_date;
 		do {
 			one_date = date_mlu.getNextNElements(date_num);
-			if(one_date == null || one_date.size() == 0) {
-				break;
-			}
+//			if(one_date == null || one_date.size() == 0) {
+//				break;
+//			}
 			epu_mlu.setCurrentIndex(0);
 			List<EpUser> part_epus;
 			do {
 				part_epus = epu_mlu.getNextNElements(part_num);
-				if(part_epus == null || part_epus.size() == 0) {
-					break;
-				}
+//				if(part_epus == null || part_epus.size() == 0) {
+//					break;
+//				}
 //				for(EpUser epu:part_epus) {
 //					if(Arrays.asList(428, 479, 827, 644).contains(epu.getId())) {
 //						System.out.println("出现可疑目标。。。epu.id = " + epu.getId());
@@ -496,12 +496,12 @@ public class EpDataController {
 				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, true);
 				ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				
-			} while (part_epus != null && part_epus.size() >= part_num);
+			} while (part_epus != null && part_epus.size() > 0);
 			
 			int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
 			logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
 			
-		} while (one_date != null && one_date.size() >= date_num);
+		} while (one_date != null && one_date.size() > 0);
 		
 //		List<HashMap<String, Object>> results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(need_dates, epus_valid);
 		
@@ -561,16 +561,16 @@ public class EpDataController {
 			List<Date> one_date;
 			do {
 				one_date = date_mlu.getNextNElements(date_num);
-				if(one_date == null || one_date.size() == 0) {
-					break;
-				}
+//				if(one_date == null || one_date.size() == 0) {
+//					break;
+//				}
 				List<Integer> part_epuids;
 				epu_mlu.setCurrentIndex(0);
 				do {
 					part_epuids = epu_mlu.getNextNElements(part_num);
-					if(part_epuids == null || part_epuids.size() == 0) {
-						break;
-					}
+//					if(part_epuids == null || part_epuids.size() == 0) {
+//						break;
+//					}
 					List<HashMap<String, Object>> part_results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epuids);
 					if(part_results != null && part_results.size() > 0) {
 						results_count += part_results.size();
@@ -579,12 +579,12 @@ public class EpDataController {
 					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
 					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 					
-				} while (part_epuids != null && part_epuids.size() >= part_num);
+				} while (part_epuids != null && part_epuids.size() > 0);
 				
 				int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
 				logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
 				
-			} while (one_date != null && one_date.size() >= date_num);
+			} while (one_date != null && one_date.size() > 0);
 			
 //			List<HashMap<String, Object>> results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(npe_dates, npe_epuids);
 //			ret_num += procPush2HWAttenDatas(results, epus_valid_map, npe_dates);

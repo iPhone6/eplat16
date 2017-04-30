@@ -16,4 +16,7 @@ public class Constants {
 	
 	public static final int FILTER_PART_DATE_NUM = 1;	// 分批筛选考勤数据的每个批次的日期数量（天数）
 	public static final int FILTER_PART_EPU_NUM = 20;	// 分批筛选考勤数据的每个批次的人员数量（人数）
+
+	public static final int MACH_CHKIO_COPY_BATCH_NUM = 100;	// 分批插入打卡机服务器上的mach_chkio_copy表的每个批次数据量条数
+	
 }

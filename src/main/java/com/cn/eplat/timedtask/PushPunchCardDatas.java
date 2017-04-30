@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.cn.eplat.consts.Constants;
 import com.cn.eplat.controller.EpAttenController;
 import com.cn.eplat.datasource.DataSourceContextHolder;
 import com.cn.eplat.datasource.DataSourceType;
@@ -29,6 +30,7 @@ import com.cn.eplat.service.IMachMachinesService;
 import com.cn.eplat.service.IMachSyslogCopyService;
 import com.cn.eplat.service.IMachUserInfoService;
 import com.cn.eplat.utils.DateUtil;
+import com.cn.eplat.utils.MyListUtil;
 import com.easemob.server.comm.body.PunchDatasBody;
 import com.easemob.server.comm.constant.HTTPMethod;
 import com.easemob.server.comm.invoker.JerseyRestAPIInvoker;
@@ -106,7 +108,7 @@ public class PushPunchCardDatas {
 	}
 	
 	
-	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
+	@Scheduled(cron = "0/5 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
@@ -126,6 +128,7 @@ public class PushPunchCardDatas {
 				if(all_muis == null || all_muis.size() == 0) {
 					logger.error("查询所有打卡机用户信息条数为0，或出现了异常");
 				} else {
+					mui_num = all_muis.size();
 //					mach_userinfos = all_muis;
 					setMach_userinfos(all_muis);
 					mach_userinfos_map = new TreeMap<Integer, String>();
@@ -223,7 +226,7 @@ public class PushPunchCardDatas {
 									}
 								}
 								msc.setStatus("已处理");
-								msc.setProc_result("已更新打卡机用户信息，目前打卡机上共(" + muis_count + ")个用户。");
+								msc.setProc_result("已更新打卡机用户信息，目前打卡机上共(" + (muis_count>0?muis_count:mui_num) + ")个用户。");
 							} else {	// 其余打卡机系统日志描述信息（如“从设备下载人员信息”、“管理员设置”等）则不处理
 								msc.setStatus("不处理");
 								msc.setProc_result("无处理结果");
@@ -277,8 +280,17 @@ public class PushPunchCardDatas {
 			if(all_pc_datas == null || all_pc_datas.size() == 0) {
 				logger.error("查询打卡机全部打卡数据时出现异常，或打卡机打卡数据记录表为空");
 			} else {
-				DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-				int insert_all_ret = machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(all_pc_datas);
+//				DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+//				int insert_all_ret = machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(all_pc_datas);
+				
+				int insert_all_ret = 0;
+				
+				int batch_num = Constants.MACH_CHKIO_COPY_BATCH_NUM;
+				MyListUtil<MachCheckInOut> all_pcd_mul = new MyListUtil<MachCheckInOut>(all_pc_datas);
+				for(List<MachCheckInOut> pcds = all_pcd_mul.getNextNElements(batch_num); pcds != null && pcds.size() > 0; pcds = all_pcd_mul.getNextNElements(batch_num)) {
+					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+					insert_all_ret += machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(pcds);
+				}
 				
 				if(insert_all_ret <= 0) {
 					logger.error("批量插入打卡机全部打卡数据到本地MySQL数据库时出现异常，或打卡数据条数为0。");

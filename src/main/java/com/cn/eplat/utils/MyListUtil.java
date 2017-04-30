@@ -47,17 +47,18 @@ public class MyListUtil<T> {
 		int total_num = elements.size();
 		
 		if(currentIndex >= total_num) {
+			System.out.println("currentIndex = " + currentIndex + ", total_num = " + total_num);
 			return null;
 		}
 		
-		if(currentIndex + n <= total_num) {
+		if(currentIndex + n < total_num) {
 			List<T> ret_list = elements.subList(currentIndex, currentIndex+n);
 			currentIndex += n;
 			return ret_list;
 		}
 		
 		List<T> ret_list = elements.subList(currentIndex, total_num);
-		currentIndex = total_num-1;
+		currentIndex += n;
 		return ret_list;
 	}
 	
@@ -71,12 +72,12 @@ public class MyListUtil<T> {
 		
 		List<Integer> res_list;
 		
-		int i=0, n = 22;
+		int i=0, n = 7;
 		do {
 			i++;
 			res_list = mlu.getNextNElements(n);
 			System.out.println("第（" + i + "）次获取，res_list = " + res_list);
-		} while (res_list != null && res_list.size() >= n);
+		} while (res_list != null && res_list.size() > 0);
 		
 	}
 	
