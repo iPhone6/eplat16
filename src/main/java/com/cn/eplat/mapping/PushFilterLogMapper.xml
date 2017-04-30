@@ -21,7 +21,7 @@
 	</sql>
 	
 	<sql id="all_fields_except_id_sharp_item">
-		#{item.dayof_date}, #{item.ep_uid}, #{item.filter_time}, #{item.status}, #{item.describe}
+		#{item.dayof_date}, #{item.ep_uid}, now(), #{item.status}, #{item.describe}
 	</sql>
 	
 	<insert id="batchInsertPushFilterLogs" parameterType="com.cn.eplat.model.PushFilterLog" >

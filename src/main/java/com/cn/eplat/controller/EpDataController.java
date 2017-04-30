@@ -725,7 +725,7 @@ public class EpDataController {
 			}
 			
 			if(is_refilter) {
-				logger.info("重新筛选考勤数据操作，不跳过重新推送已筛选出的昨天的考勤数据到HW考勤系统...");
+				logger.info("重新筛选考勤数据操作，不跳过重新推送已筛选出的昨天的考勤数据到HW考勤系统...skip_push2hw = " + skip_push2hw);
 				pushToHwTask.setPths(pthws);
 				pushToHwTask.pushDatasToHw();
 			} else {
