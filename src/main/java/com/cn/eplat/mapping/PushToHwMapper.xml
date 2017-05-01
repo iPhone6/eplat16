@@ -79,7 +79,7 @@
 	
 	<select id="findNotPushedDatasByActualConditioin" resultType="com.cn.eplat.model.PushToHw" statementType="CALLABLE" >
 		{
-			call test_sp()
+			call findNotPushedDatasByActualConditioin_sp()
 		}
 	</select>
 	
