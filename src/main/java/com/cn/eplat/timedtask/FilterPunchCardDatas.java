@@ -57,7 +57,7 @@ public class FilterPunchCardDatas {
 
 
 
-	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
+//	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
 //	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。");
