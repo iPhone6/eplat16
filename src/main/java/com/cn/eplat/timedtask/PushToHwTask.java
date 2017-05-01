@@ -71,7 +71,7 @@ public class PushToHwTask {
 	}
 	
 //	@Scheduled(cron = "0 30 1 * * ? ") // "0 30 1 * * ?"      // （每天凌晨1点30分开始执行）(正式上线时用的定时设置)
-//	@Scheduled(cron = "0/8 * * * * ? ")     // （快速测试用定时设置。。。）
+	@Scheduled(cron = "0/8 * * * * ? ")     // （快速测试用定时设置。。。）
 	public void pushDatasToHw() { // 将从数据库里查出来的数据组装成推送需要的数据
 		long start_time = System.currentTimeMillis();	// 记录推送开始时间毫秒数
 		logger.info("本次推送到华为,开始时间   "+DateUtil.formatDate(2, new Date()));
@@ -208,12 +208,22 @@ public class PushToHwTask {
 			}
 
 			// 2.获取待推送的数据(截至到昨天)
+			/*
 			Date startDate = DateUtil.parse2date(1, DateUtil.formatDate(1, time));
 			Date date = new Date();
 			Date simpleDate = DateUtil.parse2date(2, (DateUtil.formatDate(1, date)+" 23:59:59"));
 			Date endDate = DateUtil.calcXDaysAfterADate(-1, simpleDate);
 			
 			List<PushToHw> waitingDatas = pushToHwDao.getPushToHwsByDate(startDate,endDate);
+			*/
+			
+			Date now_date = new Date();
+			String yesterday_start_str = DateUtil.formatDate(1, DateUtil.calcXDaysAfterADate(-1, now_date));
+			String yesterday_end_str = yesterday_start_str + " 23:59:59.999";
+			Date yesterday_start = DateUtil.parse2date(1, yesterday_start_str);
+			Date yesterday_end = DateUtil.parse2date(4, yesterday_end_str);
+			
+			List<PushToHw> waitingDatas = pushToHwDao.getPushToHwsByDate(yesterday_start, yesterday_end);
 			if (waitingDatas != null && !waitingDatas.isEmpty()) {
 				result.addAll(waitingDatas);
 			}
