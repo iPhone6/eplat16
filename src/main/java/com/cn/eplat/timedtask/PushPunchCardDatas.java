@@ -17,6 +17,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cn.eplat.consts.Constants;
 import com.cn.eplat.controller.EpAttenController;
+import com.cn.eplat.dao.IMachCheckInOutDao;
 import com.cn.eplat.datasource.DataSourceContextHolder;
 import com.cn.eplat.datasource.DataSourceType;
 import com.cn.eplat.model.EpUser;
@@ -48,6 +49,8 @@ public class PushPunchCardDatas {
 	private IEpAttenService epAttenService;
 	@Resource
 	private IMachCheckInOutService machCheckInOutService;
+	@Resource
+	private IMachCheckInOutDao machCheckInOutDao;
 	@Resource
 	private IMachMachinesService machMachinesService;
 	@Resource
@@ -108,7 +111,7 @@ public class PushPunchCardDatas {
 	}
 	
 	
-	@Scheduled(cron = "0/5 * * * * ? ")	// 间隔60秒执行
+	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
@@ -296,8 +299,12 @@ public class PushPunchCardDatas {
 					logger.error("批量插入打卡机全部打卡数据到本地MySQL数据库时出现异常，或打卡数据条数为0。");
 				} else {
 					logger.info("批量插入打卡机全部打卡数据到本地MySQL数据库成功，共插入（" + insert_all_ret + "）条打卡机打卡数据。");
+					
+					long ctm1 = System.currentTimeMillis();
 					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-					List<MachCheckInOut> missed_cios = machCheckInOutService.queryMissedMachCheckInOutsByCompareAccessAndMySQLDatas();
+					List<MachCheckInOut> missed_cios = machCheckInOutDao.findMissedMachCheckInOutsByCompareAccessAndMySQLDatas();
+					long ctm2 = System.currentTimeMillis();
+					logger.info("查找遗漏未推送阿里云的打卡数据的SQL(findMissedMachCheckInOutsByCompareAccessAndMySQLDatas)执行耗时 = " + DateUtil.timeMills2ReadableStr(ctm2-ctm1));
 					
 					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
 					int del_ret = machCheckInOutService.deleteAllAccessCheckInOutsCopyInMySQL();
@@ -900,116 +907,125 @@ public class PushPunchCardDatas {
 			return -2;
 		}
 		
-		Date push_time = new Date();
-		List<MachCheckInOut> mcios_to_add = new ArrayList<MachCheckInOut>();
+		int ret_num = 0;
 		
-		JSONArray top100_mcios_arr = new JSONArray();
-		top100_mcios_arr.addAll(mcios);
+		MyListUtil<MachCheckInOut> mcios_mlu = new MyListUtil<MachCheckInOut>(mcios);
 		
-		HeaderWrapper header = new HeaderWrapper();
-    	header.addHeader("Content-Type", "text/plain");
-    	PunchDatasBody pdb = new PunchDatasBody(top100_mcios_arr.toJSONString());
-    	
-		ResponseWrapper response = rest_invoker.sendRequest(HTTPMethod.METHOD_POST, push_mach_data_url, header, pdb, null);
-		
-		if(response != null && response.getResponseStatus() == 200) {
-			Object rspb = response.getResponseBody();
-//			System.out.println("rspb class = " + rspb.getClass());
+		int push_num = Constants.PUSH_TO_ALIYUN_MCIOS_NUM;
+		for(List<MachCheckInOut> mcios_list = mcios_mlu.getNextNElements(push_num); mcios_list != null && mcios_list.size() > 0; mcios_list = mcios_mlu.getNextNElements(push_num)) {
+			Date push_time = new Date();
+			List<MachCheckInOut> mcios_to_add = new ArrayList<MachCheckInOut>();
+			JSONArray top100_mcios_arr = new JSONArray();
+			top100_mcios_arr.addAll(mcios_list);
 			
-			if(rspb != null) {
-				String rspb_str = rspb.toString();
-				Object rspb_obj = JSONObject.parse(rspb_str);
-				if(rspb_obj != null && rspb_obj instanceof JSONObject) {
-					JSONObject rspb_json = (JSONObject) rspb_obj;
-//					Integer ret_code = (Integer) rspb_json.get("ret_code");
-					Integer ret_code = null;
-					
-					Object ret_code_obj = rspb_json.get("ret_code");
-					if(ret_code_obj instanceof Integer) {
-						ret_code = (Integer) ret_code_obj;
-						if(ret_code > 0 || ret_code == -3) {
-							logger.info("推送新一批的打卡机(" + sn + ")打卡数据成功...，ret_code = " + ret_code);
-							
-							Object invalid_bgns_obj = rspb_json.get("invalid_badgenumbers");
-							if(invalid_bgns_obj instanceof JSONArray) {
-								JSONArray invalid_bgns = (JSONArray) invalid_bgns_obj;
-								
-								for(MachCheckInOut mcio : mcios) {
-//							MachCheckInOut mcio_tmp = new MachCheckInOut();
-//							mcio_tmp.setId(mcio.getId());
-//							mcio_tmp.setPush_status(desc + "_success");
-//							mcio_tmp.setLast_push_time(push_time);
-//							Integer last_push_count = mcio.getPush_count();
-//							mcio_tmp.setPush_count(last_push_count==null?1:(last_push_count+1));
-//							mcios_to_add.add(mcio_tmp);
-									
-									if(invalid_bgns.contains(mcio.getBadge_number())) {
-										mcio.setPush_status(desc + "_invalid_badgenumber");
-									} else {
-//										mcio.setPush_status("push_success");
-										mcio.setPush_status(desc + "_success");
-									}
-									mcio.setLast_push_time(push_time);
-									Integer last_push_count = mcio.getPush_count();
-									mcio.setPush_count(last_push_count==null?1:(last_push_count+1));
-								}
-								mcios_to_add = mcios;
-								DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-								int batch_mod_ret = machCheckInOutService.batchAddMachCheckInOut(mcios_to_add);
-								
-								if(batch_mod_ret <= 0) {
-									logger.error("(" + desc + " success)-批量添加打卡机(" + sn + ")打卡数据出现异常，batch_mod_ret = " + batch_mod_ret);
-								} else {
-									logger.info("(" + desc + " success)-批量添加打卡机(" + sn + ")打卡数据成功，batch_mod_ret = " + batch_mod_ret);
-								}
-								
-								return 1;
-							} else {
-								logger.error("invalid_bgns_obj 类型异常...(3)...");
-							}
-							
-						} else {
-							logger.error("远程推送新一批的打卡机(" + sn + ")打卡数据出现异常，ret_code = " + ret_code);
-						}
-					} else {
-						logger.error("远程推送打卡机(" + sn + ")打卡数据接口返回的 ret_code 非Integer类型异常...(3)...");
-					}
-				}
-			} else {
-				logger.error("rspb对象为空异常。。。(3)");
-			}
-			return 0;
-		} else {
-			logger.error("推送新一批的打卡机(" + sn + ")打卡数据出现异常...");
+			HeaderWrapper header = new HeaderWrapper();
+	    	header.addHeader("Content-Type", "text/plain");
+	    	PunchDatasBody pdb = new PunchDatasBody(top100_mcios_arr.toJSONString());
+	    	
+			ResponseWrapper response = rest_invoker.sendRequest(HTTPMethod.METHOD_POST, push_mach_data_url, header, pdb, null);
 			
-			for(MachCheckInOut mcio : mcios) {
-//				MachCheckInOut mcio_tmp = new MachCheckInOut();
-//				mcio_tmp.setId(mcio.getId());
-//				mcio_tmp.setPush_status(desc + "_failed");
-//				mcio_tmp.setLast_push_time(push_time);
-//				Integer last_push_count = mcio.getPush_count();
-//				mcio_tmp.setPush_count(last_push_count==null?1:(last_push_count+1));
-//				mcios_to_add.add(mcio_tmp);
+			if(response != null && response.getResponseStatus() == 200) {
+				Object rspb = response.getResponseBody();
+//				System.out.println("rspb class = " + rspb.getClass());
 				
-				mcio.setPush_status(desc + "_failed");
-				mcio.setLast_push_time(push_time);
-				Integer last_push_count = mcio.getPush_count();
-				mcio.setPush_count(last_push_count==null?1:(last_push_count+1));
-			}
-			mcios_to_add = mcios;
-			DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-			int batch_mod_ret = machCheckInOutService.batchAddMachCheckInOut(mcios_to_add);
-			
-			if(batch_mod_ret <= 0) {
-				logger.error("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据出现异常，batch_mod_ret = " + batch_mod_ret);
+				if(rspb != null) {
+					String rspb_str = rspb.toString();
+					Object rspb_obj = JSONObject.parse(rspb_str);
+					if(rspb_obj != null && rspb_obj instanceof JSONObject) {
+						JSONObject rspb_json = (JSONObject) rspb_obj;
+//						Integer ret_code = (Integer) rspb_json.get("ret_code");
+						Integer ret_code = null;
+						
+						Object ret_code_obj = rspb_json.get("ret_code");
+						if(ret_code_obj instanceof Integer) {
+							ret_code = (Integer) ret_code_obj;
+							if(ret_code > 0 || ret_code == -3) {
+								logger.info("推送新一批的打卡机(" + sn + ")打卡数据成功...，ret_code = " + ret_code);
+								
+								Object invalid_bgns_obj = rspb_json.get("invalid_badgenumbers");
+								if(invalid_bgns_obj instanceof JSONArray) {
+									JSONArray invalid_bgns = (JSONArray) invalid_bgns_obj;
+									
+									for(MachCheckInOut mcio : mcios_list) {
+//								MachCheckInOut mcio_tmp = new MachCheckInOut();
+//								mcio_tmp.setId(mcio.getId());
+//								mcio_tmp.setPush_status(desc + "_success");
+//								mcio_tmp.setLast_push_time(push_time);
+//								Integer last_push_count = mcio.getPush_count();
+//								mcio_tmp.setPush_count(last_push_count==null?1:(last_push_count+1));
+//								mcios_to_add.add(mcio_tmp);
+										
+										if(invalid_bgns.contains(mcio.getBadge_number())) {
+											mcio.setPush_status(desc + "_invalid_badgenumber");
+										} else {
+//											mcio.setPush_status("push_success");
+											mcio.setPush_status(desc + "_success");
+										}
+										mcio.setLast_push_time(push_time);
+										Integer last_push_count = mcio.getPush_count();
+										mcio.setPush_count(last_push_count==null?1:(last_push_count+1));
+									}
+									mcios_to_add = mcios_list;
+									DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+									int batch_mod_ret = machCheckInOutService.batchAddMachCheckInOut(mcios_to_add);
+									
+									if(batch_mod_ret <= 0) {
+										logger.error("(" + desc + " success)-批量添加打卡机(" + sn + ")打卡数据出现异常，batch_mod_ret = " + batch_mod_ret);
+									} else {
+										logger.info("(" + desc + " success)-批量添加打卡机(" + sn + ")打卡数据成功，batch_mod_ret = " + batch_mod_ret);
+									}
+									
+//									return 1;
+									ret_num += 1;
+								} else {
+									logger.error("invalid_bgns_obj 类型异常...(3)...");
+								}
+								
+							} else {
+								logger.error("远程推送新一批的打卡机(" + sn + ")打卡数据出现异常，ret_code = " + ret_code);
+							}
+						} else {
+							logger.error("远程推送打卡机(" + sn + ")打卡数据接口返回的 ret_code 非Integer类型异常...(3)...");
+						}
+					}
+				} else {
+					logger.error("rspb对象为空异常。。。(3)");
+				}
+//				return 0;
+				ret_num += 0;
 			} else {
-				logger.info("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据成功，batch_mod_ret = " + batch_mod_ret);
+				logger.error("推送新一批的打卡机(" + sn + ")打卡数据出现异常...");
+				
+				for(MachCheckInOut mcio : mcios_list) {
+//					MachCheckInOut mcio_tmp = new MachCheckInOut();
+//					mcio_tmp.setId(mcio.getId());
+//					mcio_tmp.setPush_status(desc + "_failed");
+//					mcio_tmp.setLast_push_time(push_time);
+//					Integer last_push_count = mcio.getPush_count();
+//					mcio_tmp.setPush_count(last_push_count==null?1:(last_push_count+1));
+//					mcios_to_add.add(mcio_tmp);
+					
+					mcio.setPush_status(desc + "_failed");
+					mcio.setLast_push_time(push_time);
+					Integer last_push_count = mcio.getPush_count();
+					mcio.setPush_count(last_push_count==null?1:(last_push_count+1));
+				}
+				mcios_to_add = mcios_list;
+				DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+				int batch_mod_ret = machCheckInOutService.batchAddMachCheckInOut(mcios_to_add);
+				
+				if(batch_mod_ret <= 0) {
+					logger.error("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据出现异常，batch_mod_ret = " + batch_mod_ret);
+				} else {
+					logger.info("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据成功，batch_mod_ret = " + batch_mod_ret);
+				}
+				
+//				return -3;
+				ret_num += -3;
 			}
-			
-			return -3;
 		}
 		
-//		return -3;
+		return ret_num;
 	}
 	
 }

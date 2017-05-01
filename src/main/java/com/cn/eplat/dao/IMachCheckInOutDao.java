@@ -69,11 +69,21 @@ public interface IMachCheckInOutDao {
 	// 从Access打卡数据拷贝表中找出在本地MySQL打卡数据推送日志表中没有的打卡数据
 	public List<MachCheckInOut> queryMissedMachCheckInOutsByCompareAccessAndMySQLDatas();
 	
+	// 从Access打卡数据拷贝表中找出在本地MySQL打卡数据推送日志表中没有的打卡数据
+	/**
+	 * 从Access打卡数据拷贝表中找出在本地MySQL打卡数据推送日志表中没有的打卡数据（使用not exists）
+	 * @return
+	 */
+	public List<MachCheckInOut> findMissedMachCheckInOutsByCompareAccessAndMySQLDatas();
+	
 	// 把全部Access的打卡数据批量插入本地MySQL的打卡数据拷贝表中
 	public int batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(List<MachCheckInOut> all_datas);
 	
 	// 删除全部打卡机Access打卡数据在MySQL数据库中的拷贝（即清空mach_chkio_copy表中的数据）
 	public int deleteAllAccessCheckInOutsCopyInMySQL();
+	
+	
+	
 	
 	
 	
