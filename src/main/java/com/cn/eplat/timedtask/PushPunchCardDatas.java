@@ -111,7 +111,7 @@ public class PushPunchCardDatas {
 	}
 	
 	
-	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
+//	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
@@ -385,6 +385,9 @@ public class PushPunchCardDatas {
 			logger.info("本次推送暂无推送失败的打卡数据...");
 		} else {
 			
+			pushOperation(all_failed_mcios, "repush", "<repush_MIXED>");
+			
+			/*
 			JSONArray all_failed_arr = new JSONArray();
 			
 //			for(MachCheckInOut mcio : all_failed_mcios) {
@@ -486,6 +489,7 @@ public class PushPunchCardDatas {
 					logger.info("(repush failed)-批量修改打卡机打卡数据推送状态成功，batch_mod_ret = " + batch_mod_ret);
 				}
 			}
+			*/
 		}
 		
 		
@@ -599,6 +603,9 @@ public class PushPunchCardDatas {
 							logger.info("打卡机(" + mach_sn + ")没有新的打卡数据需要推送了。。。");
 							
 						} else {
+							
+							pushOperation(eliminated_pc_datas, "push", mach_sn);
+						/*	
 							JSONArray top100_mcios_arr = new JSONArray();
 							
 							top100_mcios_arr.addAll(eliminated_pc_datas);
@@ -697,6 +704,7 @@ public class PushPunchCardDatas {
 									logger.info("(push failed)-批量添加打卡机(" + mach_sn + ")打卡数据成功，batch_mod_ret = " + batch_mod_ret);
 								}
 							}
+						 */
 						}
 					} else {
 						logger.error("打卡机(" + mach_sn + ")打卡数据记录表中最晚打卡的打卡时间为空异常！");
