@@ -66,11 +66,24 @@
 	
 	<select id="findNotPushedDatasBeforeYesterday" resultType="com.cn.eplat.model.PushToHw" >
 		select * from push_to_hw pth
-		where pth.id not in (
+		where ep_uid IS NOT NULL 
+			AND NAME IS NOT NULL
+			AND id_no IS NOT NULL
+			AND dayof_date IS NOT NULL
+			AND dayof_week IS NOT NULL
+			and pth.id not in (
 			select distinct(pth_id)
 			from push_log
 		) and pth.dayof_date &lt; DATE_FORMAT(date_add(NOW(), interval -1 day),'%Y-%m-%d')
 	</select>
+	
+	<select id="findNotPushedDatasByActualConditioin" resultType="com.cn.eplat.model.PushToHw" statementType="CALLABLE" >
+		{
+			call test_sp()
+		}
+	</select>
+	
+	
 	
 	
 </mapper>

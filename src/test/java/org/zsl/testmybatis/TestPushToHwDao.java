@@ -40,6 +40,35 @@ public class TestPushToHwDao {
 	
 	
 	
+	
+	
+	
+	
+	@Test
+	public void testfindNotPushedDatasByActualConditioin() {
+		
+		List<PushToHw> res = null;
+		try {
+			res = pushToHwDao.findNotPushedDatasByActualConditioin();
+		} catch (Exception e) {
+			logger.error("调用存储过程查询出现异常：error_info = " + e.getLocalizedMessage());
+			return;
+		}
+		
+		if(res != null && res.size() > 0) {
+			logger.info("调用存储过程查询成功~");
+			System.out.println(res);
+		} else {
+			logger.error("查询失败");
+		}
+		
+	}
+	
+	
+	
+	
+	
+	
 	@Test
 	public void testBatchInsertPushToHws() {
 		List<PushToHw> pthws = new ArrayList<PushToHw>();

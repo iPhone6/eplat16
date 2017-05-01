@@ -37,4 +37,10 @@ public interface IPushToHwDao {
 	 */
 	List<PushToHw> findNotPushedDatasBeforeYesterday();
 	
+	/**
+	 * 查出未推送HW考勤系统的数据（根据具体情况灵活判断是否包含昨天的筛选出来的未推送考勤数据：当前时间如果已经过了当天01:30，则返回结果要包含昨天的数据；否则不包含昨天的数据。）
+	 * @return
+	 */
+	List<PushToHw> findNotPushedDatasByActualConditioin();
+	
 }
