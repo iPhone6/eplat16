@@ -32,6 +32,12 @@ public interface IMachCheckInOutDao {
 	
 	public List<MachCheckInOut> queryAllMachCheckInOut();
 	
+	/**
+	 * 查询所有打卡机打卡数据的总条数
+	 * @return
+	 */
+	int getAllMachCheckInOutCount();
+	
 	// 
 	public List<MachCheckInOut> queryMachCheckInOutBySomeCriteria();
 	

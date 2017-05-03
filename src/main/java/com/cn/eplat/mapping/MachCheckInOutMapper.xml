@@ -208,6 +208,11 @@
 			ck.userid = ui.userid
 	</select>
 	
+	<select id="getAllMachCheckInOutCount" resultType="int" >
+		select count(*)
+		from checkinout
+	</select>
+	
 	<!-- 
 	<select id="queryPPPById" parameterType="int" resultType="com.cn.eplat.model.PPP" >
 		select name, uuu
