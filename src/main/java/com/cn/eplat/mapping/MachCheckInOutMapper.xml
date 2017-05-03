@@ -460,8 +460,13 @@
 		WHERE NOT EXISTS (
 			SELECT *
 			FROM mach_checkinout mc
-			WHERE mcc.`userid` = mc.`userid`
+			WHERE (
+				mcc.`userid` = mc.`userid`
 				AND mcc.`checktime` = mc.`check_time`
+			) or (
+				mcc.`badgenumber` = mc.`badge_number`
+				AND mcc.`checktime` = mc.`check_time`
+			)
 		)
 		group by mcc.`userid`, mcc.`checktime`
 	</select>
