@@ -1684,8 +1684,9 @@ public class EpUserController {
 		return JSONObject.toJSONString(jsonObj, SerializerFeature.WriteMapNullValue);
 	}
 	
-	@RequestMapping(params = "changePassword", produces = "application/json; charset=utf-8")
-	@ResponseBody
+//	@RequestMapping(params = "changePassword", produces = "application/json; charset=utf-8")
+//	@ResponseBody
+	@Deprecated
 	public String changePasswordJson(HttpServletRequest request) {
 		logger.info("开始调用原考勤系统的修改密码功能...@" + DateUtil.formatDate(2, new Date()));
 		
@@ -2071,8 +2072,9 @@ public class EpUserController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(params = "resetPassword", produces = "application/json; charset=UTF-8")
-	@ResponseBody
+//	@RequestMapping(params = "resetPassword", produces = "application/json; charset=UTF-8")
+//	@ResponseBody
+	@Deprecated
 	public String resetPasswordByEmail(HttpServletRequest request) {
 		logger.info("开始调用原考勤系统的重置密码功能...@" + DateUtil.formatDate(2, new Date()));
 		
@@ -2244,8 +2246,9 @@ public class EpUserController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(params = "getVerificationCode", produces = "application/json; charset=UTF-8")
-	@ResponseBody
+//	@RequestMapping(params = "getVerificationCode", produces = "application/json; charset=UTF-8")
+//	@ResponseBody
+	@Deprecated
 	public String createVerificationCode(HttpServletRequest request) {
 		String email = request.getParameter("email");
 		JSONObject object = new JSONObject();
@@ -2274,8 +2277,9 @@ public class EpUserController {
 				SerializerFeature.WriteMapNullValue);
 	}
 	
-	@RequestMapping(params = "isNewUser", produces = "application/json; charset=UTF-8")
-	@ResponseBody
+//	@RequestMapping(params = "isNewUser", produces = "application/json; charset=UTF-8")
+//	@ResponseBody
+	@Deprecated
 	public String wetherIsNewUser(HttpServletRequest request) {
 		String email = request.getParameter("email");
 		JSONObject object = new JSONObject();
