@@ -213,6 +213,13 @@
 		from checkinout
 	</select>
 	
+	<select id="getEarliestAndLatestMachCheckTime" resultType="map" >
+		SELECT MIN(checktime) as min_chkt, MAX(checktime) as max_chkt
+		FROM checkinout
+		where 
+			checktime is not null
+	</select>
+	
 	<!-- 
 	<select id="queryPPPById" parameterType="int" resultType="com.cn.eplat.model.PPP" >
 		select name, uuu

@@ -39,6 +39,29 @@ public class TestMachCheckInOutDao {
 	
 	
 	
+	
+	
+	
+	
+	
+	@Test
+	public void testgetEarliestAndLatestMachCheckTime() {
+		
+		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
+		
+		HashMap<String, Object> res = machCheckInOutDao.getEarliestAndLatestMachCheckTime();
+		
+		System.out.println("res = " + res);
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	@Test
 	public void testQueryMachCheckInOutByCheckTimeExcludeSomeUseridsTop100ByMachSn() {
 		

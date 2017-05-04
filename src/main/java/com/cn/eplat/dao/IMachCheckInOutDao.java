@@ -1,6 +1,7 @@
 package com.cn.eplat.dao;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,12 @@ public interface IMachCheckInOutDao {
 	
 	// 
 	public List<MachCheckInOut> queryMachCheckInOutBySomeCriteria();
+	
+	/**
+	 * 查出最早和最晚的打卡机打卡时间
+	 * @return
+	 */
+	HashMap<String, Object> getEarliestAndLatestMachCheckTime();
 	
 	
 	// // 对本地MySQL数据库进行操作	// // TODO: 对本地MySQL数据库操作虽说保证了服务器端的数据库用户名和密码不会泄露，但是要求每台打卡机的主机上要安装一个MySQL数据库。。。
