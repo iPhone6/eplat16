@@ -41,6 +41,36 @@ public class TestMachCheckInOutDao {
 	
 	
 	
+	@Test
+	public void testgetAllMachCheckInOutCount() {
+		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
+		int all_mcios_count = machCheckInOutDao.getAllMachCheckInOutCount();
+		System.out.println("all_mcios_count = " + all_mcios_count);
+		
+	}
+	
+	
+	
+	
+	
+	@Test
+	public void testgetTop100MachCheckInOutsByStartTime() {
+		
+		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
+		
+		Date start_time = DateUtil.parse2date(2, "2017-04-03 08:00:00");
+		
+		List<MachCheckInOut> results = machCheckInOutDao.getTop100MachCheckInOutsByStartTime(start_time);
+		
+//		System.out.println("results = " + results);
+		
+		for(int i=0; i<10 && i<results.size(); i++) {
+			System.out.println("result = " + results.get(i));
+		}
+		
+	}
+	
+	
 	
 	
 	

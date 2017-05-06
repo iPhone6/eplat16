@@ -1,7 +1,9 @@
 package com.cn.eplat.timedtask;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -111,7 +113,7 @@ public class PushPunchCardDatas {
 	}
 	
 	
-//	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
+	@Scheduled(cron = "0/5 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
@@ -278,7 +280,54 @@ public class PushPunchCardDatas {
 		
 		if(need_search_missed) {
 			DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
-			List<MachCheckInOut> all_pc_datas = machCheckInOutService.getAllMachCheckInOut();
+			List<MachCheckInOut> all_pc_datas = new ArrayList<MachCheckInOut>();
+			
+			HashMap<String, Object> firstAndLast_check_time = machCheckInOutDao.getEarliestAndLatestMachCheckTime();
+			Object min_chkt_obj = firstAndLast_check_time.get("min_chkt");
+			Object max_chkt_obj = firstAndLast_check_time.get("max_chkt");
+			
+			Date min_chkt = null;
+			Date max_chkt = null;
+			if(min_chkt_obj instanceof Timestamp && max_chkt_obj instanceof Timestamp) {
+				min_chkt = (Date) min_chkt_obj;
+				max_chkt = (Date) max_chkt_obj;
+			}
+			
+			long get_all_mach_checkinouts_start = System.currentTimeMillis();
+			if(min_chkt != null && max_chkt != null) {
+				List<MachCheckInOut> top100mcios = null;
+				Integer userid = null;
+				for(Date start_time = DateUtil.calcDatePlusGivenTimeMills(min_chkt, -1000); ;) {
+					/*
+					top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTime(start_time);
+					top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid2(start_time, userid);
+					*/
+					top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid3(start_time, userid);
+					/*
+					List<MachCheckInOut> special_mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid(start_time, userid);
+					if(special_mcios != null && special_mcios.size() > 0) {
+						logger.info("找到特殊情况下的打卡数据：");
+						System.out.println("special_mcios = " + special_mcios);
+					} else {
+						logger.info("暂未找到特殊情况下的打卡数据...");
+					}
+					*/
+					if(top100mcios != null && top100mcios.size()>0) {
+						all_pc_datas.addAll(top100mcios);
+						MachCheckInOut the_last_mcio = top100mcios.get(top100mcios.size()-1);
+						start_time = the_last_mcio.getCheck_time();
+						userid = the_last_mcio.getUserid();
+					} else {
+						System.out.println("for循环即将退出。。。, all_pc_datas.size() = " + all_pc_datas.size());
+						break;
+					}
+				}
+			} else {
+				logger.error("打卡机上最早或最晚的打卡时间为Null");
+			}
+			long get_all_mach_checkinouts_end = System.currentTimeMillis();
+			logger.info("获取打卡机Access数据库中全部打卡数据到系统内存，过程总耗时：" + DateUtil.timeMills2ReadableStr(get_all_mach_checkinouts_end-get_all_mach_checkinouts_start));
+			logger.info("获取到的打卡机全部打卡数据总条数为： all_pc_datas.size() = " + all_pc_datas.size());
 			
 			if(all_pc_datas == null || all_pc_datas.size() == 0) {
 				logger.error("查询打卡机全部打卡数据时出现异常，或打卡机打卡数据记录表为空");
@@ -289,11 +338,14 @@ public class PushPunchCardDatas {
 				int insert_all_ret = 0;
 				
 				int batch_num = Constants.MACH_CHKIO_COPY_BATCH_NUM;
+				long batch_insert_start = System.currentTimeMillis();
 				MyListUtil<MachCheckInOut> all_pcd_mul = new MyListUtil<MachCheckInOut>(all_pc_datas);
 				for(List<MachCheckInOut> pcds = all_pcd_mul.getNextNElements(batch_num); pcds != null && pcds.size() > 0; pcds = all_pcd_mul.getNextNElements(batch_num)) {
 					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
 					insert_all_ret += machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(pcds);
 				}
+				long batch_insert_end = System.currentTimeMillis();
+				logger.info("批量插入打卡机全部打卡数据到本地MySQL数据库过程总共耗时：" + DateUtil.timeMills2ReadableStr(batch_insert_end-batch_insert_start));
 				
 				if(insert_all_ret <= 0) {
 					logger.error("批量插入打卡机全部打卡数据到本地MySQL数据库时出现异常，或打卡数据条数为0。");

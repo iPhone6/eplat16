@@ -49,6 +49,37 @@ public interface IMachCheckInOutDao {
 	HashMap<String, Object> getEarliestAndLatestMachCheckTime();
 	
 	
+	/**
+	 * 根据给定的起始时间查出前100条打卡机打卡数据
+	 * @param start_time
+	 * @return
+	 */
+	List<MachCheckInOut> getTop100MachCheckInOutsByStartTime(@Param("start_time") Date start_time);
+	
+	/**
+	 * 根据给定的起始时间和userid查出前100条打卡机打卡数据
+	 * @param start_time
+	 * @return
+	 */
+	List<MachCheckInOut> getTop100MachCheckInOutsByStartTimeAndUserid(@Param("start_time") Date start_time, @Param("userid") Integer userid);
+	
+	/**
+	 * 根据给定的起始时间和userid查出前100条打卡机打卡数据2（修复Bug：已排除可能出现查出重复的打卡数据的情况）
+	 * @param start_time
+	 * @return
+	 */
+	List<MachCheckInOut> getTop100MachCheckInOutsByStartTimeAndUserid2(@Param("start_time") Date start_time, @Param("userid") Integer userid);
+	
+	/**
+	 * 根据给定的起始时间和userid查出前100条打卡机打卡数据3（修复Bug：已排除可能出现查出重复的打卡数据的情况，并补充用户工号信息）
+	 * @param start_time
+	 * @return
+	 */
+	List<MachCheckInOut> getTop100MachCheckInOutsByStartTimeAndUserid3(@Param("start_time") Date start_time, @Param("userid") Integer userid);
+	
+	
+	
+	
 	// // 对本地MySQL数据库进行操作	// // TODO: 对本地MySQL数据库操作虽说保证了服务器端的数据库用户名和密码不会泄露，但是要求每台打卡机的主机上要安装一个MySQL数据库。。。
 	// 批量添加打卡机打卡数据
 	public int batchInsertMachCheckInOut(List<MachCheckInOut> mcios);

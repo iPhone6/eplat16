@@ -2,34 +2,47 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.cn.eplat.dao.IMachCheckInOutDao">
 	
+	<sql id="all_fields_of_checkinout">
+		USERID, 
+		checktime as check_time, 
+		CHECKTYPE as check_type, 
+		VERIFYCODE as verify_code, 
+		SENSORID as sensor_id, 
+		Memoinfo as memo_info, 
+		WorkCode as work_code, 
+		SN, 
+		UserExtFmt as user_ext_fmt
+	</sql>
+	
+	<sql id="all_fields_of_checkinout_and_userinfo_badgenumber">
+		c.USERID, 
+		u.Badgenumber as badge_number,
+		c.checktime as check_time, 
+		c.CHECKTYPE as check_type, 
+		c.VERIFYCODE as verify_code, 
+		c.SENSORID as sensor_id, 
+		c.Memoinfo as memo_info, 
+		c.WorkCode as work_code, 
+		c.SN, 
+		c.UserExtFmt as user_ext_fmt
+	</sql>
+	
 	<sql id="select_all_fields">
 		select 
-			USERID, 
-			checktime as check_time, 
-			CHECKTYPE as check_type, 
-			VERIFYCODE as verify_code, 
-			SENSORID as sensor_id, 
-			Memoinfo as memo_info, 
-			WorkCode as work_code, 
-			SN, 
-			UserExtFmt as user_ext_fmt
+		<include refid="all_fields_of_checkinout"></include>
 	</sql>
 	
 	<sql id="select_top_n">
 		select top 50
 	</sql>
 	
+	<sql id="select_top_100">
+		select top 100
+	</sql>
+	
 	<sql id="select_all_fields_top100">
 		<include refid="select_top_n"></include>
-			USERID, 
-			checktime as check_time, 
-			CHECKTYPE as check_type, 
-			VERIFYCODE as verify_code, 
-			SENSORID as sensor_id, 
-			Memoinfo as memo_info, 
-			WorkCode as work_code, 
-			SN, 
-			UserExtFmt as user_ext_fmt
+		<include refid="all_fields_of_checkinout"></include>
 	</sql>
 	
 	<sql id="select_fields_checkinout_userinfo_top100">
@@ -219,6 +232,104 @@
 		where 
 			checktime is not null
 	</select>
+	
+	<select id="getTop100MachCheckInOutsByStartTime" resultType="com.cn.eplat.model.MachCheckInOut" >
+		<include refid="select_top_100"></include>
+		<include refid="all_fields_of_checkinout"></include>
+		from checkinout
+		where checktime is not null
+			and checktime &gt; #{start_time}
+			<!-- 
+			<if test="userid != null and userid > 0">
+				or (
+					checktime = #{start_time}
+					and userid &lt;&gt; #{userid}
+				)
+			</if>
+			 -->
+		order by checktime asc
+	</select>
+	
+	<select id="getTop100MachCheckInOutsByStartTimeAndUserid" resultType="com.cn.eplat.model.MachCheckInOut" >
+		<include refid="select_top_100"></include>
+		<include refid="all_fields_of_checkinout"></include>
+		from checkinout
+		where 1 &lt; 1
+			<!-- 
+			and (
+				checktime &gt; #{start_time}
+				<if test="userid != null and userid > 0">
+					or (
+						checktime = #{start_time}
+						and userid &lt;&gt; #{userid}
+					)
+				</if>
+			)
+			 -->
+			<if test="userid != null and userid > 0">
+				or (
+					checktime is not null
+					and checktime = #{start_time}
+					and userid &lt;&gt; #{userid}
+				)
+			</if>
+		order by checktime asc
+	</select>
+	
+	<select id="getTop100MachCheckInOutsByStartTimeAndUserid2" resultType="com.cn.eplat.model.MachCheckInOut" >
+		<include refid="select_top_100"></include>
+		<include refid="all_fields_of_checkinout"></include>
+		from checkinout
+		where checktime is not null
+			and (
+				checktime &gt; #{start_time}
+				<!-- 
+					<if test="userid != null and userid > 0">
+						or (
+							checktime = #{start_time}
+							and userid &lt;&gt; #{userid}
+						)
+					</if>
+				 -->
+			 	<!-- 
+			 	 -->
+				<if test="userid != null and userid > 0">
+					or (
+						checktime = #{start_time}
+						and userid &gt; #{userid}
+					)
+				</if>
+			)
+		order by checktime asc, userid asc
+	</select>
+	
+	<select id="getTop100MachCheckInOutsByStartTimeAndUserid3" resultType="com.cn.eplat.model.MachCheckInOut" >
+		<include refid="select_top_100"></include>
+		<include refid="all_fields_of_checkinout_and_userinfo_badgenumber"></include>
+		from checkinout c left join userinfo u on c.userid = u.userid
+		where checktime is not null
+			and (
+				checktime &gt; #{start_time}
+				<!-- 
+					<if test="userid != null and userid > 0">
+						or (
+							checktime = #{start_time}
+							and userid &lt;&gt; #{userid}
+						)
+					</if>
+				 -->
+			 	<!-- 
+			 	 -->
+				<if test="userid != null and userid > 0">
+					or (
+						checktime = #{start_time}
+						and c.userid &gt; #{userid}
+					)
+				</if>
+			)
+		order by checktime asc, c.userid asc
+	</select>
+	
 	
 	<!-- 
 	<select id="queryPPPById" parameterType="int" resultType="com.cn.eplat.model.PPP" >
@@ -453,6 +564,19 @@
 		mcc.userextfmt user_ext_fmt
 	</sql>
 	
+	<sql id="missed_mcios_fields_from_mcc_distinct">
+		distinct(mcc.userid), 
+		mcc.badgenumber badge_number,
+		mcc.checktime check_time,
+		mcc.checktype check_type,
+		mcc.verifycode verify_code,
+		mcc.sensorid sensor_id,
+		mcc.memoinfo memo_info,
+		mcc.workcode work_code,
+		mcc.sn,
+		mcc.userextfmt user_ext_fmt
+	</sql>
+	
 	<select id="queryMissedMachCheckInOutsByCompareAccessAndMySQLDatas" resultType="com.cn.eplat.model.MachCheckInOut" >
 		SELECT <include refid="missed_mcios_fields_from_A"></include>
 		FROM 
@@ -467,7 +591,7 @@
 	</select>
 	
 	<select id="findMissedMachCheckInOutsByCompareAccessAndMySQLDatas" resultType="com.cn.eplat.model.MachCheckInOut" >
-		SELECT <include refid="missed_mcios_fields_from_mcc"></include>
+		SELECT <include refid="missed_mcios_fields_from_mcc_distinct"></include>
 		FROM mach_chkio_copy mcc
 		WHERE NOT EXISTS (
 			SELECT *
