@@ -113,7 +113,7 @@ public class PushPunchCardDatas {
 	}
 	
 	
-	@Scheduled(cron = "0/5 * * * * ? ")	// 间隔60秒执行
+//	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
