@@ -1,18 +1,28 @@
 package com.cn.eplat.service.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.zsl.testmybatis.TestEpCenterAxisDao;
 
 import com.cn.eplat.dao.IEpAttenDao;
+import com.cn.eplat.dao.IEpCenterAxisDao;
 import com.cn.eplat.dao.IEpUserDao;
 import com.cn.eplat.model.EpAtten;
 import com.cn.eplat.model.EpAttenExport;
+import com.cn.eplat.model.EpAxis;
+import com.cn.eplat.model.EpCenterAddr;
+import com.cn.eplat.model.EpCenterAxis;
 import com.cn.eplat.model.EpUser;
 import com.cn.eplat.service.IEpAttenService;
 import com.cn.eplat.utils.db2excel.DbToExcelUtil;
@@ -21,10 +31,14 @@ import com.cn.eplat.utils.db2excel.DbToExcelUtil;
 @Transactional
 public class EpAttenServiceImpl implements IEpAttenService {
 	
+	private static Logger logger = Logger.getLogger(EpAttenServiceImpl.class);
+	
 	@Resource
 	private IEpUserDao epUserDao;
 	@Resource
 	private IEpAttenDao epAttenDao;
+	@Resource
+	private IEpCenterAxisDao epCenterAxisDao;
 	
 	@Override
 	public int addEpAtten(EpAtten epa) {
@@ -116,6 +130,37 @@ public class EpAttenServiceImpl implements IEpAttenService {
 	@Override
 	public HashMap<String, Object> getFirstAndLastPunchTimeValid() {
 		return epAttenDao.queryFirstAndLastPunchTimeValid();
+	}
+
+	@Override
+	public boolean isEpCenterAxisInitialized() {
+		
+		return EpCenterAxis.getCenter_num()>0?true:false;
+	}
+
+	@Override
+	public void initializeCenterAxis() {
+		if(isEpCenterAxisInitialized()) {
+			logger.info("EpCenterAxis已经初始化了");
+		} else {
+			logger.info("开始初始化EpCenterAxis");
+			List<EpAxis> allEpAxises = epCenterAxisDao.getAllEpAxises();
+			if(allEpAxises != null && allEpAxises.size()>0){
+				EpCenterAxis.setCenter_axis(allEpAxises);
+				EpCenterAxis.setCenter_addr(new ArrayList<String[]>());
+				for(EpAxis ea:allEpAxises) {
+					List<String> center_addrs = new ArrayList<String>();
+					List<EpCenterAddr> centerAxisAddrs = epCenterAxisDao.getCenterAxisAddrsByCenterId(ea.getId());
+					for(EpCenterAddr eca:centerAxisAddrs){
+						center_addrs.add(eca.getName());
+					}
+					EpCenterAxis.getCenter_addr().add(center_addrs.toArray(new String[]{}));
+				}
+				logger.info("初始化EpCenterAxis完成");
+			}else{
+				logger.error("中心点坐标个数为0");
+			}
+		}
 	}
 	
 }

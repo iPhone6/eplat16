@@ -47,8 +47,8 @@ public class EpAttenController {
 	private static Logger logger = Logger.getLogger(EpAttenController.class);
 	
 	private static IEpUserService epUserService;
-	@Resource
-	private IEpAttenService epAttenService;
+//	@Resource
+	private static IEpAttenService epAttenService;
 	
 	@Resource
 	private IAttenExceptionService attenExceptionService;
@@ -67,6 +67,23 @@ public class EpAttenController {
 		EpAttenController.epUserService = epUserService;
 	}
 
+	public static IEpAttenService getEpAttenService() {
+		return epAttenService;
+	}
+	public static void setEpAttenService(IEpAttenService epAttenService) {
+		EpAttenController.epAttenService = epAttenService;
+	}
+	
+//	static {
+//		System.out.println("进入EpAttenController的静态代码块");
+//		if(!epAttenService.isEpCenterAxisInitialized()){
+//			logger.info("尚未初始化EpCenterAxis");
+//			epAttenService.initializeCenterAxis();
+//		} else {
+//			logger.info("已初始化EpCenterAxis");
+//		}
+//	}
+	
 	/*
 	 * 打卡接口（工号）
 	 */

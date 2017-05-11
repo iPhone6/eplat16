@@ -37,4 +37,8 @@ public interface IEpAttenService {
 	// 在所有打卡数据中，查询最早的一次和最晚的一次打卡数据的日期（只查今天0点之前的）
 	public HashMap<String, Object> getFirstAndLastPunchTimeValid();
 	
+	boolean isEpCenterAxisInitialized();
+	
+	void initializeCenterAxis();
+	
 }

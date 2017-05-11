@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cn.eplat.dao.IEpCenterAxisDao">
+	
+	<select id="getAllEpAxises" resultType="com.cn.eplat.model.EpAxis" >
+		select *
+		from att_center_axis
+	</select>
+	
+	<select id="getCenterAxisAddrsByCenterId" parameterType="int" resultType="com.cn.eplat.model.EpCenterAddr" >
+		select *
+		from att_center_addr
+		where center_id = #{centerId}
+	</select>
+	
+</mapper>

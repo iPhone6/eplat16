@@ -2,11 +2,14 @@ package com.cn.eplat.utils;
 
 import java.util.Random;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cn.eplat.controller.EpDataController;
+import com.cn.eplat.service.IEpAttenService;
 import com.cn.eplat.utils.gps.BDToGPS;
 
 /**
@@ -29,7 +32,9 @@ public class LocationUtil {
 	private static final double[] EP_COMPANY_LONGTITUDE_COMMONS = {114.0606288169, 114.0605468967, 114.0607718967, 114.0575979613, 114.0567129613, 114.0566729613,
 		114.0563431741, 114.0568331741, 114.0562221741, 114.0595081007, 114.0596291007, 114.0595751007, 114.0601861007, 114.0602508967, 114.0630111007, 114.0628401007, 114.0629728967,
 		114.0743077791, 108.8419103853, 103.9710245586, 103.8950237569, 103.8975517569, 103.9699685586, 103.9705695586, 114.0633250063, 114.0632440063, 114.0590286255, 
-		114.0597770000};	// 多地区中心点地理位置纬度值数组
+		114.0597770000};	// 多地区中心点地理位置经度值数组
+	
+	private static double[][] EP_CENTERS_AXIS = {};
 	
 	private static final double EP_COMPANY_LATITUDE = 22.640853000000000;	// 公司所在地地理位置之纬度值（iOS平台）
 	private static final double EP_COMPANY_LONGTITUDE = 114.058098000000000;	// 公司所在地地理位置之经度值（iOS平台）
@@ -80,6 +85,9 @@ public class LocationUtil {
 	private static Random EP_RAND = new Random();
 	
 	private static Logger logger = Logger.getLogger(LocationUtil.class);
+	
+//	@Resource
+//	private IEpAttenService epAttenService;
 	
 	public static double getEARTH_RADIUS() {
 		return EARTH_RADIUS;
@@ -132,7 +140,7 @@ public class LocationUtil {
 	public static double getEpRangeRadius() {
 		return EP_RANGE_RADIUS;
 	}
-
+	
 	private static double rad(double d) {
 		return d * Math.PI / 180.0;
 	}
