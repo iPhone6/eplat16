@@ -7,6 +7,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import com.cn.eplat.service.IEpAttenService;
+import com.cn.eplat.utils.LocationUtil;
 
 @Component("BeanDefineConfigue")
 public class BeanDefineConfigue implements ApplicationListener<ContextRefreshedEvent> {
@@ -23,6 +24,7 @@ public class BeanDefineConfigue implements ApplicationListener<ContextRefreshedE
 			if(!epAttenService.isEpCenterAxisInitialized()){
 				logger.info("尚未初始化EpCenterAxis");
 				epAttenService.initializeCenterAxis();
+				LocationUtil.initializeCenterInfos();
 				logger.info("初始化EpCenterAxis完成");
 			} else {
 				logger.info("已初始化EpCenterAxis");

@@ -1,5 +1,7 @@
 package com.cn.eplat.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.annotation.Resource;
@@ -9,6 +11,8 @@ import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cn.eplat.controller.EpDataController;
+import com.cn.eplat.model.EpAxis;
+import com.cn.eplat.model.EpCenterAxis;
 import com.cn.eplat.service.IEpAttenService;
 import com.cn.eplat.utils.gps.BDToGPS;
 
@@ -25,16 +29,16 @@ public class LocationUtil {
 	private static final double EP_COMPANY_LATITUDE_COMMON = 22.6391143100;	// 公司所在地地理位置之纬度值（iOS和安卓平台共用）
 	private static final double EP_COMPANY_LONGTITUDE_COMMON = 114.0606038169;	// 公司所在地地理位置之经度值（iOS和安卓平台共用）
 	
-	private static final double[] EP_COMPANY_LATITUDE_COMMONS = {22.6392643100, 22.6447740174, 22.6431570174, 22.6440990335, 22.6465420335, 22.6483600335,
+	private static Double[] EP_COMPANY_LATITUDE_COMMONS = {22.6392643100, 22.6447740174, 22.6431570174, 22.6440990335, 22.6465420335, 22.6483600335,
 		22.6501920957, 22.6532690957, 22.6565960957, 22.6567420712, 22.6545780712, 22.6533400712, 22.6497040712, 22.6479890174, 22.6535190712, 22.6501760712, 22.6482390174,
 		22.6420593380, 34.2081126228, 30.7315428557, 30.7659890716, 30.7625560716, 30.7341818557, 30.7349158557, 22.6428113578, 22.6441413578, 22.6484525413, 
-		22.6486987000,};	// 多地区中心点地理位置纬度值数组
-	private static final double[] EP_COMPANY_LONGTITUDE_COMMONS = {114.0606288169, 114.0605468967, 114.0607718967, 114.0575979613, 114.0567129613, 114.0566729613,
+		22.6486987000, 0.0};	// 多地区中心点地理位置纬度值数组
+	private static Double[] EP_COMPANY_LONGTITUDE_COMMONS = {114.0606288169, 114.0605468967, 114.0607718967, 114.0575979613, 114.0567129613, 114.0566729613,
 		114.0563431741, 114.0568331741, 114.0562221741, 114.0595081007, 114.0596291007, 114.0595751007, 114.0601861007, 114.0602508967, 114.0630111007, 114.0628401007, 114.0629728967,
 		114.0743077791, 108.8419103853, 103.9710245586, 103.8950237569, 103.8975517569, 103.9699685586, 103.9705695586, 114.0633250063, 114.0632440063, 114.0590286255, 
-		114.0597770000};	// 多地区中心点地理位置经度值数组
+		114.0597770000, 0.0};	// 多地区中心点地理位置经度值数组
 	
-	private static double[][] EP_CENTERS_AXIS = {};
+//	private static double[][] EP_CENTERS_AXIS = {};
 	
 	private static final double EP_COMPANY_LATITUDE = 22.640853000000000;	// 公司所在地地理位置之纬度值（iOS平台）
 	private static final double EP_COMPANY_LONGTITUDE = 114.058098000000000;	// 公司所在地地理位置之经度值（iOS平台）
@@ -78,6 +82,7 @@ public class LocationUtil {
 		{"神州电脑大厦"},
 		{"深圳华为坂田园区G区-G1座"},
 		{"深圳华为坂田园区G区-G2座"},
+		{"000000000000FFFFFFFFFFFFF"},
 	};
 	private static final String MAC_PATTERN_COLON = "^([0-9a-fA-F]{2})(([/\\s:][0-9a-fA-F]{2}){5})$";	// 判断是否是MAC地址的正则表达式（中间以冒号(:)连接的MAC地址）
 	private static final String MAC_PATTERN_DASH = "^([0-9a-fA-F]{2})(([/\\s-][0-9a-fA-F]{2}){5})$";	// 判断是否是MAC地址的正则表达式（中间以短横线(-)连接的MAC地址）
@@ -225,6 +230,30 @@ public class LocationUtil {
 		logger.info("[共用 - " + platform +  " ] 当前位置距离中心标准点的距离：" + distance + "（米）");
 		return distance <= EP_RANGE_RADIUS;
 		*/
+	}
+	
+	/**
+	 * 初始化中心点坐标和对应地址信息
+	 */
+	public static void initializeCenterInfos() {
+		int center_num = EpCenterAxis.getCenter_num();
+		if(center_num>0){
+			List<EpAxis> center_axises = EpCenterAxis.getCenter_axis();
+			List<String[]> center_addrs = EpCenterAxis.getCenter_addr();
+//			double[] longitude_axises = new double[center_num];
+//			double[] latitude_axises = new double[center_num];
+			List<Double> longitude_list = new ArrayList<Double>();
+			List<Double> latitude_list = new ArrayList<Double>();
+			for(EpAxis ca:center_axises){
+				longitude_list.add(ca.getLongitude());
+				latitude_list.add(ca.getLatitude());
+			}
+			EP_COMPANY_LONGTITUDE_COMMONS = longitude_list.toArray(new Double[0]);
+			EP_COMPANY_LATITUDE_COMMONS = latitude_list.toArray(new Double[0]);
+			EP_GPS_ADDRSS = center_addrs.toArray(new String[0][0]);
+		}else{
+			logger.error("中心点坐标尚未初始化");
+		}
 	}
 	
 	/**
