@@ -35,6 +35,29 @@ public class TestEpAttenDao {
 	
 	
 	
+	
+	
+	
+	
+	@Test
+	public void testLocationUtilCheckCenterAxis(){
+		Double[] longitudes = LocationUtil.getEP_COMPANY_LONGTITUDE_COMMONS();
+		Double[] latitudes = LocationUtil.getEP_COMPANY_LATITUDE_COMMONS();
+		String[] addrs = LocationUtil.getEP_GPS_ADDRS();
+		
+		System.out.println("longitudes = " + longitudes);
+		System.out.println("latitudes = " + latitudes);
+		System.out.println("addrs = " + addrs);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	@Test
 	public void testgetNotProcessedEpAttenEpUids() {
 		

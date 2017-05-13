@@ -30,12 +30,14 @@ import org.apache.http.entity.EntityTemplate;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.util.TextUtils;
+import org.apache.log4j.Logger;
 import org.apache.poi.sl.draw.DrawNotImplemented;
 import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
 import com.cn.eplat.model.PushLog;
 import com.cn.eplat.model.PushToHw;
+import com.cn.eplat.timedtask.PushToHwTask;
 import com.cn.eplat.utils.DateUtil;
 import com.mysql.fabric.xmlrpc.base.Array;
 
@@ -46,6 +48,8 @@ import com.mysql.fabric.xmlrpc.base.Array;
  *
  */
 public class ExportData2HWHelper {
+	
+	private static Logger logger = Logger.getLogger(ExportData2HWHelper.class);
 	
 	private static ExportData2HWHelper helper = new ExportData2HWHelper();
 	
@@ -255,6 +259,8 @@ public class ExportData2HWHelper {
 			System.out.println(resultMessage);
 			if("S00".equalsIgnoreCase(resultFlag)){
 				isSuccess = true;
+			}else{
+				logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage);
 			}
 		}
 		return isSuccess;

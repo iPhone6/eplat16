@@ -146,10 +146,26 @@ public class LocationUtil {
 		return EP_RANGE_RADIUS;
 	}
 	
+	public static Double[] getEP_COMPANY_LATITUDE_COMMONS() {
+		return EP_COMPANY_LATITUDE_COMMONS;
+	}
+
+	public static void setEP_COMPANY_LATITUDE_COMMONS(Double[] eP_COMPANY_LATITUDE_COMMONS) {
+		EP_COMPANY_LATITUDE_COMMONS = eP_COMPANY_LATITUDE_COMMONS;
+	}
+
+	public static Double[] getEP_COMPANY_LONGTITUDE_COMMONS() {
+		return EP_COMPANY_LONGTITUDE_COMMONS;
+	}
+
+	public static void setEP_COMPANY_LONGTITUDE_COMMONS(Double[] eP_COMPANY_LONGTITUDE_COMMONS) {
+		EP_COMPANY_LONGTITUDE_COMMONS = eP_COMPANY_LONGTITUDE_COMMONS;
+	}
+	
 	private static double rad(double d) {
 		return d * Math.PI / 180.0;
 	}
-
+	
 	/**
 	 * 通过经纬度获取距离(单位：米)
 	 * 

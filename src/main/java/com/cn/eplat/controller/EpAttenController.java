@@ -67,10 +67,11 @@ public class EpAttenController {
 		EpAttenController.epUserService = epUserService;
 	}
 
-	public static IEpAttenService getEpAttenService() {
+	public IEpAttenService getEpAttenService() {
 		return epAttenService;
 	}
-	public static void setEpAttenService(IEpAttenService epAttenService) {
+	@Resource
+	public void setEpAttenService(IEpAttenService epAttenService) {
 		EpAttenController.epAttenService = epAttenService;
 	}
 	

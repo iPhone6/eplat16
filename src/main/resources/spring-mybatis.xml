@@ -30,9 +30,9 @@
 		
 		<!-- 本地数据库连接配置 
 				注：参数zeroDateTimeBehavior的可选值: convertToNull, round, exception
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy02?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy03?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 		-->
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy04?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy05?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		
@@ -74,16 +74,16 @@
 	<bean id="ds_ms" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
 		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
 		<!-- 服务器上的微服务数据库
+		 -->
 			<property name="url" value="jdbc:mysql://120.77.50.190:3306/eplat-ms?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="@Elead2015"></property>
-		 -->
 		
 		<!-- 本地上的微服务数据库
-		 -->
 			<property name="url" value="jdbc:mysql://localhost:3306/eplatms_copy19?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
+		 -->
 			
 		<property name="validationQuery" value="SELECT 1" />
 		<property name="testOnBorrow" value="true"/>
@@ -104,7 +104,7 @@
         
         <!-- 本地测试环境配置 
         -->
-	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=S:\S00\002\att2000.mdb" />
+	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=S:\S00\006\att2000\att2000.mdb" />
         
         <!-- <property name="username" value=""></property>
 		<property name="password" value=""></property> -->
@@ -126,7 +126,7 @@
 				<entry value-ref="ds_access" key="ds_access"></entry>
 			</map>
 		</property>
-		<property name="defaultTargetDataSource" ref="ds_admin"></property>      <!-- 默认使用ds_admin的数据源 -->
+		<property name="defaultTargetDataSource" ref="ds_mop"></property>      <!-- 默认使用ds_admin的数据源 -->
 	</bean>
 	
 	<!-- 
