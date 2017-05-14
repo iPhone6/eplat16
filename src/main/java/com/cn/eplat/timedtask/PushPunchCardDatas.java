@@ -79,7 +79,7 @@ public class PushPunchCardDatas {
 	// 允许的打卡时间误差毫秒总数（上面的所有允许的打卡时间误差之和）
 	private static final long tolerance_time_mills = (tolerance_days*24*3600 + toerance_hours*3600 + toerance_minutes*60 + toerance_seconds)*1000l;
 	
-	private static final long my_timer_delay = 10*1000;	// 延时任务定时时间毫秒数（10分钟）
+	private static final long my_timer_delay = 5*60*1000;	// 延时任务定时时间毫秒数（10分钟）
 	// 是否正在查找遗漏未上传阿里云的打卡数据的标志（如果线程正在忙于查找遗漏打卡数据，则不开启新线程重复进行查找操作，可避免重复开启过多查漏线程，导致系统资源过度消耗以及查漏过程耗时过长的问题。）
 	private static boolean is_busy_finding_missing_not_uploaded_punch_card_datas = false;
 	
@@ -128,7 +128,7 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-	@Scheduled(cron = "0/5 * * * * ? ")	// 间隔60秒执行
+	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
