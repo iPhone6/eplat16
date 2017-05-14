@@ -11,8 +11,8 @@ public class Constants {
 //	public static final String ANDROID_APKS_URL = ANDROID_APKS_URL_TEST;
 	public static final String ANDROID_APKS_URL = ANDROID_APKS_URL_ALUYUN;
 	
-//	public static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_LOCAL;	// 本地运行环境类型
-	public static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_PROD;	// 生产运行环境类型
+	public static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_LOCAL;	// 本地运行环境类型
+//	public static final String RUN_ENVIRONMENT = DataSourceType.EVIRONMENT_PROD;	// 生产运行环境类型
 	
 	public static final int FILTER_PART_DATE_NUM = 1;	// 分批筛选考勤数据的每个批次的日期数量（天数）
 	public static final int FILTER_PART_EPU_NUM = 20;	// 分批筛选考勤数据的每个批次的人员数量（人数）
