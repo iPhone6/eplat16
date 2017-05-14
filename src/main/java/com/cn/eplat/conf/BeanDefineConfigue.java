@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.cn.eplat.service.IEpAttenService;
 import com.cn.eplat.utils.LocationUtil;
 
-@Component("BeanDefineConfigue")
+//@Component("BeanDefineConfigue")
 public class BeanDefineConfigue implements ApplicationListener<ContextRefreshedEvent> {
 	
 	private static Logger logger = Logger.getLogger(BeanDefineConfigue.class);

@@ -122,6 +122,14 @@
 			and proc_result is null
 	</select>
 	
+	<select id="queryProcessedSyslogsWithProcessingFindingMissingProcResult" resultType="com.cn.eplat.model.MachSyslogCopy" >
+		select <include refid="all_fields"></include>
+		from mach_syslog_copy
+		where 
+			status = '已处理'
+			and proc_result like '%正在查找是否有遗漏未上传%'
+	</select>
+	
 	<sql id="update_all_fields_except_id_sharp_item_if">
 		<if test="item.syslog_id != null ">
 			syslog_id = #{item.syslog_id},

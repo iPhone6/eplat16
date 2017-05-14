@@ -77,7 +77,13 @@ public class MachSyslogCopyServiceImpl implements IMachSyslogCopyService {
 //		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
 		return machSyslogCopyDao.queryProcessedSyslogsWithNullProcResult();
 	}
-
+	
+	@Override
+	public List<MachSyslogCopy> queryProcessedSyslogsWithProcessingFindingMissingProcResult() {
+//		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+		return machSyslogCopyDao.queryProcessedSyslogsWithProcessingFindingMissingProcResult();
+	}
+	
 	@Override
 	public int batchUpdateMachSyslogCopyById(List<MachSyslogCopy> logs) {
 //		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);

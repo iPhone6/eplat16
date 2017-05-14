@@ -41,6 +41,9 @@ public interface IMachSyslogCopyDao {
 	// 查出所有已处理但没有处理结果的系统日志拷贝数据
 	public List<MachSyslogCopy> queryProcessedSyslogsWithNullProcResult();
 	
+	// 查出所有已处理但是是正宗处理查找遗漏未上传的系统日志拷贝数据
+	public List<MachSyslogCopy> queryProcessedSyslogsWithProcessingFindingMissingProcResult();
+	
 	// 批量修改打卡机系统日志数据
 	public int batchUpdateMachSyslogCopyById(List<MachSyslogCopy> logs);
 	
