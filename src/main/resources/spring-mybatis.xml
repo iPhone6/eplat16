@@ -30,9 +30,9 @@
 		
 		<!-- 本地数据库连接配置 
 				注：参数zeroDateTimeBehavior的可选值: convertToNull, round, exception
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy04?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
-		-->
 			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy05?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+		-->
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy04?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		
@@ -104,7 +104,7 @@
         
         <!-- 本地测试环境配置 
         -->
-	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=S:\S00\001\att2000\att2000.mdb" />
+	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=S:\S01\004\att2000.mdb" />
         
         <!-- <property name="username" value=""></property>
 		<property name="password" value=""></property> -->

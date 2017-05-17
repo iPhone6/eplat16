@@ -128,7 +128,7 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-//	@Scheduled(cron = "0/60 * * * * ? ")	// 间隔60秒执行
+//	@Scheduled(cron = "0/30 * * * * ? ")	// 间隔60秒执行
 	public void push() {
 		
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
@@ -1136,13 +1136,25 @@ public class PushPunchCardDatas {
 					mcio.setPush_count(last_push_count==null?1:(last_push_count+1));
 				}
 				mcios_to_add = mcios_list;
-				DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-				int batch_mod_ret = machCheckInOutService.batchAddMachCheckInOut(mcios_to_add);
-				
-				if(batch_mod_ret <= 0) {
-					logger.error("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据出现异常，batch_mod_ret = " + batch_mod_ret);
-				} else {
-					logger.info("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据成功，batch_mod_ret = " + batch_mod_ret);
+				if(desc.contains("repush")) {
+					int batch_mod_ret = 0;
+					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+					batch_mod_ret = machCheckInOutService.batchModifyMachCheckInOutById(mcios_list);
+					
+					if(batch_mod_ret <= 0) {
+						logger.error("(repush failed)-批量修改打卡机(" + sn + ")打卡数据推送状态出现异常，batch_mod_ret = " + batch_mod_ret);
+					} else {
+						logger.info("(repush failed)-批量修改打卡机(" + sn + ")打卡数据推送状态成功，batch_mod_ret = " + batch_mod_ret);
+					}
+				} else{
+					DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+					int batch_mod_ret = machCheckInOutService.batchAddMachCheckInOut(mcios_to_add);
+					
+					if(batch_mod_ret <= 0) {
+						logger.error("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据出现异常，batch_mod_ret = " + batch_mod_ret);
+					} else {
+						logger.info("(" + desc + " failed)-批量添加打卡机(" + sn + ")打卡数据成功，batch_mod_ret = " + batch_mod_ret);
+					}
 				}
 				
 //				return -3;
