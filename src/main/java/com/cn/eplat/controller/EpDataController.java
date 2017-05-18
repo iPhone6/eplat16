@@ -279,6 +279,9 @@ public class EpDataController {
 		for(EpUser epu : epus_push2hw) {
 			// 有效的人员信息必须满足id为正整数，工号、姓名、身份证号非空
 			if(epu.getId() != null && epu.getId() > 0 && StringUtils.isNotBlank(epu.getWork_no()) && StringUtils.isNotBlank(epu.getName()) && StringUtils.isNotBlank(epu.getIdentity_no())) {
+//				if(epu.getId() >= 1109 && epu.getId() <= 1111) {
+//					System.out.println("找到测试账号：epu = " + epu);
+//				}
 				epus_valid.add(epu);
 				epus_valid_map.put(epu.getId(), epu);
 			} else {
