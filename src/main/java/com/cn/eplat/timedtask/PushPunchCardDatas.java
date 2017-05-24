@@ -300,159 +300,165 @@ public class PushPunchCardDatas {
 				@Override
 				public void run() {
 					if(!Constants.isBusy_finding_missing_not_uploaded_punch_card_datas()){
-						Constants.setBusy_finding_missing_not_uploaded_punch_card_datas(true);
-						// 先更新打卡机上的用户信息（不管人员信息是否有变动，只要有下载打卡数据的操作就先更新打卡机的用户信息）
-						DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
-						List<MachUserInfo> all_muis = machUserInfoService.queryAllMachUserInfos();
-						if(all_muis == null || all_muis.size() == 0) {
-							logger.error("查询所有打卡机用户信息条数为0，或出现了异常3");
-						} else {
-							setMach_userinfos(all_muis);
-							mach_userinfos_map = new TreeMap<Integer, String>();
-							
-							for(MachUserInfo mui : all_muis) {
-								Integer userid = mui.getUserid();
-								String badgenumber = mui.getBadgenumber();
-								if(userid != null && badgenumber != null) {
-									mach_userinfos_map.put(userid, badgenumber);
-								} else {
-									logger.error("打卡机用户信息出现userid或工号为空/null的数据3！+ mui = " + mui);
-								}
-							}
-						}
-						// 然后开始查找遗漏未上传至阿里云服务器的打卡数据
-						DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
-						List<MachCheckInOut> all_pc_datas = new ArrayList<MachCheckInOut>();
-						
-						HashMap<String, Object> firstAndLast_check_time = machCheckInOutDao.getEarliestAndLatestMachCheckTime();
-						Object min_chkt_obj = firstAndLast_check_time.get("min_chkt");
-						Object max_chkt_obj = firstAndLast_check_time.get("max_chkt");
-						
-						Date min_chkt = null;
-						Date max_chkt = null;
-						if(min_chkt_obj instanceof Timestamp && max_chkt_obj instanceof Timestamp) {
-							min_chkt = (Date) min_chkt_obj;
-							max_chkt = (Date) max_chkt_obj;
-						}
-						
-						long get_all_mach_checkinouts_start = System.currentTimeMillis();
-						if(min_chkt != null && max_chkt != null) {
-							List<MachCheckInOut> top100mcios = null;
-							Integer userid = null;
-							for(Date start_time = DateUtil.calcDatePlusGivenTimeMills(min_chkt, -1000); ;) {
-								/*
-								top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTime(start_time);
-								top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid2(start_time, userid);
-								*/
-								top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid3(start_time, userid);
-								/*
-								List<MachCheckInOut> special_mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid(start_time, userid);
-								if(special_mcios != null && special_mcios.size() > 0) {
-									logger.info("找到特殊情况下的打卡数据：");
-									System.out.println("special_mcios = " + special_mcios);
-								} else {
-									logger.info("暂未找到特殊情况下的打卡数据...");
-								}
-								*/
-								if(top100mcios != null && top100mcios.size()>0) {
-									all_pc_datas.addAll(top100mcios);
-									MachCheckInOut the_last_mcio = top100mcios.get(top100mcios.size()-1);
-									start_time = the_last_mcio.getCheck_time();
-									userid = the_last_mcio.getUserid();
-								} else {
-									System.out.println("for循环即将退出。。。, all_pc_datas.size() = " + all_pc_datas.size());
-									break;
-								}
-							}
-						} else {
-							logger.error("打卡机上最早或最晚的打卡时间为Null");
-						}
-						long get_all_mach_checkinouts_end = System.currentTimeMillis();
-						logger.info("获取打卡机Access数据库中全部打卡数据到系统内存，过程总耗时：" + DateUtil.timeMills2ReadableStr(get_all_mach_checkinouts_end-get_all_mach_checkinouts_start));
-						logger.info("获取到的打卡机全部打卡数据总条数为： all_pc_datas.size() = " + all_pc_datas.size());
-						
-						if(all_pc_datas == null || all_pc_datas.size() == 0) {
-							logger.error("查询打卡机全部打卡数据时出现异常，或打卡机打卡数据记录表为空");
-						} else {
-//							DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-//							int insert_all_ret = machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(all_pc_datas);
-							
-							int insert_all_ret = 0;
-							
-							int batch_num = Constants.MACH_CHKIO_COPY_BATCH_NUM;
-							long batch_insert_start = System.currentTimeMillis();
-							MyListUtil<MachCheckInOut> all_pcd_mul = new MyListUtil<MachCheckInOut>(all_pc_datas);
-							for(List<MachCheckInOut> pcds = all_pcd_mul.getNextNElements(batch_num); pcds != null && pcds.size() > 0; pcds = all_pcd_mul.getNextNElements(batch_num)) {
-								DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-								insert_all_ret += machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(pcds);
-							}
-							long batch_insert_end = System.currentTimeMillis();
-							logger.info("批量插入打卡机全部打卡数据到本地MySQL数据库过程总共耗时：" + DateUtil.timeMills2ReadableStr(batch_insert_end-batch_insert_start));
-							
-							if(insert_all_ret <= 0) {
-								logger.error("批量插入打卡机全部打卡数据到本地MySQL数据库时出现异常，或打卡数据条数为0。");
+						try {
+							Constants.setBusy_finding_missing_not_uploaded_punch_card_datas(true);
+							// 先更新打卡机上的用户信息（不管人员信息是否有变动，只要有下载打卡数据的操作就先更新打卡机的用户信息）
+							DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
+							List<MachUserInfo> all_muis = machUserInfoService.queryAllMachUserInfos();
+							if(all_muis == null || all_muis.size() == 0) {
+								logger.error("查询所有打卡机用户信息条数为0，或出现了异常3");
 							} else {
-								logger.info("批量插入打卡机全部打卡数据到本地MySQL数据库成功，共插入（" + insert_all_ret + "）条打卡机打卡数据。");
+								setMach_userinfos(all_muis);
+								mach_userinfos_map = new TreeMap<Integer, String>();
 								
-								long ctm1 = System.currentTimeMillis();
-								DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-								List<MachCheckInOut> missed_cios = machCheckInOutDao.findMissedMachCheckInOutsByCompareAccessAndMySQLDatas();
-								long ctm2 = System.currentTimeMillis();
-								logger.info("查找遗漏未推送阿里云的打卡数据的SQL(findMissedMachCheckInOutsByCompareAccessAndMySQLDatas)执行耗时 = " + DateUtil.timeMills2ReadableStr(ctm2-ctm1) + 
-										"，共找到（" + missed_cios.size() +"）条遗漏的打卡数据。");
-								
-								DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-								int del_ret = machCheckInOutService.deleteAllAccessCheckInOutsCopyInMySQL();
-								logger.info("清空本地打卡机打卡数据的临时拷贝数据成功，已删除临时数据条数为：" + del_ret);
-								
-								if(missed_cios == null || missed_cios.size() == 0) {
-									logger.info("本次查找暂未找到遗漏的未被上传到阿里云服务器的打卡机打卡数据");
-									DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-									List<MachSyslogCopy> logs_no_proc_results = machSyslogCopyService.queryProcessedSyslogsWithProcessingFindingMissingProcResult();
-									
-									if(logs_no_proc_results == null || logs_no_proc_results.size() == 0) {
-										logger.error("处理结果为空的打卡机系统日志信息条数为0，或出现了其它异常");
-										DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-										machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "本次遗漏的打卡机打卡数据条数为0，或出现了其它异常");
+								for(MachUserInfo mui : all_muis) {
+									Integer userid = mui.getUserid();
+									String badgenumber = mui.getBadgenumber();
+									if(userid != null && badgenumber != null) {
+										mach_userinfos_map.put(userid, badgenumber);
 									} else {
-										logger.info("处理结果为空的打卡机系统日志信息条数为：" + logs_no_proc_results.size());
-										DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-										machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "本次暂无遗漏未被上传阿里云服务器的打卡机打卡数据");
+										logger.error("打卡机用户信息出现userid或工号为空/null的数据3！+ mui = " + mui);
 									}
-								} else {
-									logger.info("本次查找已找到（" + missed_cios.size() + "）条遗漏的未被上传到阿里云服务器的打卡机打卡数据");
-									
-									String mixed_sn = "<MIXED>";
-									Date tolerant_time = DateUtil.calcDatePlusGivenTimeMills(new Date(), tolerance_time_mills);
-									List<MachCheckInOut> elim_missed_cios = eliminatePunchCardDatasWithErrorPunchTime(missed_cios, tolerant_time, mixed_sn);
-									
-									if(elim_missed_cios == null || elim_missed_cios.size() == 0) {
-										logger.error("排除掉打卡时间明显有误的遗漏未被上传阿里云的打卡机打卡数据后，有效的打卡数据条数为0，或出现了其它异常。");
+								}
+							}
+							// 然后开始查找遗漏未上传至阿里云服务器的打卡数据
+							DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ACCESS);
+							List<MachCheckInOut> all_pc_datas = new ArrayList<MachCheckInOut>();
+							
+							HashMap<String, Object> firstAndLast_check_time = machCheckInOutDao.getEarliestAndLatestMachCheckTime();
+							Object min_chkt_obj = firstAndLast_check_time.get("min_chkt");
+							Object max_chkt_obj = firstAndLast_check_time.get("max_chkt");
+							
+							Date min_chkt = null;
+							Date max_chkt = null;
+							if(min_chkt_obj instanceof Timestamp && max_chkt_obj instanceof Timestamp) {
+								min_chkt = (Date) min_chkt_obj;
+								max_chkt = (Date) max_chkt_obj;
+							}
+							
+							long get_all_mach_checkinouts_start = System.currentTimeMillis();
+							if(min_chkt != null && max_chkt != null) {
+								List<MachCheckInOut> top100mcios = null;
+								Integer userid = null;
+								for(Date start_time = DateUtil.calcDatePlusGivenTimeMills(min_chkt, -1000); ;) {
+									/*
+									top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTime(start_time);
+									top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid2(start_time, userid);
+									*/
+									top100mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid3(start_time, userid);
+									/*
+									List<MachCheckInOut> special_mcios = machCheckInOutDao.getTop100MachCheckInOutsByStartTimeAndUserid(start_time, userid);
+									if(special_mcios != null && special_mcios.size() > 0) {
+										logger.info("找到特殊情况下的打卡数据：");
+										System.out.println("special_mcios = " + special_mcios);
 									} else {
-										int push_miss_ret = pushOperation(elim_missed_cios, "push_missed", mixed_sn);
+										logger.info("暂未找到特殊情况下的打卡数据...");
+									}
+									*/
+									if(top100mcios != null && top100mcios.size()>0) {
+										all_pc_datas.addAll(top100mcios);
+										MachCheckInOut the_last_mcio = top100mcios.get(top100mcios.size()-1);
+										start_time = the_last_mcio.getCheck_time();
+										userid = the_last_mcio.getUserid();
+									} else {
+										System.out.println("for循环即将退出。。。, all_pc_datas.size() = " + all_pc_datas.size());
+										break;
+									}
+								}
+							} else {
+								logger.error("打卡机上最早或最晚的打卡时间为Null");
+							}
+							long get_all_mach_checkinouts_end = System.currentTimeMillis();
+							logger.info("获取打卡机Access数据库中全部打卡数据到系统内存，过程总耗时：" + DateUtil.timeMills2ReadableStr(get_all_mach_checkinouts_end-get_all_mach_checkinouts_start));
+							logger.info("获取到的打卡机全部打卡数据总条数为： all_pc_datas.size() = " + all_pc_datas.size());
+							
+							if(all_pc_datas == null || all_pc_datas.size() == 0) {
+								logger.error("查询打卡机全部打卡数据时出现异常，或打卡机打卡数据记录表为空");
+							} else {
+//								DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+//								int insert_all_ret = machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(all_pc_datas);
+								
+								int insert_all_ret = 0;
+								
+								int batch_num = Constants.MACH_CHKIO_COPY_BATCH_NUM;
+								long batch_insert_start = System.currentTimeMillis();
+								MyListUtil<MachCheckInOut> all_pcd_mul = new MyListUtil<MachCheckInOut>(all_pc_datas);
+								for(List<MachCheckInOut> pcds = all_pcd_mul.getNextNElements(batch_num); pcds != null && pcds.size() > 0; pcds = all_pcd_mul.getNextNElements(batch_num)) {
+									DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+									insert_all_ret += machCheckInOutService.batchInsertAllAccessCheckinoutsToMySQLMachCheckInOutCopy(pcds);
+								}
+								long batch_insert_end = System.currentTimeMillis();
+								logger.info("批量插入打卡机全部打卡数据到本地MySQL数据库过程总共耗时：" + DateUtil.timeMills2ReadableStr(batch_insert_end-batch_insert_start));
+								
+								if(insert_all_ret <= 0) {
+									logger.error("批量插入打卡机全部打卡数据到本地MySQL数据库时出现异常，或打卡数据条数为0。");
+								} else {
+									logger.info("批量插入打卡机全部打卡数据到本地MySQL数据库成功，共插入（" + insert_all_ret + "）条打卡机打卡数据。");
+									
+									long ctm1 = System.currentTimeMillis();
+									DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+									List<MachCheckInOut> missed_cios = machCheckInOutDao.findMissedMachCheckInOutsByCompareAccessAndMySQLDatas();
+									long ctm2 = System.currentTimeMillis();
+									logger.info("查找遗漏未推送阿里云的打卡数据的SQL(findMissedMachCheckInOutsByCompareAccessAndMySQLDatas)执行耗时 = " + DateUtil.timeMills2ReadableStr(ctm2-ctm1) + 
+											"，共找到（" + missed_cios.size() +"）条遗漏的打卡数据。");
+									
+									DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+									int del_ret = machCheckInOutService.deleteAllAccessCheckInOutsCopyInMySQL();
+									logger.info("清空本地打卡机打卡数据的临时拷贝数据成功，已删除临时数据条数为：" + del_ret);
+									
+									if(missed_cios == null || missed_cios.size() == 0) {
+										logger.info("本次查找暂未找到遗漏的未被上传到阿里云服务器的打卡机打卡数据");
+										DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+										List<MachSyslogCopy> logs_no_proc_results = machSyslogCopyService.queryProcessedSyslogsWithProcessingFindingMissingProcResult();
 										
-										if(push_miss_ret <= 0) {
-											logger.error("推送遗漏的打卡机(" + mixed_sn + ")打卡数据失败");
-										} else {
-											logger.info("推送遗漏的打卡机(" + mixed_sn + ")打卡数据成功");
+										if(logs_no_proc_results == null || logs_no_proc_results.size() == 0) {
+											logger.error("处理结果为空的打卡机系统日志信息条数为0，或出现了其它异常");
 											DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-											List<MachSyslogCopy> logs_no_proc_results = machSyslogCopyService.queryProcessedSyslogsWithProcessingFindingMissingProcResult();
+											machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "本次遗漏的打卡机打卡数据条数为0，或出现了其它异常");
+										} else {
+											logger.info("处理结果为空的打卡机系统日志信息条数为：" + logs_no_proc_results.size());
+											DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+											machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "本次暂无遗漏未被上传阿里云服务器的打卡机打卡数据");
+										}
+									} else {
+										logger.info("本次查找已找到（" + missed_cios.size() + "）条遗漏的未被上传到阿里云服务器的打卡机打卡数据");
+										
+										String mixed_sn = "<MIXED>";
+										Date tolerant_time = DateUtil.calcDatePlusGivenTimeMills(new Date(), tolerance_time_mills);
+										List<MachCheckInOut> elim_missed_cios = eliminatePunchCardDatasWithErrorPunchTime(missed_cios, tolerant_time, mixed_sn);
+										
+										if(elim_missed_cios == null || elim_missed_cios.size() == 0) {
+											logger.error("排除掉打卡时间明显有误的遗漏未被上传阿里云的打卡机打卡数据后，有效的打卡数据条数为0，或出现了其它异常。");
+										} else {
+											int push_miss_ret = pushOperation(elim_missed_cios, "push_missed", mixed_sn);
 											
-											if(logs_no_proc_results == null || logs_no_proc_results.size() == 0) {
-												logger.error("处理结果为空的打卡机系统日志信息条数为0，或出现了其它异常");
-												DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-												machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "推送遗漏的打卡机打卡数据条数为0，或出现了其它异常");
+											if(push_miss_ret <= 0) {
+												logger.error("推送遗漏的打卡机(" + mixed_sn + ")打卡数据失败");
 											} else {
-												logger.info("处理结果为空的打卡机系统日志信息条数为：" + logs_no_proc_results.size());
+												logger.info("推送遗漏的打卡机(" + mixed_sn + ")打卡数据成功");
 												DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
-												machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "已成功推送遗漏的打卡机打卡数据，推送数据条数为：" + elim_missed_cios.size());
+												List<MachSyslogCopy> logs_no_proc_results = machSyslogCopyService.queryProcessedSyslogsWithProcessingFindingMissingProcResult();
+												
+												if(logs_no_proc_results == null || logs_no_proc_results.size() == 0) {
+													logger.error("处理结果为空的打卡机系统日志信息条数为0，或出现了其它异常");
+													DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+													machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "推送遗漏的打卡机打卡数据条数为0，或出现了其它异常");
+												} else {
+													logger.info("处理结果为空的打卡机系统日志信息条数为：" + logs_no_proc_results.size());
+													DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+													machSyslogCopyService.batchUpdateMachSyslogCopyProcResultById(logs_no_proc_results, "已成功推送遗漏的打卡机打卡数据，推送数据条数为：" + elim_missed_cios.size());
+												}
 											}
 										}
 									}
 								}
 							}
+							logger.info("查漏过程已完成");
+						} catch (Exception e) {
+							logger.error("查漏过程中出现异常，error_info = " + e.getMessage());
+							Constants.setBusy_finding_missing_not_uploaded_punch_card_datas(false);
+							logger.info("已还原是否正在查找遗漏的标志为false");
 						}
-						logger.info("查漏过程已完成");
 						Constants.setBusy_finding_missing_not_uploaded_punch_card_datas(false);
 					}else{
 						logger.info("已有线程正忙于查找遗漏未推送阿里云的打卡数据。。。");
