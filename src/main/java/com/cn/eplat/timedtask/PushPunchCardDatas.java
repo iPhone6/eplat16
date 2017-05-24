@@ -36,6 +36,7 @@ import com.cn.eplat.service.IMachSyslogCopyService;
 import com.cn.eplat.service.IMachUserInfoService;
 import com.cn.eplat.utils.DateUtil;
 import com.cn.eplat.utils.MyListUtil;
+import com.cn.eplat.utils.MyTimeUtil;
 import com.easemob.server.comm.body.PunchDatasBody;
 import com.easemob.server.comm.constant.HTTPMethod;
 import com.easemob.server.comm.invoker.JerseyRestAPIInvoker;
@@ -128,9 +129,13 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-//	@Scheduled(cron = "0/30 * * * * ? ")	// 间隔60秒执行
+	@Scheduled(cron = "0/300 * * * * ? ")	// 间隔60秒执行
 	public void push() {
-		
+		Date push_start_time = new Date();
+		if(!MyTimeUtil.isTimeRight(push_start_time)){
+			logger.info("当前时间（" + DateUtil.formatDate(2, push_start_time) + "）不在规定的可推送时间范围内(除08:00~08:45和17:45~18:30这两个时间范围之外)，跳过此次推送打卡数据操作，等待达到可推送时间再开始推送操作……");
+			return;
+		}
 		// 监控打卡机用户信息表（Userinfo），如果用户信息条数发生了变化，则更新打卡机用户信息静态变量对象的值
 		logger.info("开始监控打卡机用户信息。。。");
 		long monitor_userinfo_start = System.currentTimeMillis();

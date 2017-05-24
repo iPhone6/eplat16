@@ -33,7 +33,7 @@
 	</sql>
 	
 	<sql id="select_top_n">
-		select top 50
+		select top 20
 	</sql>
 	
 	<sql id="select_top_100">

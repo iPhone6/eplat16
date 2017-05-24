@@ -26,6 +26,7 @@ public class DateUtil {
 	private static SimpleDateFormat sdf_hms = new SimpleDateFormat(DU_YMD_HMS);	// “年-月-日 时:分:秒”格式的日期格式化对象（对应日期格式的类型 type = 2）
 	private static SimpleDateFormat sdf_hms_no_colon = new SimpleDateFormat(DU_YMD_HMS_NO_COLON);	// “年-月-日 时分秒”格式的日期格式化对象（对应日期格式的类型 type = 3）
 	private static SimpleDateFormat sdf_hms_sss = new SimpleDateFormat(DU_YMD_HMS_SSS);	// “年-月-日 时:分:秒.毫秒”格式的日期格式化对象（对应日期格式的类型 type = 4）
+	private static SimpleDateFormat sdf_hhmmss = new SimpleDateFormat("HH:mm:ss");	// “时:分:秒”格式的日期格式化对象（对应日期格式的类型 type = 5）
 	
 	public static final long ONE_DAY_TIME_MILLS = 24*60*60*1000;	// 表示一天时间对应的时间毫秒数
 	
@@ -589,7 +590,15 @@ public class DateUtil {
 					return null;	// 转换出现异常时，输出错误日志信息后，直接返回null
 				}
 //				break;
+//			case 5:
+//				try {
+//					return sdf_hhmmss.parse(date_str_trim);
+//				} catch (ParseException e) {
+//					logger.error("按“HH:mm:ss”格式转换日期字符串时出现异常：" + date_str + ", [error_info = " + e.getMessage() + "]");
+//					return null;	// 转换出现异常时，输出错误日志信息后，直接返回null
+//				}
 			default:
+				logger.error("未知的时间格式类型type="+type);
 				return null;
 		}
 		
@@ -650,6 +659,8 @@ public class DateUtil {
 			case 4:
 				return sdf_hms_sss.format(date);
 //				break;
+			case 5:
+				return sdf_hhmmss.format(date);
 			default:
 				return null;
 		}
@@ -684,6 +695,11 @@ public class DateUtil {
 		
 		
 		
+		String date_str = DateUtil.formatDate(5, new Date());
+		System.out.println("date_str = " + date_str);
+		
+		
+		
 		/*
 		String date_str1 = "2018-05-13";
 		String date_str2 = "2018-05-14 19:56:33";
@@ -704,7 +720,7 @@ public class DateUtil {
 		
 		
 		
-		
+		/*
 		Date now_date = new Date();
 		
 		Date now_date_000 = DateUtil.parse2date(1, DateUtil.formatDate(1, now_date));
@@ -721,7 +737,7 @@ public class DateUtil {
 		
 		Date start_date = DateUtil.calcXDaysAfterADate(-1, now_date_0000);
 		System.out.println("start_date = " + DateUtil.formatDate(4, start_date));
-		
+		*/
 		
 		
 		
