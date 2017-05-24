@@ -14,6 +14,9 @@ import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +47,9 @@ import com.easemob.server.comm.wrapper.HeaderWrapper;
 import com.easemob.server.comm.wrapper.ResponseWrapper;
 
 @Component
+//@ComponentScan
+//@Configuration
+@PropertySource("classpath:schedule/tasks.props")	// 此处注解用于指定定时任务的定时参数的配置文件路径
 public class PushPunchCardDatas {
 	
 	private static Logger logger = Logger.getLogger(PushPunchCardDatas.class);
@@ -129,10 +135,10 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-	@Scheduled(cron = "0/300 * * * * ? ")	// 间隔60秒执行
+	@Scheduled(cron = "${tasks.schedule}")	// 按预先设定的时间间隔执行push方法
 	public void push() {
 		Date push_start_time = new Date();
-		if(!MyTimeUtil.isTimeRight(push_start_time)){
+		if(MyTimeUtil.isTimeRight(push_start_time)){
 			logger.info("当前时间（" + DateUtil.formatDate(2, push_start_time) + "）不在规定的可推送时间范围内(除08:00~08:45和17:45~18:30这两个时间范围之外)，跳过此次推送打卡数据操作，等待达到可推送时间再开始推送操作……");
 			return;
 		}
