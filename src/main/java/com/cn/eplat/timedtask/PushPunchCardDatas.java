@@ -135,10 +135,10 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-	@Scheduled(cron = "${tasks.schedule}")	// 按预先设定的时间间隔执行push方法
+//	@Scheduled(cron = "${push_punch_card_datas.schedule}")	// 按预先设定的时间间隔执行push方法
 	public void push() {
 		Date push_start_time = new Date();
-		if(MyTimeUtil.isTimeRight(push_start_time)){
+		if(!MyTimeUtil.isTimeRight(push_start_time)){
 			logger.info("当前时间（" + DateUtil.formatDate(2, push_start_time) + "）不在规定的可推送时间范围内(除08:00~08:45和17:45~18:30这两个时间范围之外)，跳过此次推送打卡数据操作，等待达到可推送时间再开始推送操作……");
 			return;
 		}
