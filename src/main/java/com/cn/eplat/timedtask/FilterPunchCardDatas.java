@@ -7,6 +7,7 @@ import java.util.HashMap;
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ import com.cn.eplat.utils.DateUtil;
  *
  */
 @Component
+@PropertySource("classpath:schedule/tasks.props")	// 此处注解用于指定定时任务的定时参数的配置文件路径
 public class FilterPunchCardDatas {
 	
 	private static Logger logger = Logger.getLogger(FilterPunchCardDatas.class);
@@ -58,7 +60,7 @@ public class FilterPunchCardDatas {
 
 
 //	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
-//	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
+	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
 //	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。");
