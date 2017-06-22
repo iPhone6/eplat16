@@ -47,7 +47,7 @@ public class LocationUtil {
 	private static final double EP_COMPANY_LATITUDE_ADR = 22.644644;	// 公司所在地地理位置之纬度值（Android平台）
 	private static final double EP_COMPANY_LONGTITUDE_ADR = 114.067206;	// 公司所在地地理位置之经度值（Android平台）
 	
-	private static final double EP_RANGE_RADIUS = 80.0;	// 地理位置有效范围半径50米
+	private static final double EP_RANGE_RADIUS = 150.0;	// 地理位置有效范围半径50米
 	private static String EP_WIFI_MAC = "80:89:17:33:9f:18";	// EleadWifi无线路由器的有效WiFi MAC地址
 	private static String EP_WIFI_ADDR = "深圳市龙岗区坂田街道坂兴路8号附近";	// WiFi MAC地址对应的地址信息
 	private static String EP_GPS_ADDR = "深圳市龙岗区坂田街道坂兴路8号附近";	// GPS 经纬度对应的地址信息

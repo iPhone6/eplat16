@@ -61,15 +61,15 @@
 	<bean id="ds_mop" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
 		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
 		<!-- 阿里云（190）服务器数据库连接配置
+		-->
 		<property name="url" value="jdbc:mysql://120.77.50.190:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 		<property name="username" value="root"></property>
 		<property name="password" value="@Elead2015"></property> 
-		-->
 		<!-- xxx（）服务器数据库连接配置
-		-->
 		<property name="url" value="jdbc:mysql://39.108.90.77:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 		<property name="username" value="elppm_user"></property>
 		<property name="password" value="elppm"></property>
+		-->
 		<property name="validationQuery" value="SELECT 1" />
 		<property name="testOnBorrow" value="true"/>
 		<property name="initialSize" value="0"></property>
