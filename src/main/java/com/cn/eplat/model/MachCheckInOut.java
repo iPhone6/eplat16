@@ -22,6 +22,27 @@ public class MachCheckInOut {
 	private Date last_push_time;	// 最近一次推送时间
 	private Integer push_count;	// 推送次数计数
 	
+	public MachCheckInOut(){}
+	
+	public MachCheckInOut(Integer id, Integer userid, String badge_number, Date check_time, String check_type, Integer verify_code, String sensor_id, String memo_info,
+			String work_code, String sn, Integer user_ext_fmt, String push_status, Date last_push_time, Integer push_count) {
+		super();
+		this.id = id;
+		this.userid = userid;
+		this.badge_number = badge_number;
+		this.check_time = check_time;
+		this.check_type = check_type;
+		this.verify_code = verify_code;
+		this.sensor_id = sensor_id;
+		this.memo_info = memo_info;
+		this.work_code = work_code;
+		this.sn = sn;
+		this.user_ext_fmt = user_ext_fmt;
+		this.push_status = push_status;
+		this.last_push_time = last_push_time;
+		this.push_count = push_count;
+	}
+	
 	public Integer getId() {
 		return id;
 	}

@@ -838,6 +838,12 @@ public class PushPunchCardDatas {
 //			
 //		}
 		
+		// 测试网络是否通畅
+		String network_test_sn="5555555555555";
+		List<MachCheckInOut> networktest_pc_datas=new ArrayList<MachCheckInOut>();
+		MachCheckInOut mcio_test=new MachCheckInOut(null,99999990,"99999990",new Date(),"V",5,"555","test_network","5555",network_test_sn,55,null,null,null);
+		networktest_pc_datas.add(mcio_test);
+		pushOperation(networktest_pc_datas, "push_test", network_test_sn);
 		
 		// C计时点 \\
 //		long C_checkpoint_time = System.currentTimeMillis();
