@@ -135,7 +135,7 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-//	@Scheduled(cron = "${push_punch_card_datas.schedule}")	// 按预先设定的时间间隔执行push方法
+	@Scheduled(cron = "${push_punch_card_datas.schedule}")	// 按预先设定的时间间隔执行push方法
 	public void push() {
 		Date push_start_time = new Date();
 		if(!MyTimeUtil.isTimeRight(push_start_time)){
@@ -1048,6 +1048,27 @@ public class PushPunchCardDatas {
 		
 		int push_num = Constants.PUSH_TO_ALIYUN_MCIOS_NUM;
 		for(List<MachCheckInOut> mcios_list = mcios_mlu.getNextNElements(push_num); mcios_list != null && mcios_list.size() > 0; mcios_list = mcios_mlu.getNextNElements(push_num)) {
+			
+			// 针对打卡机的打卡数据中某些字段可能出现为空的情况时，做特别处理，将值为空（null 或 ""）的字段的值处理为非空，
+			// 具体处理方案如下（箭头前为可能为空的字段，箭头后为若该字段值为空时，将会被赋予的值）：
+			// check_type	--> "X"
+			// verify_code	--> 10
+			// mach_sn		--> "1010101010101"
+			for(MachCheckInOut mcio:mcios_list){
+				if(StringUtils.isBlank(mcio.getCheck_type())){
+					mcio.setCheck_type("X");
+					logger.error("出现check_type为空的打卡数据：mcio = "+mcio+", desc = "+desc+", sn = "+sn);
+				}
+				if(mcio.getVerify_code()==null){
+					mcio.setVerify_code(10);
+					logger.error("出现verify_code为空的打卡数据：mcio = "+mcio+", desc = "+desc+", sn = "+sn);
+				}
+				if(StringUtils.isBlank(mcio.getSn())){
+					mcio.setSn("1010101010101");
+					logger.error("出现mach_sn为空的打卡数据：mcio = "+mcio+", desc = "+desc+", sn = "+sn);
+				}
+			}
+			
 			Date push_time = new Date();
 			List<MachCheckInOut> mcios_to_add = new ArrayList<MachCheckInOut>();
 			JSONArray top100_mcios_arr = new JSONArray();
