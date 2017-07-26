@@ -16,6 +16,8 @@ import com.cn.eplat.dao.IEpUserDao;
 import com.cn.eplat.dao.IMachCheckInOutDao;
 import com.cn.eplat.dao.IPushFilterLogDao;
 import com.cn.eplat.dao.IPushToHwDao;
+import com.cn.eplat.datasource.DataSourceContextHolder;
+import com.cn.eplat.datasource.DataSourceType;
 import com.cn.eplat.model.PushToHw;
 import com.cn.eplat.utils.DateUtil;
 
@@ -42,6 +44,28 @@ public class TestPushToHwDao {
 	
 	
 	
+	
+	
+	@Test
+	public void testSqlServerDb() {
+		
+		List<PushToHw> res = null;
+		try {
+			DataSourceContextHolder.setDbType(DataSourceType.SOURCE_SQLSERVER);
+			res = pushToHwDao.queryQcKqDatas();
+		} catch (Exception e) {
+			logger.error("查询全程OA系统考勤数据出现异常：error_info = " + e.getLocalizedMessage());
+			return;
+		}
+		
+		if(res != null && res.size() > 0) {
+			logger.info("查询全程OA系统考勤数据成功~");
+			System.out.println(res);
+		} else {
+			logger.error("查询失败");
+		}
+		
+	}
 	
 	
 	@Test

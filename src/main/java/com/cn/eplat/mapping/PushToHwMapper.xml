@@ -83,7 +83,13 @@
 		}
 	</select>
 	
-	
+	<!-- 查询全程OA系统的考勤数据（SQL Server 2008 R2 数据库） -->
+	<select id="queryQcKqDatas" resultType="com.cn.eplat.model.PushToHw" >
+		SELECT vb.FK_UserID ep_uid, vb.empid work_no, vb.sName name, vb.sIDCard id_no, kq.dWKTime dayof_date, tb.sCustField18Value company_code
+		FROM HR_KQ_T_Origin kq, HR_Archives_V_BaseInfo vb LEFT JOIN HR_Archives_T_Base tb ON vb.FK_UserID = tb.FK_UserID
+		WHERE kq.FK_UserID=vb.FK_UserID
+		ORDER BY kq.dWKTime DESC
+	</select>
 	
 	
 </mapper>

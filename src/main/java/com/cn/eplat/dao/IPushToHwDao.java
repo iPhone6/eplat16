@@ -43,4 +43,11 @@ public interface IPushToHwDao {
 	 */
 	List<PushToHw> findNotPushedDatasByActualConditioin();
 	
+	
+	/**
+	 * 查询全程OA系统的考勤数据（SQL Server 2008 R2 数据库）
+	 * @return
+	 */
+	List<PushToHw> queryQcKqDatas();
+	
 }

@@ -33,6 +33,8 @@ public class DataSourceType {
 	// Access数据源：
 	// D:/TempDataDpan/19.test_mdb/att2000.mdb
 	public static final String SOURCE_ACCESS = "ds_access";
+	// SQL Server数据源：
+	public static final String SOURCE_SQLSERVER = "ds_sqlserver";
 	
 	/**
 	 * 根据环境类型和数据库类型参数获取所要连接的数据源类型
