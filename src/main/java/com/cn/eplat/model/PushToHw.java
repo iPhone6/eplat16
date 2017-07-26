@@ -11,6 +11,7 @@ import java.util.Date;
 public class PushToHw {
 	private Long id;	// 推送华为考勤信息表的主键id
 	private Integer ep_uid;	// 用户id
+	private String work_no;	// 工号
 	private String name;	// 用户姓名
 	private String id_no;	// 身份证号
 	private Date dayof_date;	// 考勤日期
@@ -31,6 +32,12 @@ public class PushToHw {
 	}
 	public void setEp_uid(Integer ep_uid) {
 		this.ep_uid = ep_uid;
+	}
+	public String getWork_no() {
+		return work_no;
+	}
+	public void setWork_no(String work_no) {
+		this.work_no = work_no;
 	}
 	public String getName() {
 		return name;
@@ -77,10 +84,7 @@ public class PushToHw {
 	}
 	@Override
 	public String toString() {
-		return "PushToHw [id=" + id + ", ep_uid=" + ep_uid + ", name=" + name
-				+ ", id_no=" + id_no + ", dayof_date=" + dayof_date
-				+ ", dayof_week=" + dayof_week + ", on_duty_time="
-				+ on_duty_time + ", off_duty_time=" + off_duty_time
-				+ ", company_code=" + company_code + "]";
+		return "PushToHw [id=" + id + ", ep_uid=" + ep_uid + ", work_no=" + work_no + ", name=" + name + ", id_no=" + id_no + ", dayof_date=" + dayof_date + ", dayof_week="
+				+ dayof_week + ", on_duty_time=" + on_duty_time + ", off_duty_time=" + off_duty_time + ", company_code=" + company_code + "]";
 	}
 }

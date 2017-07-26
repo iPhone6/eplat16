@@ -60,7 +60,10 @@ public class TestPushToHwDao {
 		
 		if(res != null && res.size() > 0) {
 			logger.info("查询全程OA系统考勤数据成功~");
-			System.out.println(res);
+//			System.out.println(res);
+			for(int i=0;i<10&&i<res.size();i++){
+				System.out.println(res.get(i));
+			}
 		} else {
 			logger.error("查询失败");
 		}
