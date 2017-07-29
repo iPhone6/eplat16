@@ -36,6 +36,8 @@ public interface IEpUserDao {
 	public int queryEpUserByMobilePhone(EpUser epu);
 	// 根据员工信息（除主键id外的其它字段信息）查询员工信息
 	public List<EpUser> queryEpUserByCriteria(EpUser epu);
+	// 查询全程OA系统用户信息
+	public List<EpUser> queryEpUserByCriteriaQCOA(EpUser epu);
 	// 根据用户id获取用户信息
 	public EpUser queryEpUserById(int id);
 	
@@ -72,6 +74,14 @@ public interface IEpUserDao {
 	// 批量添加用户信息
 	public int batchInsertEpUsers(List<EpUser> epus);
 	
+	// 批量添加用户信息（全程OA系统用户信息）
+	/**
+	 * 批量添加用户信息（全程OA系统用户信息）
+	 * @param epus
+	 * @return
+	 */
+	public int batchInsertEpUsersQCOA(List<EpUser> epus);
+	
 	// 批量修改用户信息
 	public int batchUpdateEpUsers(Map<String, List<EpUser>> epus);
 	
@@ -96,6 +106,12 @@ public interface IEpUserDao {
 	 * @return
 	 */
 	int updateSomeFieldsOfEpUser(EpUser epu);
+	
+	/**
+	 * 清空所有ep_user表中的用户信息
+	 * @return
+	 */
+	int deleteAllEpUsers();
 	
 	
 }

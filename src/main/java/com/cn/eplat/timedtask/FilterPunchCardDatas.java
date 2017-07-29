@@ -1,8 +1,11 @@
 package com.cn.eplat.timedtask;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.TreeMap;
 
 import javax.annotation.Resource;
 
@@ -11,13 +14,16 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.cn.eplat.consts.Constants;
 import com.cn.eplat.controller.EpDataController;
+import com.cn.eplat.model.EpUser;
 import com.cn.eplat.service.IEpAttenService;
 import com.cn.eplat.service.IEpUserService;
 import com.cn.eplat.service.IMachCheckInOutService;
 import com.cn.eplat.service.IPushFilterLogService;
 import com.cn.eplat.service.IPushToHwService;
 import com.cn.eplat.utils.DateUtil;
+import com.cn.eplat.utils.MyListUtil;
 
 /**
  * 每天定时筛选打卡数据
@@ -44,6 +50,10 @@ public class FilterPunchCardDatas {
 	@Resource
 	private EpDataController epDataController;
 	
+	private static List<EpUser> epus_valid = new ArrayList<EpUser>();
+	
+	private static TreeMap<Integer, EpUser> qc_users = null;
+	
 	private static int filter_times = 0;	// 筛选次数
 	
 	public static void addFilterTimes() {	// 筛选次数加1
@@ -56,12 +66,23 @@ public class FilterPunchCardDatas {
 	public static void setFilter_times(int filter_times) {
 		FilterPunchCardDatas.filter_times = filter_times;
 	}
-
-
-
-//	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
-	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
-//	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
+	
+	public static List<EpUser> getEpus_valid() {
+		return epus_valid;
+	}
+	public static void setEpus_valid(List<EpUser> epus_valid) {
+		FilterPunchCardDatas.epus_valid = epus_valid;
+	}
+	public static TreeMap<Integer, EpUser> getQc_users() {
+		return qc_users;
+	}
+	public static void setQc_users(TreeMap<Integer, EpUser> qc_users) {
+		FilterPunchCardDatas.qc_users = qc_users;
+	}
+	
+	//	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
+//	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
+	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。");
 		
@@ -76,6 +97,31 @@ public class FilterPunchCardDatas {
 		System.out.println("ret = " + ret);
 		// TODO: 临时代码 (End)
 		*/
+		
+		// 从全程OA系统中获取最新用户信息，并更新到本地MySQL数据库中
+		List<EpUser> epus_valid = refreshQcoaUsers();
+		if(epus_valid!=null&& epus_valid.size()>0){
+			int del_count = epUserService.deleteAllEpUsers();	// 清空本地MySQL数据库中的全部用户信息
+			
+			int part_num = Constants.QCOA_PART_EPU_NUM;
+			MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
+			List<EpUser> part_epus=null;
+			epu_mlu.setCurrentIndex(0);
+			
+			int insert_count=0;
+			boolean flag=false;	// 标志是否还有需要写入本地MySQL数据库中的用户信息数据
+			do {
+				part_epus = epu_mlu.getNextNElements(part_num);
+				flag=part_epus != null && part_epus.size() > 0;
+				if(flag){
+					insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
+				}
+			}while (flag);
+			
+			logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
+		}else{
+			logger.error("全程OA系统用户信息条数为0");
+		}
 		
 		// // 1. 正常情况下筛选打卡数据（正常情况下，只筛选前一天的打卡数据）
 		Date earliest_pfl_time = pushFilterLogService.getEarliestPushFilterLogTime();
@@ -137,9 +183,25 @@ public class FilterPunchCardDatas {
 		long end_time = System.currentTimeMillis();
 		long use_time = (end_time - start_time);
 		
-		System.out.println("第（" + FilterPunchCardDatas.getFilter_times() + "）次筛选考勤数据，结束时间：" + DateUtil.formatDate(2, new Date()) + "，本次筛选耗时：" + DateUtil.timeMills2ReadableStr(use_time) + " (over)");
+		System.out.println("第（" + FilterPunchCardDatas.getFilter_times() + "）次筛选考勤数据，结束时间：" + DateUtil.formatDate(2, new Date()) + 
+				"，本次筛选耗时：" + DateUtil.timeMills2ReadableStr(use_time) + " (over)");
 		
 		
+	}
+	
+	
+	/**
+	 * 刷新全程OA系统用户信息
+	 * @return
+	 */
+	public List<EpUser> refreshQcoaUsers(){
+		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();
+		if(epus_valid==null||epus_valid.size()==0){
+			TreeMap<Integer, EpUser> qc_users = epDataController.getEpusValidQCOA(epus_valid);
+			FilterPunchCardDatas.setEpus_valid(epus_valid);
+			FilterPunchCardDatas.setQc_users(qc_users);
+		}
+		return epus_valid;
 	}
 	
 	

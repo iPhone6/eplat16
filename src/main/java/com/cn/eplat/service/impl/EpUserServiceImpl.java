@@ -82,6 +82,11 @@ public class EpUserServiceImpl implements IEpUserService {
 	public List<EpUser> getEpUserByCriteria(EpUser epu) {
 		return epUserDao.queryEpUserByCriteria(epu);
 	}
+	
+	@Override
+	public List<EpUser> getEpUserByCriteriaQCOA(EpUser epu) {
+		return epUserDao.queryEpUserByCriteriaQCOA(epu);
+	}
 
 	@Override
 	public EpUser getEpUserById(int id) {
@@ -163,6 +168,16 @@ public class EpUserServiceImpl implements IEpUserService {
 		data_map.put("data_map", epus_valid);
 		
 		return epUserDao.batchUpdateEpUsersUnderSomeConditions(data_map);
+	}
+
+	@Override
+	public int deleteAllEpUsers() {
+		return epUserDao.deleteAllEpUsers();
+	}
+
+	@Override
+	public int batchInsertEpUsersQCOA(List<EpUser> epus) {
+		return epUserDao.batchInsertEpUsersQCOA(epus);
 	}
 
 }

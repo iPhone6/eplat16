@@ -325,6 +325,12 @@
 			mach_userid, type, push2hw_atten, company_code
 	</sql>
 	
+	<sql id="all_fields_include_id">
+		id, code, name, english_name, pwd, mima, em_uid, role_id, userid, work_no, gender, job_title, on_position_date,  mobile_phone, fixed_phone, email, base_place, work_place, notes, 
+			dept_name, project_name, origin_pwd, identity_no, ver_code, vercode_time, max_device_num, max_bind_times, bind_times_count, bind_start_time, bind_limit_time, 
+			mach_userid, type, push2hw_atten, company_code
+	</sql>
+	
 	<sql id="all_fields_except_id_with_sharp">
 		#{code}, #{name}, #{english_name}, #{pwd}, #{mima}, #{em_uid}, #{role_id}, #{userid}, #{work_no}, #{gender}, #{job_title}, #{on_position_date}, #{mobile_phone}, #{fixed_phone}, 
 			#{email}, #{base_place}, #{work_place}, #{notes}, #{dept_name}, #{project_name}, #{origin_pwd}, #{identity_no}, #{ver_code}, #{vercode_time}, #{max_device_num}, #{max_bind_times}, 
@@ -455,6 +461,21 @@
 			<!-- and id = #{id} -->
 	</select>
 	
+	<select id="queryEpUserByCriteriaQCOA" parameterType="com.cn.eplat.model.EpUser" resultType="com.cn.eplat.model.EpUser" >
+		<!-- select <include refid="all_fields"></include>
+		from ep_user
+		where 1=1 
+			<include refid="all_fields_except_id_where_and_if"></include> -->
+		select vb.FK_UserID id, vb.empid work_no, vb.sName name, vb.sIDCard identity_no, tb.sCustField18Value company_code, tu.sLoginName code, tu.sLoginName english_name,
+			tu.sPassWord pwd, tu.dCreatedDate vercode_time, tu.sEmp_ID job_title, tu.iDirectSupervisor em_uid,
+			vb.sex+','+vb.edulevelname+','+vb.empname+',birthday='+vb.birthday+','+empstate+',StartWorkTime='+convert(VARCHAR(100),vb.StartWorkTime,120)
+				+',NativePlace'+vb.sNativePlace+',BankCard='+vb.sBankCard+',age='+cast(vb.iAge AS VARCHAR(10))
+				+',TurnFormalTime='+convert(VARCHAR(100),vb.TurnFormalTime,120) notes
+		from HR_Archives_V_BaseInfo vb, HR_Archives_T_Base tb, IBP_T_User tu
+		where vb.FK_UserID = tb.FK_UserID
+		    AND tb.FK_UserID=tu.PK_ID
+	</select>
+	
 	<select id="queryEpUserById" parameterType="int" resultType="com.cn.eplat.model.EpUser"  >
 		select <include refid="all_fields"></include>
 		from ep_user
@@ -510,6 +531,16 @@
 				#{item.bind_times_count}, #{item.bind_start_time}, #{item.bind_limit_time}, #{item.mach_userid}, #{item.type}, #{item.push2hw_atten}, #{item.company_code}
 	</sql>
 	
+	<sql id="all_fields_include_id_with_sharp_item">
+		#{item.id}, 
+		#{item.code}, #{item.name}, #{item.english_name}, #{item.pwd}, #{item.mima}, #{item.em_uid}, #{item.role_id}, #{item.userid}, #{item.work_no}, #{item.gender}, #{item.job_title}, 
+				#{item.on_position_date}, #{item.mobile_phone}, #{item.fixed_phone}, 
+				#{item.email}, #{item.base_place}, #{item.work_place}, #{item.notes}, #{item.dept_name}, #{item.project_name}, #{item.origin_pwd}, #{item.identity_no}, 
+				#{item.ver_code}, #{item.vercode_time}, 
+				#{item.max_device_num}, #{item.max_bind_times}, 
+				#{item.bind_times_count}, #{item.bind_start_time}, #{item.bind_limit_time}, #{item.mach_userid}, #{item.type}, #{item.push2hw_atten}, #{item.company_code}
+	</sql>
+	
 	<insert id="batchInsertEpUsers" parameterType="com.cn.eplat.model.EpUser" >
 		insert into ep_user (
 			<include refid="all_fields_except_id"></include>
@@ -518,6 +549,18 @@
 		<foreach collection="list" item="item" index="index" separator="," >
 			(
 				<include refid="all_fields_except_id_with_sharp_item"></include>
+			)
+		</foreach>
+	</insert>
+	
+	<insert id="batchInsertEpUsersQCOA" parameterType="com.cn.eplat.model.EpUser" >
+		insert into ep_user (
+			<include refid="all_fields_include_id"></include>
+		)
+		values 
+		<foreach collection="list" item="item" index="index" separator="," >
+			(
+				<include refid="all_fields_include_id_with_sharp_item"></include>
 			)
 		</foreach>
 	</insert>
@@ -687,6 +730,11 @@
 		</set>
 		where id = #{id}
 	</update>
+	
+	<!-- 清空所有ep_user表中的用户信息 -->
+	<delete id="deleteAllEpUsers">
+		delete from ep_user
+	</delete>
 	
 <!-- 
 	<resultMap id="BaseResultMap" type="com.cn.zpxt.model.User">

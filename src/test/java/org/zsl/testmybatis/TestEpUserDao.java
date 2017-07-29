@@ -19,6 +19,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cn.eplat.dao.IEpUserDao;
+import com.cn.eplat.datasource.DataSourceContextHolder;
+import com.cn.eplat.datasource.DataSourceType;
 import com.cn.eplat.model.EpUser;
 import com.cn.eplat.utils.CreatePasswordHelper;
 import com.cn.eplat.utils.CryptionUtil;
@@ -33,6 +35,69 @@ public class TestEpUserDao {
 	@Resource
 	private IEpUserDao epUserDao;
 	
+	
+	
+	
+	
+	
+	@Test
+	public void testBatchInsertEpUsersQCOA(){
+		List<EpUser> epus = new ArrayList<EpUser>();
+		EpUser epu1=new EpUser();
+		EpUser epu2=new EpUser();
+		EpUser epu3=new EpUser();
+		EpUser epu4=new EpUser();
+		epu1.setId(100);
+		epu2.setId(200);
+		epu3.setId(333);
+		epu4.setId(666);
+		epu1.setName("明明是我");
+		epu2.setName("mmpp");
+		epu3.setName("093jfdfdfd");
+		epu4.setName("pppp0000");
+		epu1.setMobile_phone("1010101111");
+		epu2.setMobile_phone("3333333333");
+		epu3.setMobile_phone("999999999999");
+		epu4.setMobile_phone("88774411fff");
+		epus.add(epu1);
+		epus.add(epu2);
+		epus.add(epu3);
+		epus.add(epu4);
+		int ret=-1;
+		try {
+			ret = epUserDao.batchInsertEpUsersQCOA(epus);
+		} catch (Exception e) {
+			logger.error("插入用户数据出现异常：error_info = "+e.getMessage());
+			e.printStackTrace();
+		}
+		if(ret>0){
+			logger.info("批量插入用户数据成功，ret = "+ret);
+		}else{
+			logger.error("未插入用户数据！ret = "+ret);
+		}
+	}
+	
+	
+	
+	@Test
+	public void testGetEpUserByCriteriaQCOA(){
+		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_SQLSERVER);
+		List<EpUser> qc_users=null;
+		try {
+			qc_users = epUserDao.queryEpUserByCriteriaQCOA(null);
+		} catch (Exception e) {
+			logger.error("查询异常：+ error_info = "+e.getMessage());
+		}
+		if(qc_users!=null&&qc_users.size()>0){
+			int count=qc_users.size();
+			logger.info("qc_users.size() = "+count);
+			for(int i=0;i<10&&i<count;i++){
+				System.out.println(qc_users.get(i));
+			}
+		}else{
+			logger.error("查询失败");
+		}
+	}
 	
 	
 	@Test

@@ -56,6 +56,7 @@ import com.cn.eplat.service.IEpDeptService;
 import com.cn.eplat.service.IEpUserService;
 import com.cn.eplat.service.IPushFilterLogService;
 import com.cn.eplat.service.IPushToHwService;
+import com.cn.eplat.timedtask.FilterPunchCardDatas;
 import com.cn.eplat.timedtask.PushToHwTask;
 import com.cn.eplat.utils.DateUtil;
 import com.cn.eplat.utils.FileUtil;
@@ -102,6 +103,8 @@ public class EpDataController {
 	private PushToHwTask pushToHwTask;
 	@Resource
 	private IMsUserDao msUserDao;
+	@Resource
+	private FilterPunchCardDatas filterPunchCardDatas;
 	
 	
 	@RequestMapping(params = "getData", produces = "application/json; charset=UTF-8")
@@ -262,6 +265,7 @@ public class EpDataController {
 	 * 获取有效的人员信息
 	 * @return
 	 */
+	@Deprecated
 	private TreeMap<Integer, EpUser> getEpusValid(List<EpUser> epus_valid) {
 		
 		EpUser epu_query = new EpUser();
@@ -296,10 +300,53 @@ public class EpDataController {
 		return epus_valid_map;
 	}
 	
+	/**
+	 * 获取有效的人员信息（全程OA系统/QCOA）
+	 * @return
+	 */
+	public TreeMap<Integer, EpUser> getEpusValidQCOA(List<EpUser> epus_valid) {
+		
+		EpUser epu_query = new EpUser();
+		epu_query.setPush2hw_atten(true);
+		
+		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_SQLSERVER);
+		List<EpUser> epus_push2hw = epUserService.getEpUserByCriteriaQCOA(epu_query);	// 1. 首先查出准备推送华为考勤系统的人员信息（QCOA）
+		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_MOP);
+		if(epus_valid == null) {
+			epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
+		}
+		TreeMap<Integer, EpUser> epus_valid_map = new TreeMap<Integer, EpUser>();
+		List<EpUser> epus_invalid = new ArrayList<EpUser>();	// 无效的人员信息数组列表
+		
+		JSONArray invalid_epus_ja = new JSONArray();
+		
+		for(EpUser epu : epus_push2hw) {
+			// 有效的人员信息必须满足id为正整数，工号、姓名、身份证号非空
+			if(epu.getId() != null && epu.getId() > 0 && StringUtils.isNotBlank(epu.getWork_no()) && StringUtils.isNotBlank(epu.getName()) && StringUtils.isNotBlank(epu.getIdentity_no())) {
+//				if(epu.getId() >= 1109 && epu.getId() <= 1111) {
+//					System.out.println("找到测试账号：epu = " + epu);
+//				}
+				epus_valid.add(epu);
+				epus_valid_map.put(epu.getId(), epu);
+			} else {
+				epus_invalid.add(epu);
+			}
+		}
+		
+		if(epus_invalid.size() > 0) {
+			invalid_epus_ja.addAll(epus_invalid);
+		}
+		
+		return epus_valid_map;
+	}
+	
 	public int filterPush2HwAttenOperation(Date start, Date end) {
 		
-		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
-		TreeMap<Integer, EpUser> epus_valid_map = getEpusValid(epus_valid);
+		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
+		if(epus_valid==null||epus_valid.size()==0){
+			filterPunchCardDatas.refreshQcoaUsers();
+		}
+		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		
 		if(epus_valid.size() == 0) {
 			return -3;
@@ -360,10 +407,9 @@ public class EpDataController {
 				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
 				if(part_results != null && part_results.size() > 0) {
 					results_count += part_results.size();
+					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
+					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				}
-				
-				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
-				ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				
 			} while (part_epus != null && part_epus.size() > 0);
 			
@@ -432,8 +478,13 @@ public class EpDataController {
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
-		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
-		TreeMap<Integer, EpUser> epus_valid_map = getEpusValid(epus_valid);
+//		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
+//		TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(epus_valid);
+		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
+		if(epus_valid==null||epus_valid.size()==0){
+			filterPunchCardDatas.refreshQcoaUsers();
+		}
+		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		
 		if(epus_valid.size() == 0) {
 			json_ret.put("ret_code", -3);
@@ -494,10 +545,9 @@ public class EpDataController {
 				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
 				if(part_results != null && part_results.size() > 0) {
 					results_count += part_results.size();
+					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, true);
+					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				}
-				
-				int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, true);
-				ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				
 			} while (part_epus != null && part_epus.size() > 0);
 			
@@ -559,7 +609,12 @@ public class EpDataController {
 			MyListUtil<Date> date_mlu = new MyListUtil<Date>(npe_dates);
 			MyListUtil<Integer> epu_mlu = new MyListUtil<Integer>(npe_epuids);
 			
-			TreeMap<Integer, EpUser> epus_valid_map = getEpusValid(null);
+//			TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(null);
+			List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
+			if(epus_valid==null||epus_valid.size()==0){
+				filterPunchCardDatas.refreshQcoaUsers();
+			}
+			TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 			
 			List<Date> one_date;
 			do {
@@ -578,10 +633,9 @@ public class EpDataController {
 					List<HashMap<String, Object>> part_results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epuids);
 					if(part_results != null && part_results.size() > 0) {
 						results_count += part_results.size();
+						int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
+						ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 					}
-					
-					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, false);
-					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 					
 				} while (part_epuids != null && part_epuids.size() > 0);
 				
@@ -638,13 +692,25 @@ public class EpDataController {
 				epuids.add(ep_uid);
 				pfl.setEp_uid(ep_uid.intValue());
 				
-				if(punch_date_obj instanceof String && first_punch_time_obj instanceof Timestamp && last_punch_time_obj instanceof Timestamp && company_code_obj instanceof String) {
-					Date punch_date = DateUtil.parse2date(1, (String) punch_date_obj);
-					Date first_punch_time = (Timestamp) first_punch_time_obj;
-					Date last_punch_time = (Timestamp) last_punch_time_obj;
-					String company_code = (String) company_code_obj;
-					
-					pfl.setDayof_date(punch_date);
+				Date punch_date = null;
+				Date first_punch_time = null;
+				Date last_punch_time = null;
+				String company_code = null;
+				if(punch_date_obj instanceof String){
+					punch_date = DateUtil.parse2date(1, (String) punch_date_obj);
+				}
+				if(first_punch_time_obj instanceof Timestamp){
+					first_punch_time = (Timestamp) first_punch_time_obj;
+				}
+				if(last_punch_time_obj instanceof Timestamp){
+					last_punch_time = (Timestamp) last_punch_time_obj;
+				}
+				if(company_code_obj instanceof String){
+					company_code = (String) company_code_obj;
+				}
+				pfl.setDayof_date(punch_date);
+				
+				if(punch_date!=null && first_punch_time!=null && last_punch_time!=null && company_code!=null) {
 					
 					EpUser epUser = epus_valid_map.get(ep_uid.intValue());
 					if(epUser != null) {
@@ -674,7 +740,7 @@ public class EpDataController {
 					}
 				} else {
 					pfl.setStatus("filter_error_2");
-					pfl.setDescribe("该用户的考勤数据日期非日期类型，或其它字段类型错误");
+					pfl.setDescribe("该用户的考勤数据日期，或公司编号为Null");
 					filtered_invalid.add(pfl);
 				}
 			} else {
@@ -706,7 +772,7 @@ public class EpDataController {
 		
 		if(pthws.size() == 0) {
 			logger.error("准备推送华为考勤数据条数为0");
-			return -11;
+//			return -11;
 		} else {
 			Integer batch_add_pthws = pushToHwService.batchAddPushToHws(pthws);
 			

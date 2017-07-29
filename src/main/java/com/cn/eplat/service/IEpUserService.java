@@ -30,6 +30,8 @@ public interface IEpUserService {
 	public boolean isMobilePhoneDuplicate(EpUser epu);
 	// 根据除主键id以外其它字段为条件查询员工信息
 	public List<EpUser> getEpUserByCriteria(EpUser epu);
+	// 获取全程OA系统用户信息
+	public List<EpUser> getEpUserByCriteriaQCOA(EpUser epu);
 	// 根据用户id获取用户信息
 	public EpUser getEpUserById(int id);
 	
@@ -59,4 +61,18 @@ public interface IEpUserService {
 	
 	// 在一定条件下批量修改用户信息
 	public int batchModifyEpUsersUnderSomeConditions(List<EpUser> epus);
+	
+	/**
+	 * 清空所有ep_user表中的用户信息
+	 * @return
+	 */
+	int deleteAllEpUsers();
+	
+	/**
+	 * 批量添加用户信息（全程OA系统用户信息）
+	 * @param epus
+	 * @return
+	 */
+	public int batchInsertEpUsersQCOA(List<EpUser> epus);
+	
 }
