@@ -81,8 +81,8 @@ public class FilterPunchCardDatas {
 	}
 	
 	//	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
-//	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
-	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
+	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
+//	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。");
 		
@@ -98,27 +98,27 @@ public class FilterPunchCardDatas {
 		// TODO: 临时代码 (End)
 		*/
 		
-		// 从全程OA系统中获取最新用户信息，并更新到本地MySQL数据库中
-		List<EpUser> epus_valid = refreshQcoaUsers();
+		// 从全程OA系统中获取最新用户信息，并硬更新到本地MySQL数据库中
+		List<EpUser> epus_valid = refreshQcoaUsers(true);
 		if(epus_valid!=null&& epus_valid.size()>0){
-			int del_count = epUserService.deleteAllEpUsers();	// 清空本地MySQL数据库中的全部用户信息
+//			int del_count = epUserService.deleteAllEpUsers();	// 清空本地MySQL数据库中的全部用户信息
 			
-			int part_num = Constants.QCOA_PART_EPU_NUM;
-			MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
-			List<EpUser> part_epus=null;
-			epu_mlu.setCurrentIndex(0);
-			
-			int insert_count=0;
-			boolean flag=false;	// 标志是否还有需要写入本地MySQL数据库中的用户信息数据
-			do {
-				part_epus = epu_mlu.getNextNElements(part_num);
-				flag=part_epus != null && part_epus.size() > 0;
-				if(flag){
-					insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
-				}
-			}while (flag);
-			
-			logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
+//			int part_num = Constants.QCOA_PART_EPU_NUM;
+//			MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
+//			List<EpUser> part_epus=null;
+//			epu_mlu.setCurrentIndex(0);
+//			
+//			int insert_count=0;
+//			boolean flag=false;	// 标志是否还有需要写入本地MySQL数据库中的用户信息数据
+//			do {
+//				part_epus = epu_mlu.getNextNElements(part_num);
+//				flag=part_epus != null && part_epus.size() > 0;
+//				if(flag){
+//					insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
+//				}
+//			}while (flag);
+//			
+//			logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
 		}else{
 			logger.error("全程OA系统用户信息条数为0");
 		}
@@ -192,16 +192,52 @@ public class FilterPunchCardDatas {
 	
 	/**
 	 * 刷新全程OA系统用户信息
+	 * @param hardRefresh 表示是否需要硬刷新（即是否需要把从SQL Server数据库中得到的最新的用户信息写入本地MySQL数据中）
 	 * @return
 	 */
-	public List<EpUser> refreshQcoaUsers(){
+	public List<EpUser> refreshQcoaUsers(boolean hardRefresh){
 		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();
-		if(epus_valid==null||epus_valid.size()==0){
+		boolean softRefresh = epus_valid==null||epus_valid.size()==0;	// 表示是否需要软更新用户信息的标志
+		if(hardRefresh||softRefresh){
 			TreeMap<Integer, EpUser> qc_users = epDataController.getEpusValidQCOA(epus_valid);
 			FilterPunchCardDatas.setEpus_valid(epus_valid);
 			FilterPunchCardDatas.setQc_users(qc_users);
 		}
+		if(hardRefresh){
+			hardRefreshQcoaUsers2LocalMySqlDb(epus_valid);
+		}else{
+//			List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();
+//			if(epus_valid==null||epus_valid.size()==0){
+//				TreeMap<Integer, EpUser> qc_users = epDataController.getEpusValidQCOA(epus_valid);
+//				FilterPunchCardDatas.setEpus_valid(epus_valid);
+//				FilterPunchCardDatas.setQc_users(qc_users);
+//			}
+		}
 		return epus_valid;
+	}
+	
+	/**
+	 * 将全程OA用户信息硬更新写入本地MySQL数据库（写入前先清空本地MySQL数据库中的用户信息）
+	 */
+	private void hardRefreshQcoaUsers2LocalMySqlDb(List<EpUser> epus_valid){
+		// 从全程OA系统中获取最新用户信息，并更新到本地MySQL数据库中
+		int del_count = epUserService.deleteAllEpUsers();	// 清空本地MySQL数据库中的全部用户信息
+		int part_num = Constants.QCOA_PART_EPU_NUM;
+		MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
+		List<EpUser> part_epus=null;
+		epu_mlu.setCurrentIndex(0);
+		
+		int insert_count=0;
+		boolean flag=false;	// 标志是否还有需要写入本地MySQL数据库中的用户信息数据
+		do {
+			part_epus = epu_mlu.getNextNElements(part_num);
+			flag=part_epus != null && part_epus.size() > 0;
+			if(flag){
+				insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
+			}
+		}while (flag);
+		
+		logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
 	}
 	
 	

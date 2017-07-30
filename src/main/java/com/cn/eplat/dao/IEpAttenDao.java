@@ -66,11 +66,25 @@ public interface IEpAttenDao {
 	int updateEpAttenProcResultOfGivenDates(@Param("dates") List<Date> dates);
 	
 	/**
-	 * 修改指定日期、指定用户的所有打卡数据的处理结果字段（proc_result）的值
+	 * 修改指定日期、指定用户的所有打卡数据的处理结果字段（proc_result）的值为指定值（由调用方法时的参数procResult设置）
 	 * @param dates
 	 * @return
 	 */
-	int updateEpAttenProcResultOfGivenDatesAndEpuids(@Param("dates") List<Date> dates, @Param("epuids") List<Long> epuids);
+	int updateEpAttenProcResultOfGivenDatesAndEpuids(@Param("dates") List<Date> dates, @Param("epuids") List<Long> epuids, @Param("procResult") String procResult);
+	
+	/**
+	 * 修改指定日期、指定用户的所有打卡数据的处理结果字段（proc_result）的值为"filter_success"
+	 * @param dates
+	 * @return
+	 */
+	int updateEpAttenProcResultOfGivenDatesAndEpuids2FilterSuccess(@Param("dates") List<Date> dates, @Param("epuids") List<Long> epuids);
+	
+	/**
+	 * 修改指定日期、指定用户的所有打卡数据的处理结果字段（proc_result）的值为"filter_error"
+	 * @param dates
+	 * @return
+	 */
+	int updateEpAttenProcResultOfGivenDatesAndEpuids2FilterError(@Param("dates") List<Date> dates, @Param("epuids") List<Long> epuids);
 	
 	/**
 	 * 获取尚未做筛选处理的打卡数据数量

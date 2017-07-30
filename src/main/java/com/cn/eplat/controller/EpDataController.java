@@ -344,7 +344,7 @@ public class EpDataController {
 		
 		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
 		if(epus_valid==null||epus_valid.size()==0){
-			filterPunchCardDatas.refreshQcoaUsers();
+			filterPunchCardDatas.refreshQcoaUsers(false);
 		}
 		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		
@@ -482,7 +482,7 @@ public class EpDataController {
 //		TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(epus_valid);
 		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
 		if(epus_valid==null||epus_valid.size()==0){
-			filterPunchCardDatas.refreshQcoaUsers();
+			filterPunchCardDatas.refreshQcoaUsers(true);
 		}
 		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		
@@ -612,7 +612,7 @@ public class EpDataController {
 //			TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(null);
 			List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
 			if(epus_valid==null||epus_valid.size()==0){
-				filterPunchCardDatas.refreshQcoaUsers();
+				filterPunchCardDatas.refreshQcoaUsers(true);
 			}
 			TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 			
@@ -682,7 +682,7 @@ public class EpDataController {
 			Object punch_date_obj = result.get("punch_date");
 			Object first_punch_time_obj = result.get("first_punch_time");
 			Object last_punch_time_obj = result.get("last_punch_time");
-			Object company_code_obj = result.get("company_code");
+//			Object company_code_obj = result.get("company_code");
 			
 			PushFilterLog pfl = new PushFilterLog();
 			pfl.setFilter_time(filter_time);
@@ -695,7 +695,7 @@ public class EpDataController {
 				Date punch_date = null;
 				Date first_punch_time = null;
 				Date last_punch_time = null;
-				String company_code = null;
+//				String company_code = null;
 				if(punch_date_obj instanceof String){
 					punch_date = DateUtil.parse2date(1, (String) punch_date_obj);
 				}
@@ -705,12 +705,12 @@ public class EpDataController {
 				if(last_punch_time_obj instanceof Timestamp){
 					last_punch_time = (Timestamp) last_punch_time_obj;
 				}
-				if(company_code_obj instanceof String){
-					company_code = (String) company_code_obj;
-				}
+//				if(company_code_obj instanceof String){
+//					company_code = (String) company_code_obj;
+//				}
 				pfl.setDayof_date(punch_date);
 				
-				if(punch_date!=null && first_punch_time!=null && last_punch_time!=null && company_code!=null) {
+				if(punch_date!=null && first_punch_time!=null && last_punch_time!=null/* && company_code!=null*/) {
 					
 					EpUser epUser = epus_valid_map.get(ep_uid.intValue());
 					if(epUser != null) {
@@ -723,16 +723,26 @@ public class EpDataController {
 						} else {
 							pthw.setOff_duty_time(last_punch_time);
 						}
-						pthw.setName(epUser.getName());
-						pthw.setId_no(epUser.getIdentity_no());
-						// 星期几。。。
-						pthw.setDayof_week(DateUtil.getDayOfWeekByDate(punch_date, 1));
-						pthw.setCompany_code(company_code);
-						pthws.add(pthw);
-						
-						pfl.setStatus("filter_success");
-						pfl.setDescribe("成功筛选出该用户的考勤信息");
-						filtered_valid.add(pfl);
+						String epu_name=epUser.getName();
+						String epu_id_no=epUser.getIdentity_no();
+						String epu_company_code=epUser.getCompany_code();
+						if(StringUtils.isBlank(epu_name)||StringUtils.isBlank(epu_id_no)||StringUtils.isBlank(epu_company_code)){
+							pfl.setStatus("filter_error_4");
+							pfl.setDescribe("用户姓名、身份证号或公司编号为空");
+							filtered_invalid.add(pfl);
+						}else{
+							pthw.setName(epu_name);
+							pthw.setId_no(epu_id_no);
+							// 星期几。。。
+							pthw.setDayof_week(DateUtil.getDayOfWeekByDate(punch_date, 1));
+//						pthw.setCompany_code(company_code);
+							pthw.setCompany_code(epu_company_code);	// 直接从用户信息中得到公司编号
+							pthws.add(pthw);
+							
+							pfl.setStatus("filter_success");
+							pfl.setDescribe("成功筛选出该用户的考勤信息");
+							filtered_valid.add(pfl);
+						}
 					} else {
 						pfl.setStatus("filter_error_1");
 						pfl.setDescribe("根据用户id获取用户信息为null");
@@ -740,7 +750,7 @@ public class EpDataController {
 					}
 				} else {
 					pfl.setStatus("filter_error_2");
-					pfl.setDescribe("该用户的考勤数据日期，或公司编号为Null");
+					pfl.setDescribe("该用户的考勤数据日期或时间为null");
 					filtered_invalid.add(pfl);
 				}
 			} else {
@@ -810,11 +820,33 @@ public class EpDataController {
 			}
 		}
 		
-		// 筛选完后，修改已处理的日期下的所有打卡数据的处理结果字段的值
-		epAttenDao.updateEpAttenProcResultOfGivenDatesAndEpuids(need_dates, epuids);
-		
 		filtered_all.addAll(filtered_invalid);
 		filtered_all.addAll(filtered_valid);
+		
+		// 得到筛选过程中结果正常和出现异常的用户id列表
+		List<Long> epuids_valid = new ArrayList<Long>();
+		List<Long> epuids_invalid = new ArrayList<Long>();
+		
+		for(PushFilterLog pfl:filtered_valid){
+			Integer ep_uid = pfl.getEp_uid();
+			if(ep_uid!=null){
+				epuids_valid.add(ep_uid.longValue());
+			}
+		}
+		for(PushFilterLog pfl:filtered_invalid){
+			Integer ep_uid = pfl.getEp_uid();
+			if(ep_uid!=null){
+				epuids_invalid.add(ep_uid.longValue());
+			}
+		}
+		
+		// 筛选完后，修改已处理的日期下的所有打卡数据的处理结果字段的值
+		if(epuids_valid!=null&&epuids_valid.size()>0){
+			epAttenDao.updateEpAttenProcResultOfGivenDatesAndEpuids(need_dates, epuids_valid, "filter_success");
+		}
+		if(epuids_invalid!=null&&epuids_invalid.size()>0){
+			epAttenDao.updateEpAttenProcResultOfGivenDatesAndEpuids(need_dates, epuids_invalid, "filter_error");
+		}
 		
 		if(filtered_all.size() == 0) {
 			logger.error("筛选日志数据条数为0");

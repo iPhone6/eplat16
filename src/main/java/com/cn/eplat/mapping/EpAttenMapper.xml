@@ -155,11 +155,11 @@
 	
 	
 	<select id="queryFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday" resultType="map" >
-		SELECT ep_uid, DATE_FORMAT(TIME,'%Y-%m-%d') punch_date, MIN(TIME) first_punch_time, MAX(TIME) last_punch_time, 
-			(
+		SELECT ep_uid, DATE_FORMAT(TIME,'%Y-%m-%d') punch_date, MIN(TIME) first_punch_time, MAX(TIME) last_punch_time
+			<!-- ,(
 				select company_code from ep_user
 				where id = ep_uid
-			) company_code
+			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
 			AND TIME IS NOT NULL
@@ -190,11 +190,11 @@
 	</select>
 	
 	<select id="queryFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday2" resultType="map" >
-		SELECT ep_uid, DATE_FORMAT(TIME,'%Y-%m-%d') punch_date, MIN(TIME) first_punch_time, MAX(TIME) last_punch_time, 
-			(
+		SELECT ep_uid, DATE_FORMAT(TIME,'%Y-%m-%d') punch_date, MIN(TIME) first_punch_time, MAX(TIME) last_punch_time
+			<!-- ,(
 				select company_code from ep_user
 				where id = ep_uid
-			) company_code
+			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
 			AND TIME IS NOT NULL
@@ -219,11 +219,11 @@
 	</select>
 	
 	<select id="getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday" resultType="map" >
-		SELECT ep_uid, DATE_FORMAT(TIME,'%Y-%m-%d') punch_date, MIN(TIME) first_punch_time, MAX(TIME) last_punch_time, 
-			(
+		SELECT ep_uid, DATE_FORMAT(TIME,'%Y-%m-%d') punch_date, MIN(TIME) first_punch_time, MAX(TIME) last_punch_time
+			<!-- ,(
 				select company_code from ep_user
 				where id = ep_uid
-			) company_code
+			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
 			AND TIME IS NOT NULL
@@ -362,7 +362,9 @@
 	<update id="updateEpAttenProcResultOfGivenDatesAndEpuids">
 		update ep_attendance
 		<set>
-			proc_result = 'filter_success',
+			<if test="procResult!=null and procResult!=''">
+				proc_result = #{procResult},
+			</if>
 			proc_count = (ifnull(proc_count, 0) + 1),
 			proc_time = now()
 		</set>
@@ -380,6 +382,9 @@
 								#{epuid}
 							</foreach>
 						)
+					</if>
+					<if test="epuids == null or epuids.size() == 0 ">
+						and 1 = 2
 					</if>
 				)
 			</if>
