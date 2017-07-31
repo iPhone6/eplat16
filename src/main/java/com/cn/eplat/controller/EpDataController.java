@@ -314,6 +314,8 @@ public class EpDataController {
 		DataSourceContextHolder.setDbType(DataSourceType.SOURCE_MOP);
 		if(epus_valid == null) {
 			epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
+		}else{	// 如果传入的epus_valid参数不为null，则须先清空其中的全部数据
+			epus_valid.clear();
 		}
 		TreeMap<Integer, EpUser> epus_valid_map = new TreeMap<Integer, EpUser>();
 		List<EpUser> epus_invalid = new ArrayList<EpUser>();	// 无效的人员信息数组列表

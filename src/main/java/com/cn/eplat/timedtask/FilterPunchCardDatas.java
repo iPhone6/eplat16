@@ -14,6 +14,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSON;
 import com.cn.eplat.consts.Constants;
 import com.cn.eplat.controller.EpDataController;
 import com.cn.eplat.model.EpUser;
@@ -81,8 +82,8 @@ public class FilterPunchCardDatas {
 	}
 	
 	//	@Scheduled(cron = "0 0 1 * * ? ")	// "0 0 1 * * ?"  （每天凌晨1点整开始执行）(正式上线时用的定时设置)
-	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
-//	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
+//	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
+	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。");
 		
@@ -222,7 +223,9 @@ public class FilterPunchCardDatas {
 	private void hardRefreshQcoaUsers2LocalMySqlDb(List<EpUser> epus_valid){
 		// 从全程OA系统中获取最新用户信息，并更新到本地MySQL数据库中
 		int del_count = epUserService.deleteAllEpUsers();	// 清空本地MySQL数据库中的全部用户信息
+		logger.info("已删除"+del_count+"条用户信息");
 		int part_num = Constants.QCOA_PART_EPU_NUM;
+//		part_num=1;	// TODO: 临时设置的值，用于调试程序之用
 		MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
 		List<EpUser> part_epus=null;
 		epu_mlu.setCurrentIndex(0);
@@ -233,11 +236,18 @@ public class FilterPunchCardDatas {
 			part_epus = epu_mlu.getNextNElements(part_num);
 			flag=part_epus != null && part_epus.size() > 0;
 			if(flag){
-				insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
+				try {
+					insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
+				} catch (Exception e) {
+//					e.printStackTrace();
+					System.err.println("error_part_epus = "+JSON.toJSONString(part_epus) );
+					logger.error("将用户信息写入MySQL数据库时出现异常，error_info = "+e.getMessage());
+				}
 			}
 		}while (flag);
 		
 		logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
+		
 	}
 	
 	

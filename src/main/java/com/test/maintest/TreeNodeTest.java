@@ -66,6 +66,19 @@ public class TreeNodeTest {
 	}
 	
 	
+	public void genStr(String strin){
+		if(strin==null){
+			strin="test2017";
+		}
+	}
+	
+	public static void main(String[] args) {
+		TreeNodeTest tnt=new TreeNodeTest();
+		String str=null;
+		tnt.genStr(str);
+		System.out.println("str_gen = "+str);
+		
+	}
 	
 	
 }
