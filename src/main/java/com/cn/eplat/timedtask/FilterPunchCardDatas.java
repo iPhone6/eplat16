@@ -121,7 +121,13 @@ public class FilterPunchCardDatas {
 //			
 //			logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
 		}else{
-			logger.error("全程OA系统用户信息条数为0");
+			try {
+				throw new Exception("全程OA系统用户信息条数为0");
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("全程OA系统用户信息条数为0");
+				return;
+			}
 		}
 		
 		// // 1. 正常情况下筛选打卡数据（正常情况下，只筛选前一天的打卡数据）

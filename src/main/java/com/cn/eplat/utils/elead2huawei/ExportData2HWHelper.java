@@ -242,9 +242,9 @@ public class ExportData2HWHelper {
 	public boolean insert2HW(ArrayList<Map<String, String>> lists,String token){
 		
 		// TODO: 临时代码
-//		if(lists != null) {
-//			return true;
-//		}
+		if(lists != null) {
+			return true;
+		}
 		// TODO: 临时代码
 		
 		String body = combinBody(lists);
