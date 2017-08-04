@@ -538,7 +538,7 @@
 				#{item.email}, #{item.base_place}, #{item.work_place}, #{item.notes}, #{item.dept_name}, #{item.project_name}, #{item.origin_pwd}, #{item.identity_no}, 
 				#{item.ver_code}, #{item.vercode_time}, 
 				#{item.max_device_num}, #{item.max_bind_times}, 
-				#{item.bind_times_count}, #{item.bind_start_time}, #{item.bind_limit_time}, #{item.mach_userid}, #{item.type}, #{item.push2hw_atten}, #{item.company_code}
+				#{item.bind_times_count}, #{item.bind_start_time}, #{item.bind_limit_time}, #{item.mach_userid}, #{item.type}, 1, #{item.company_code}
 	</sql>
 	
 	<insert id="batchInsertEpUsers" parameterType="com.cn.eplat.model.EpUser" >
