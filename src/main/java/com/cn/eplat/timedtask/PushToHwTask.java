@@ -50,6 +50,7 @@ public class PushToHwTask {
 	private List<PushToHw> pths;
 	
 	public static String real_push="0";	// 表示是否开启真推送HW考勤数据（1表示开启真推送，0表示开启假推送）
+										// TODO: 后面会用properties配置文件的方式来设置这个参数
 	
 	//将epuid-work_no缓存起来   key-epuid  value-work_no  
 	private static Map<String,String>  workNumMap = new HashMap<String, String>();
@@ -124,7 +125,12 @@ public class PushToHwTask {
 		*/
 		
 		if (allNeedsDatas != null && !allNeedsDatas.isEmpty()) {
+			// 计时获取用于推送HW考勤数据的token操作所花费的时间
+			long getToken_start_time = System.currentTimeMillis();
 			String token = GetTokenHelper.getToken();
+			long getToken_end_time = System.currentTimeMillis();
+			logger.info("本次获取用于推送HW考勤数据的token耗时："+DateUtil.timeMills2ReadableStr(getToken_end_time - getToken_start_time));
+			
 			ArrayList<Map<String, String>> lists = new ArrayList<>();
 //			int count = 0;
 			for (PushToHw pushToHw : allNeedsDatas) {

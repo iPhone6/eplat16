@@ -452,7 +452,7 @@ public class EpDataController {
 	 */
 	@RequestMapping(params = "reFilterPush2HwAttens", produces = "application/json; charset=UTF-8")
 	@ResponseBody
-	public String reFilterPush2HwAttenOperation(HttpServletRequest request) {
+	public synchronized String reFilterPush2HwAttenOperation(HttpServletRequest request) {
 		long start_tms = System.currentTimeMillis();	// 记录重新筛选操作开始时间毫秒数
 		JSONObject json_ret = new JSONObject();
 		
@@ -549,7 +549,12 @@ public class EpDataController {
 				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
 				if(part_results != null && part_results.size() > 0) {
 					results_count += part_results.size();
+					// 计时重筛并重推操作花费的时间
+					long push_start_time = System.currentTimeMillis();
 					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, true);
+					long push_end_time = System.currentTimeMillis();
+					logger.info("本次重筛并重推操作耗时："+DateUtil.timeMills2ReadableStr(push_end_time - push_start_time));
+					
 					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				}
 				
