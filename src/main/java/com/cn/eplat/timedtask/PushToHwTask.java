@@ -49,6 +49,8 @@ public class PushToHwTask {
 	
 	private List<PushToHw> pths;
 	
+	public static String real_push="0";	// 表示是否开启真推送HW考勤数据（1表示开启真推送，0表示开启假推送）
+	
 	//将epuid-work_no缓存起来   key-epuid  value-work_no  
 	private static Map<String,String>  workNumMap = new HashMap<String, String>();
 	
@@ -84,6 +86,13 @@ public class PushToHwTask {
 			allNeedsDatas = getAllNeedsDatas();
 		} else {
 			// 
+		}
+		
+		boolean realPush=true;
+		if("1".equals(real_push)){
+			realPush=true;
+		}else{
+			realPush=false;
 		}
 		
 		/*
@@ -140,8 +149,8 @@ public class PushToHwTask {
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
 					addPushTimes();
 					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
-					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token);
-					dealResult(lists, isSuccess);
+					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
+					dealResult(lists, isSuccess, realPush);
 					lists.clear();
 				}
 				
@@ -166,8 +175,8 @@ public class PushToHwTask {
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
 					addPushTimes();
 					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
-					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token);
-					dealResult(lists, isSuccess);
+					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
+					dealResult(lists, isSuccess, realPush);
 					lists.clear();
 				}
 			}
@@ -175,8 +184,8 @@ public class PushToHwTask {
 			if (!lists.isEmpty()) {
 				addPushTimes();
 				logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
-				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token);
-				dealResult(lists, isSuccess);
+				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
+				dealResult(lists, isSuccess, realPush);
 				lists.clear();
 			}
 		}else{
@@ -247,7 +256,7 @@ public class PushToHwTask {
 	}
 
 	// 处理推送结果
-	public void dealResult(List<Map<String, String>> lists, boolean isSuccess) {
+	public void dealResult(List<Map<String, String>> lists, boolean isSuccess, boolean realPush) {
 		if (lists == null || lists.isEmpty())  return;
 		List<PushLog> result = new ArrayList<PushLog>();
 		if(!isSuccess){
@@ -259,6 +268,7 @@ public class PushToHwTask {
 			log.setPth_id(Long.valueOf(map.get("pth_id")));
 			log.setResult(isSuccess);
 			log.setTime(new Date());
+			log.setReal_push(realPush);
 			String ep_uid = map.get("ep_uid");
 			String workNum = "";
 			if(workNumMap.containsKey(ep_uid) && !TextUtils.isEmpty(workNumMap.get(ep_uid))){

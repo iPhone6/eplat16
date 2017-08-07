@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -57,6 +58,9 @@ public class FilterPunchCardDatas {
 	
 	private static int filter_times = 0;	// 筛选次数
 	
+//	@Value("#{testdata}")
+	public String testdata;
+	
 	public static void addFilterTimes() {	// 筛选次数加1
 		filter_times ++;
 	}
@@ -85,7 +89,7 @@ public class FilterPunchCardDatas {
 	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
 //	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
-		System.out.println("执行定时筛选任务。。。");
+		System.out.println("执行定时筛选任务。。。, testdata = "+testdata);
 		
 		long start_time = System.currentTimeMillis();	// 记录筛选开始时间毫秒数
 		Date now_time = new Date();

@@ -4,10 +4,10 @@
 
 	<insert id="insert2PushLog"  useGeneratedKeys="true"  parameterType="com.cn.eplat.model.PushLog">
 			insert into push_log
-			(work_no,name,result,time,pth_id)
+			(work_no,name,result,time,pth_id,real_push)
 			values
 		<foreach collection="list" item="item" index="index"  separator=","  >
-			(#{item.work_no},#{item.name},#{item.result},#{item.time},#{item.pth_id})
+			(#{item.work_no},#{item.name},#{item.result},#{item.time},#{item.pth_id},#{item.real_push})
 		</foreach> 
 	</insert>
 	

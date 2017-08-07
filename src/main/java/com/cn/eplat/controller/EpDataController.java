@@ -497,12 +497,12 @@ public class EpDataController {
 		}
 		
 		Date now_date_0000 = DateUtil.transToDateIgnoreHHmmss(now_date);	// 将当前系统时间转化成0时0分0秒0毫秒的日期对象，用来和传入的给定开始日期、结束日期进行比较的时间点
-		if(now_date_0000.before(start_date)) {
+		if(now_date_0000.before(start_date)||now_date_0000.equals(start_date)) {
 			start_date = DateUtil.calcXDaysAfterADate(-1, now_date_0000);
 		} else {
 			// 
 		}
-		if(now_date_0000.before(end_date)) {
+		if(now_date_0000.before(end_date)||now_date_0000.equals(end_date)) {
 			end_date = DateUtil.calcXDaysAfterADate(-1, now_date_0000);
 		} else {
 			// 

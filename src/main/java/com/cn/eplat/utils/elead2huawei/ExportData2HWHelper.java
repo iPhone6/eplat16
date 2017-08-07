@@ -239,17 +239,28 @@ public class ExportData2HWHelper {
 	 * @param token 访问令牌
 	 * @return true-成功   false-失败
 	 */
-	public boolean insert2HW(ArrayList<Map<String, String>> lists,String token){
+	public boolean insert2HW(ArrayList<Map<String, String>> lists,String token, boolean realPush){
 		
 		// TODO: 临时代码
-		if(lists != null) {
+//		if(lists != null) {
+//			return true;
+//		}
+		// TODO: 临时代码
+		
+		if(!realPush){	// 如果是假推送，则直接返回true
 			return true;
 		}
-		// TODO: 临时代码
+		
+		// 计时推送HW操作所花费的时间
+		long start_time = System.currentTimeMillis();
 		
 		String body = combinBody(lists);
 		String result = send(token, body);
 		System.out.println(result);
+		
+		long end_time = System.currentTimeMillis();
+		logger.info("本次推送HW花费时间："+DateUtil.timeMills2ReadableStr(end_time - start_time));
+		
 		boolean isSuccess = false;
 		if(result.contains("resultFlag")){
 			String resultFlag = GetTokenHelper.getInnerTextByTag(result, "resultFlag");

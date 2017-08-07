@@ -32,6 +32,13 @@ public class PropertiesResolve {
 	@Value("${mongodb.password}")
 	// password
 	static String mongodbPassword;
+	
+//	@Value("#{constants.solrURL}")
+	private String solrURL;
+	
+	public void setSolrURL(String solrURL){
+		this.solrURL=solrURL;
+	}
 
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
@@ -39,11 +46,13 @@ public class PropertiesResolve {
 	}
 
 //	@Scheduled(cron = "${time1}")
-	public static void test1() {
+	public void test1() {
 		logger.info("1111111111111111111111111");
 		System.out.println("mongodbUrl的值: " + mongodbUrl);
 		System.out.println("mongodbName的值: " + mongodbName);
 		System.out.println("mongodbPassword的值: " + mongodbPassword);
+		
+		System.out.println("solrURL = "+solrURL);
 	}
 
 	// *************************************************************************************
