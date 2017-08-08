@@ -346,11 +346,14 @@ public class EpDataController {
 	
 	public int filterPush2HwAttenOperation(Date start, Date end) {
 		
-		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
-		if(epus_valid==null||epus_valid.size()==0){
-			filterPunchCardDatas.refreshQcoaUsers(false);
-		}
-		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
+//		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
+//		if(epus_valid==null||epus_valid.size()==0){
+//			filterPunchCardDatas.refreshQcoaUsers(false);
+//		}
+//		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
+		
+		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
+		TreeMap<Integer, EpUser> epus_valid_map = getEpusValid(epus_valid);
 		
 		if(epus_valid.size() == 0) {
 			return -3;
@@ -482,13 +485,13 @@ public class EpDataController {
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
-//		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
-//		TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(epus_valid);
-		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
-		if(epus_valid==null||epus_valid.size()==0){
-			filterPunchCardDatas.refreshQcoaUsers(true);
-		}
-		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
+		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
+		TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(epus_valid);
+//		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
+//		if(epus_valid==null||epus_valid.size()==0){
+//			filterPunchCardDatas.refreshQcoaUsers(true);
+//		}
+//		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		
 		if(epus_valid.size() == 0) {
 			json_ret.put("ret_code", -3);
@@ -618,12 +621,12 @@ public class EpDataController {
 			MyListUtil<Date> date_mlu = new MyListUtil<Date>(npe_dates);
 			MyListUtil<Integer> epu_mlu = new MyListUtil<Integer>(npe_epuids);
 			
-//			TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(null);
-			List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
-			if(epus_valid==null||epus_valid.size()==0){
-				filterPunchCardDatas.refreshQcoaUsers(true);
-			}
-			TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
+			TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(null);
+//			List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
+//			if(epus_valid==null||epus_valid.size()==0){
+//				filterPunchCardDatas.refreshQcoaUsers(true);
+//			}
+//			TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 			
 			List<Date> one_date;
 			do {
