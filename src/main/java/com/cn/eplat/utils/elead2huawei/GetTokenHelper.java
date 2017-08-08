@@ -158,7 +158,7 @@ public class GetTokenHelper {
 	 * @return
 	 */
 	private static String getNewToken(){
-		// 计时获取用于推送HW考勤数据的token操作所花费的时间
+		// 计时获取新token所花费的时间
 		long getNewToken_start_time = System.currentTimeMillis();
 		String token = sendSoapRequest(getSOAPTokenRequestBody());
 		long getNewToken_end_time = System.currentTimeMillis();
