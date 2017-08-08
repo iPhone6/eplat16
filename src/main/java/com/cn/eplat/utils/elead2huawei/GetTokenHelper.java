@@ -142,9 +142,13 @@ public class GetTokenHelper {
 		}else{
 //		String token = sendSoapRequest(getSOAPTokenRequestBody());
 //		return getInnerTextByTag(token, "access_token");
+			String old_token="<NULL_OLD_TOKEN>";
+			if(current_token!=null){
+				old_token=new String(current_token);
+			}
 			last_token_time=now;
 			current_token = getNewToken();
-			logger.info("当前token为空或已失效，新获取到的token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time));
+			logger.info("当前token为空或已失效，旧token = "+old_token+", 新获取到的token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time));
 			return current_token;
 		}
 	}
