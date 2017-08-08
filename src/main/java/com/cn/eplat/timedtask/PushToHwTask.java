@@ -128,6 +128,8 @@ public class PushToHwTask {
 			// 计时获取用于推送HW考勤数据的token操作所花费的时间
 			long getToken_start_time = System.currentTimeMillis();
 			String token = GetTokenHelper.getToken();
+			logger.info("本次获取到的token为：token = "+token);
+//			String token="test_token";	// 临时测试假Token
 			long getToken_end_time = System.currentTimeMillis();
 			logger.info("本次获取用于推送HW考勤数据的token耗时："+DateUtil.timeMills2ReadableStr(getToken_end_time - getToken_start_time));
 			

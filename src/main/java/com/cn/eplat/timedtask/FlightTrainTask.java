@@ -8,10 +8,17 @@ import org.springframework.stereotype.Component;
 
 //@Component
 public class FlightTrainTask {
-//	@Value("${constants.solrURL}")
+//	@Value("#{constants['solrURL']}")
 	private String solrURL;
 	
-//	@Value("#{constants}")
+	public String getSolrURL() {
+		return solrURL;
+	}
+	public void setSolrURL(String solrURL) {
+		this.solrURL = solrURL;
+	}
+	
+//	@Value("#{constants[solrURL]}")
 	public void setSurl(Properties prop){
 		this.solrURL=prop.getProperty("solrURL");
 	}
