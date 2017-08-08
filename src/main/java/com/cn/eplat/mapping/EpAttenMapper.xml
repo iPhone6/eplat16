@@ -162,7 +162,9 @@
 			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			AND TIME IS NOT NULL
 			AND TIME &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 			and (
@@ -198,7 +200,9 @@
 			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			AND TIME IS NOT NULL
 			AND TIME &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 			<if test="dates != null and dates.size() > 0 ">
@@ -228,7 +232,9 @@
 			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			AND TIME IS NOT NULL
 			AND TIME &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 			<if test="dates != null and dates.size() > 0 ">

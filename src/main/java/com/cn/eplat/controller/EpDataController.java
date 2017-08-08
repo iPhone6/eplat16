@@ -486,7 +486,7 @@ public class EpDataController {
 		}
 		
 		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
-		TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(epus_valid);
+		TreeMap<Integer, EpUser> epus_valid_map = getEpusValid(epus_valid);
 //		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
 //		if(epus_valid==null||epus_valid.size()==0){
 //			filterPunchCardDatas.refreshQcoaUsers(true);
@@ -621,7 +621,7 @@ public class EpDataController {
 			MyListUtil<Date> date_mlu = new MyListUtil<Date>(npe_dates);
 			MyListUtil<Integer> epu_mlu = new MyListUtil<Integer>(npe_epuids);
 			
-			TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(null);
+			TreeMap<Integer, EpUser> epus_valid_map = getEpusValid(null);
 //			List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
 //			if(epus_valid==null||epus_valid.size()==0){
 //				filterPunchCardDatas.refreshQcoaUsers(true);
