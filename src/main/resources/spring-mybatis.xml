@@ -71,8 +71,9 @@
 			<property name="password" value="elppm"></property>
 		-->
 		<!-- 新阿里云（124.27）服务器数据库连接配置
-		-->
 			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+		-->
+			<property name="url" value="jdbc:mysql://localhost:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
 		<!-- 本地测试环境数据库连接配置
@@ -110,8 +111,9 @@
 			<property name="password" value="elppm"></property>
 		 -->
 		 <!-- 新阿里云（124.27）服务器数据库连接配置
-		 -->
 			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-ms?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+		 -->
+			<property name="url" value="jdbc:mysql://localhost:3306/eplat-ms?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
 		 <!-- 全程OA（98.211）服务器数据库连接配置

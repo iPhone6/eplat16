@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.util.TextUtils;
 import org.apache.log4j.Logger;
 
+import com.cn.eplat.consts.Constants;
 import com.cn.eplat.timedtask.PushToHwTask;
 import com.cn.eplat.utils.DateUtil;
 
@@ -27,7 +28,7 @@ public class GetTokenHelper {
 	
 	private static Date last_token_time = null;	// 上次获取token的时间
 	
-	private static final long token_valid_time = 50*60*1000l;	// 设置token有效时长为50分钟（实际有效期是1小时，设置一个小于1小时的有效期主要是为了防止token在未来不确定的异常情况下提前失效）
+	private static final long token_valid_time = Constants.TOKEN_VALID_TIME;	// 设置token有效时长为50分钟（实际有效期是1小时，设置一个小于1小时的有效期主要是为了防止token在未来不确定的异常情况下提前失效）
 	
 	private static Logger logger = Logger.getLogger(GetTokenHelper.class);
 	
