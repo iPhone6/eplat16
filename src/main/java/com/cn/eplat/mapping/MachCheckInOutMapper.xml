@@ -639,6 +639,12 @@
 		delete from mach_chkio_copy
 	</delete>
 	
-	
+	<update id="appendFailedLabelToRecentMonthInvalidMachCheckInOuts">
+		update mach_checkinout
+		set push_status = concat(push_status,'_failed')
+		where push_status like '%invalid%'
+			and check_time &gt; date_add(sysdate(),interval -31 day)
+			and userid &lt;&gt; 99999990
+	</update>
 	
 </mapper>

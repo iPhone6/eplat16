@@ -135,7 +135,7 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-//	@Scheduled(cron = "${push_punch_card_datas.schedule}")	// 按预先设定的时间间隔执行push方法
+	@Scheduled(cron = "${push_punch_card_datas.schedule}")	// 按预先设定的时间间隔执行push方法
 	public void push() {
 		Date push_start_time = new Date();
 		if(!MyTimeUtil.isTimeRight(push_start_time)){
@@ -303,6 +303,12 @@ public class PushPunchCardDatas {
 					}
 				}
 			}
+		}
+		
+		if(need_search_missed||true){
+			DataSourceContextHolder.setDbType(DataSourceType.SOURCE_ADMIN);
+			int invalid_num = machCheckInOutDao.appendFailedLabelToRecentMonthInvalidMachCheckInOuts();
+			logger.info("已将最近一个月推送无效/工号异常的打卡数据的推送状态后缀标记为“_failed”，总共标记条数为："+invalid_num+" 条");
 		}
 		
 		if(need_search_missed) {
