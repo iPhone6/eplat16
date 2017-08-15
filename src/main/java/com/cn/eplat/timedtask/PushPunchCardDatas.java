@@ -135,7 +135,7 @@ public class PushPunchCardDatas {
 //		return this;
 //	}
 	
-	@Scheduled(cron = "${push_punch_card_datas.schedule}")	// 按预先设定的时间间隔执行push方法
+//	@Scheduled(cron = "${push_punch_card_datas.schedule}")	// 按预先设定的时间间隔执行push方法
 	public void push() {
 		Date push_start_time = new Date();
 		if(!MyTimeUtil.isTimeRight(push_start_time)){
