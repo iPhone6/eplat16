@@ -397,7 +397,7 @@
 		select count(1)
 		from ep_attendance
 		where 
-			proc_count &lt; 20	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
+			(proc_count is null or proc_count &lt; 20)	<!-- 只查出筛选次数为null或小于20次的异常未成功筛选的考勤数据 -->
 			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
 			and (
 				proc_result is null 
@@ -412,7 +412,7 @@
 			select DATE_FORMAT(TIME,'%Y-%m-%d') not_proc_date
 			from ep_attendance
 			where 
-				proc_count &lt; 20	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
+				(proc_count is null or proc_count &lt; 20)	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
 				and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
 				and (
 					proc_result is null 
@@ -427,7 +427,7 @@
 		select DISTINCT( ep_uid)
 		from ep_attendance
 		where 
-			proc_count &lt; 20	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
+			(proc_count is null or proc_count &lt; 20)	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
 			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
 			and (
 				proc_result is null 
