@@ -162,7 +162,9 @@
 			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			AND TIME IS NOT NULL
 			AND TIME &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 			and (
@@ -198,7 +200,9 @@
 			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			AND TIME IS NOT NULL
 			AND TIME &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 			<if test="dates != null and dates.size() > 0 ">
@@ -228,7 +232,9 @@
 			) company_code -->
 		FROM ep_attendance
 		WHERE is_valid = TRUE
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			AND TIME IS NOT NULL
 			AND TIME &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')
 			<if test="dates != null and dates.size() > 0 ">
@@ -398,7 +404,9 @@
 		from ep_attendance
 		where 
 			(proc_count is null or proc_count &lt; 20)	<!-- 只查出筛选次数为null或小于20次的异常未成功筛选的考勤数据 -->
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			and (
 				proc_result is null 
 				or proc_result not like '%filter_success%'
@@ -413,7 +421,9 @@
 			from ep_attendance
 			where 
 				(proc_count is null or proc_count &lt; 20)	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
-				and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+				<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 				and (
 					proc_result is null 
 					or proc_result not like '%filter_success%'
@@ -428,7 +438,9 @@
 		from ep_attendance
 		where 
 			(proc_count is null or proc_count &lt; 20)	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
-			and mach_sn = '-2'	<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 -->
+			<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
+				and mach_sn = '-2'
+			-->
 			and (
 				proc_result is null 
 				or proc_result not like '%filter_success%'

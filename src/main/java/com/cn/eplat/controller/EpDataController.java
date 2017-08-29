@@ -484,10 +484,10 @@ public class EpDataController {
 		
 //		List<EpUser> epus_valid = new ArrayList<EpUser>();	// 有效的人员信息数组列表
 //		TreeMap<Integer, EpUser> epus_valid_map = getEpusValidQCOA(epus_valid);
+		filterPunchCardDatas.refreshQcoaUsers(true);
 		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
-		if(epus_valid==null||epus_valid.size()==0){
-			filterPunchCardDatas.refreshQcoaUsers(true);
-		}
+//		if(epus_valid==null||epus_valid.size()==0){
+//		}
 		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		
 		if(epus_valid.size() == 0) {
