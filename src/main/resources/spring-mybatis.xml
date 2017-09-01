@@ -137,14 +137,14 @@
 	<bean id="ds_access" class="org.apache.commons.dbcp.BasicDataSource" >
         <property name="driverClassName" value="sun.jdbc.odbc.JdbcOdbcDriver" />  
         <!-- 
-        	<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=D:/TempDataDpan/19.test_mdb/att2000.mdb" />
+        	<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=D:/TempDataDpan/19.test_mdb/att2000.mdb" />
          -->
         <!-- 生产环境/打卡机服务器配置 
         -->
-			<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:/Program Files (x86)/ZKTECO/ZKTime5.0/att2000.mdb" />
+			<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=C:/Program Files (x86)/ZKTECO/ZKTime5.0/att2000.mdb" />
         
         <!-- 本地测试环境配置 
-	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=S:\S01\003\att2000.mdb" />
+	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=S:\S01\003\att2000.mdb" />
         -->
         
         <!-- <property name="username" value=""></property>

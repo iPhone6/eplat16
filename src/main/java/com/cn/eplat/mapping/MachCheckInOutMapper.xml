@@ -565,7 +565,7 @@
 	</sql>
 	
 	<sql id="missed_mcios_fields_from_mcc_distinct">
-		distinct(mcc.userid), 
+		mcc.userid, 
 		mcc.badgenumber badge_number,
 		mcc.checktime check_time,
 		mcc.checktype check_type,
@@ -575,6 +575,19 @@
 		mcc.workcode work_code,
 		mcc.sn,
 		mcc.userextfmt user_ext_fmt
+	</sql>
+	
+	<sql id="missed_mcios_fields_mcc_group_by">
+		mcc.userid, 
+		mcc.badgenumber,
+		mcc.checktime,
+		mcc.checktype,
+		mcc.verifycode,
+		mcc.sensorid,
+		mcc.memoinfo,
+		mcc.workcode,
+		mcc.sn,
+		mcc.userextfmt
 	</sql>
 	
 	<select id="queryMissedMachCheckInOutsByCompareAccessAndMySQLDatas" resultType="com.cn.eplat.model.MachCheckInOut" >
@@ -604,7 +617,7 @@
 				AND mcc.`checktime` = mc.`check_time`
 			)
 		)
-		group by mcc.`userid`, mcc.`checktime`
+		group by <include refid="missed_mcios_fields_mcc_group_by"></include>
 	</select>
 	
 	<sql id="insert_mach_chkio_copy_fields">
