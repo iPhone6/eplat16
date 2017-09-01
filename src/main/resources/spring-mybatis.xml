@@ -30,8 +30,8 @@
 		
 		<!-- 本地数据库连接配置 
 				注：参数zeroDateTimeBehavior的可选值: convertToNull, round, exception
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy05?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy06?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy07?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		-->
@@ -140,14 +140,14 @@
 	<bean id="ds_access" class="org.apache.commons.dbcp.BasicDataSource" >
         <property name="driverClassName" value="sun.jdbc.odbc.JdbcOdbcDriver" />  
         <!-- 
-        	<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=D:/TempDataDpan/19.test_mdb/att2000.mdb" />
+        	<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=D:/TempDataDpan/19.test_mdb/att2000.mdb" />
          -->
         <!-- 生产环境/打卡机服务器配置 
         -->
-			<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:/Program Files (x86)/ZKTECO/ZKTime5.0/att2000.mdb" />
+			<property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=C:/Program Files (x86)/ZKTECO/ZKTime5.0/att2000.mdb" />
         
         <!-- 本地测试环境配置 
-	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=S:\S01\003\att2000.mdb" />
+	        <property name="url" value="jdbc:odbc:DRIVER={Microsoft Access Driver (*.mdb)};DBQ=S:\S00\001\att2000.mdb" />
         -->
         
         <!-- <property name="username" value=""></property>
