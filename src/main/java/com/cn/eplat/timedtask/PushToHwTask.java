@@ -27,6 +27,7 @@ import com.cn.eplat.utils.DateUtil;
 import com.cn.eplat.utils.elead2huawei.Constant;
 import com.cn.eplat.utils.elead2huawei.ExportData2HWHelper;
 import com.cn.eplat.utils.elead2huawei.GetTokenHelper;
+import elead.service.client.ServiceClient;
 
 /**
  * 每天定时推送打卡数据
@@ -190,6 +191,8 @@ public class PushToHwTask {
 				}
 			}
 
+			ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
+			
 			if (!lists.isEmpty()) {
 				addPushTimes();
 				logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
