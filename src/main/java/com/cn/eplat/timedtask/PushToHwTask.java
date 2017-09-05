@@ -27,6 +27,7 @@ import com.cn.eplat.utils.DateUtil;
 import com.cn.eplat.utils.elead2huawei.Constant;
 import com.cn.eplat.utils.elead2huawei.ExportData2HWHelper;
 import com.cn.eplat.utils.elead2huawei.GetTokenHelper;
+
 import elead.service.client.ServiceClient;
 
 /**
@@ -190,8 +191,12 @@ public class PushToHwTask {
 					lists.clear();
 				}
 			}
-
-			ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
+			
+			try {
+				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
+			} catch (Exception e) {
+				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
+			}
 			
 			if (!lists.isEmpty()) {
 				addPushTimes();
