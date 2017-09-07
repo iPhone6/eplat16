@@ -128,6 +128,7 @@ public class PushToHwTask {
 		*/
 		
 		if (allNeedsDatas != null && !allNeedsDatas.isEmpty()) {
+			
 			// 计时获取用于推送HW考勤数据的token操作所花费的时间
 			long getToken_start_time = System.currentTimeMillis();
 			String token = GetTokenHelper.getToken();
@@ -192,18 +193,18 @@ public class PushToHwTask {
 				}
 			}
 			
-			try {
-				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
-			} catch (Exception e) {
-				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
-			}
-			
 			if (!lists.isEmpty()) {
 				addPushTimes();
 				logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
 				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
 				dealResult(lists, isSuccess, realPush);
 				lists.clear();
+			}
+			 
+			try {
+				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
+			} catch (Exception e) {
+				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
 			}
 		}else{
 			logger.info("没有更多数据需要推送");

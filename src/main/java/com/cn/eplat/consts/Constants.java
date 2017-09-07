@@ -17,8 +17,8 @@ public class Constants {
 	public static final String REAL_PUSH = "1";	// 表示是否开启真推送HW考勤数据（1表示开启真推送，0表示开启假推送）
 	
 	public static final int FILTER_PART_DATE_NUM = 1;	// 分批筛选考勤数据的每个批次的日期数量（天数）
-	public static final int FILTER_PART_EPU_NUM = 20;	// 分批筛选考勤数据的每个批次的人员数量（人数）
-	public static final int QCOA_PART_EPU_NUM = 50;	// 分批处理全程OA系统的每个批次的人员数量（人数）
+	public static final int FILTER_PART_EPU_NUM = 100;	// 分批筛选考勤数据的每个批次的人员数量（人数）
+	public static final int QCOA_PART_EPU_NUM = 100;	// 分批处理全程OA系统的每个批次的人员数量（人数）
 
 	public static final int MACH_CHKIO_COPY_BATCH_NUM = 100;	// 分批插入打卡机服务器上的mach_chkio_copy表的每个批次数据量条数
 	public static final int PUSH_TO_ALIYUN_MCIOS_NUM = 50;	// 分批推送到阿里云服务器的每个批次数据量条数
