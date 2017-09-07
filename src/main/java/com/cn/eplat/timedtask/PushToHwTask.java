@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.cn.eplat.consts.Constants;
 import com.cn.eplat.dao.IEpUserDao;
 import com.cn.eplat.dao.IPushLogDao;
 import com.cn.eplat.dao.IPushToHwDao;
@@ -51,7 +52,7 @@ public class PushToHwTask {
 	
 	private List<PushToHw> pths;
 	
-	public static String real_push="1";	// 表示是否开启真推送HW考勤数据（1表示开启真推送，0表示开启假推送）
+	public static String real_push=Constants.REAL_PUSH;	// 表示是否开启真推送HW考勤数据（1表示开启真推送，0表示开启假推送）
 										// TODO: 后面会用properties配置文件的方式来设置这个参数
 	
 	//将epuid-work_no缓存起来   key-epuid  value-work_no  
@@ -127,6 +128,7 @@ public class PushToHwTask {
 		*/
 		
 		if (allNeedsDatas != null && !allNeedsDatas.isEmpty()) {
+			
 			// 计时获取用于推送HW考勤数据的token操作所花费的时间
 			long getToken_start_time = System.currentTimeMillis();
 			String token = GetTokenHelper.getToken();
@@ -191,18 +193,18 @@ public class PushToHwTask {
 				}
 			}
 			
-			try {
-				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
-			} catch (Exception e) {
-				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
-			}
-
 			if (!lists.isEmpty()) {
 				addPushTimes();
 				logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
 				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
 				dealResult(lists, isSuccess, realPush);
 				lists.clear();
+			}
+			
+			try {
+				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
+			} catch (Exception e) {
+				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
 			}
 		}else{
 			logger.info("没有更多数据需要推送");
