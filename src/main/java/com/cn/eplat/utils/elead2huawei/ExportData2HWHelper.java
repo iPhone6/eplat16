@@ -262,17 +262,22 @@ public class ExportData2HWHelper {
 		logger.info("本次推送HW花费时间："+DateUtil.timeMills2ReadableStr(end_time - start_time));
 		
 		boolean isSuccess = false;
+		String resultFlag = null;
+		String resultMessage = null;
 		if(result.contains("resultFlag")){
-			String resultFlag = GetTokenHelper.getInnerTextByTag(result, "resultFlag");
-			String resultMessage = GetTokenHelper.getInnerTextByTag(result, "resultMessage");
+			resultFlag = GetTokenHelper.getInnerTextByTag(result, "resultFlag");
+			resultMessage = GetTokenHelper.getInnerTextByTag(result, "resultMessage");
 			resultMessage = StringEscapeUtils.unescapeXml(resultMessage);//unicode内码转换成中文
 			System.out.println(resultFlag);
 			System.out.println(resultMessage);
 			if("S00".equalsIgnoreCase(resultFlag)){
 				isSuccess = true;
 			}else{
-				logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage);
+//				logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage);
 			}
+		}
+		if(!isSuccess){
+			logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage);
 		}
 		return isSuccess;
 	}

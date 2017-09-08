@@ -137,6 +137,16 @@ public class PushToHwTask {
 			long getToken_end_time = System.currentTimeMillis();
 			logger.info("本次获取用于推送HW考勤数据的token耗时："+DateUtil.timeMills2ReadableStr(getToken_end_time - getToken_start_time));
 			
+			// 首先推送考勤数据到TimeSheet系统
+			logger.info("开始推送考勤数据到TimeSheet系统-Start-");
+			try {
+				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
+			} catch (Exception e) {
+				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
+			}
+			logger.info("推送考勤数据到TimeSheet系统结束-End-");
+			
+			// 然后推送考勤数据到华为考勤系统
 			ArrayList<Map<String, String>> lists = new ArrayList<>();
 //			int count = 0;
 			for (PushToHw pushToHw : allNeedsDatas) {
@@ -161,7 +171,7 @@ public class PushToHwTask {
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
 					addPushTimes();
 					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
-					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
+					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
 					dealResult(lists, isSuccess, realPush);
 					lists.clear();
 				}
@@ -187,7 +197,7 @@ public class PushToHwTask {
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
 					addPushTimes();
 					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
-					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
+					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
 					dealResult(lists, isSuccess, realPush);
 					lists.clear();
 				}
@@ -196,15 +206,9 @@ public class PushToHwTask {
 			if (!lists.isEmpty()) {
 				addPushTimes();
 				logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
-				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, token, realPush);
+				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
 				dealResult(lists, isSuccess, realPush);
 				lists.clear();
-			}
-			
-			try {
-				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
-			} catch (Exception e) {
-				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
 			}
 		}else{
 			logger.info("没有更多数据需要推送");
