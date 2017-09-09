@@ -422,8 +422,8 @@
 			where 
 				(proc_count is null or proc_count &lt; 100)	<!-- 只查出筛选次数小于20次的异常未成功筛选的考勤数据 -->
 				<!-- 先期只筛选出全程OA系统中移动打卡的考勤数据 
-				and mach_sn = '-2'
-			-->
+					and mach_sn = '-2'
+				-->
 				and (
 					proc_result is null 
 					or proc_result not like '%filter_success%'

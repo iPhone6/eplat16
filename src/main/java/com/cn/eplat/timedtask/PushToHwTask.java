@@ -177,7 +177,7 @@ public class PushToHwTask {
 				}
 
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
-					pushLists(lists,realPush);
+					pushLists(lists,realPush,true);
 //					addPushTimes();
 //					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
 //					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
@@ -208,7 +208,7 @@ public class PushToHwTask {
 				}
 
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
-					pushLists(lists,realPush);
+					pushLists(lists,realPush,true);
 //					addPushTimes();
 //					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
 //					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
@@ -222,7 +222,7 @@ public class PushToHwTask {
 			}
 			
 			if (!lists.isEmpty()) {
-				pushLists(lists,realPush);
+				pushLists(lists,realPush,true);
 //				addPushTimes();
 //				logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
 //				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
@@ -242,7 +242,7 @@ public class PushToHwTask {
 			logger.info("本次批量推送HW过程中推送失败的数据条数为：fail_lists.size() = "+fail_lists.size());
 			if(Constant.COUNTS_PER_REQUEST>1){	// 如果每次推送的数据条数大于1，则需要对推送失败的数据进行一次重推操作（一条条地重推）
 				for(ArrayList<Map<String, String>> lists:fail_lists){
-					pushLists(lists,realPush);
+					pushLists(lists,realPush,false);
 				}
 			}else{
 				logger.info("推送失败的数据已经是一条条推送了，无须再次重新推送！");
@@ -265,8 +265,9 @@ public class PushToHwTask {
 	 * 推送数据列表操作
 	 * @param lists
 	 * @param realPush
+	 * @param addFail	是否需要将推送失败的数据添加到失败列表中去的标志
 	 */
-	private void pushLists(ArrayList<Map<String, String>> lists, boolean realPush){
+	private void pushLists(ArrayList<Map<String, String>> lists, boolean realPush, boolean addFail){
 		if(lists==null||lists.isEmpty()) return;
 		addPushTimes();
 		logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
@@ -274,7 +275,11 @@ public class PushToHwTask {
 		if(isSuccess){
 			dealResult(lists, isSuccess, realPush);
 		}else{
-			dealWithFailedLists(lists);
+			if(addFail){
+				dealWithFailedLists(lists);
+			}else{
+				dealResult(lists, isSuccess, realPush);
+			}
 		}
 		lists.clear();
 	}
