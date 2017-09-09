@@ -446,6 +446,25 @@ public class EpDataController {
 		return ret_num;
 	}
 	
+	/**
+	 * 停止重筛操作
+	 * @return
+	 */
+	@RequestMapping(params = "stopRefilter", produces = "application/json; charset=UTF-8")
+	@ResponseBody
+	public String stopReFilterPush2HwAttenOperation(HttpServletRequest request) {
+		JSONObject json_ret = new JSONObject();
+		if(Constants.STOP_REFILTER_FLAG==false){
+			Constants.STOP_REFILTER_FLAG=true;
+			json_ret.put("ret_code", 1);
+			json_ret.put("ret_message", "已将停止重筛操作标志设为true");
+			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
+		}else{
+			json_ret.put("ret_code", 0);
+			json_ret.put("ret_message", "重筛操作停止标志已为true");
+			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
+		}
+	}
 	
 	/**
 	 * 根据指定开始日期、结束日期，重新筛选从开始日期到结束日期之间的所有打卡数据
@@ -458,6 +477,10 @@ public class EpDataController {
 	public synchronized String reFilterPush2HwAttenOperation(HttpServletRequest request) {
 		long start_tms = System.currentTimeMillis();	// 记录重新筛选操作开始时间毫秒数
 		JSONObject json_ret = new JSONObject();
+		
+		if(Constants.STOP_REFILTER_FLAG){	// 在重筛操作开始前，如果是否停止重筛操作的标志值为true，
+			Constants.STOP_REFILTER_FLAG=false;	// 则首先将该标志变量的值设为false，以防后续重筛过程提前终止。
+		}
 		
 		// 从接收到的请求中获得传入参数
 		String date_range_start = request.getParameter("start");	// 开始日期
@@ -540,6 +563,7 @@ public class EpDataController {
 			epu_mlu.setCurrentIndex(0);
 			List<EpUser> part_epus;
 			do {
+				if(Constants.STOP_REFILTER_FLAG) break;
 				part_epus = epu_mlu.getNextNElements(part_num);
 //				if(part_epus == null || part_epus.size() == 0) {
 //					break;
@@ -562,7 +586,7 @@ public class EpDataController {
 				}
 				
 			} while (part_epus != null && part_epus.size() > 0);
-			
+			if(Constants.STOP_REFILTER_FLAG) break;
 			int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
 			logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
 			
@@ -575,6 +599,14 @@ public class EpDataController {
 //			json_ret.put("ret_message", "重新筛选得到的结果为null异常");
 //			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 //		}
+		long end_tms = System.currentTimeMillis();	// 记录重新筛选操作结束时间毫秒数
+		
+		if(Constants.STOP_REFILTER_FLAG){	// 如果是由于用户主动停止了重筛操作，则返回相应提示信息
+			Constants.STOP_REFILTER_FLAG=false;	// 停止重筛操作后，再将停止重筛操作标志设为false，以防在执行每天定时筛选操作时，该标志导致定时筛选操作停止执行
+			json_ret.put("ret_code", -7);
+			json_ret.put("ret_message", "您已手动停止了重筛操作！proc_ret = " + ret_num + "，重新筛选操作总计耗时：" + DateUtil.timeMills2ReadableStr(end_tms-start_tms));
+			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
+		}
 		
 		if(results_count == 0) {
 			json_ret.put("ret_code", -8);
@@ -584,7 +616,6 @@ public class EpDataController {
 		
 //		int proc_ret = procPush2HWAttenDatas(results, epus_valid_map, need_dates);
 		
-		long end_tms = System.currentTimeMillis();	// 记录重新筛选操作结束时间毫秒数
 		if(ret_num > 0) {
 //			List<PushToHw> pths = pushToHwDao.findNotPushedDatas();
 //			pushToHwTask.setPths(pths);

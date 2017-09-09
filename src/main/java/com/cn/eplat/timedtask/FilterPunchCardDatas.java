@@ -1,23 +1,31 @@
 package com.cn.eplat.timedtask;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.TreeMap;
 
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSON;
+import com.cn.eplat.consts.Constants;
 import com.cn.eplat.controller.EpDataController;
+import com.cn.eplat.model.EpUser;
 import com.cn.eplat.service.IEpAttenService;
 import com.cn.eplat.service.IEpUserService;
 import com.cn.eplat.service.IMachCheckInOutService;
 import com.cn.eplat.service.IPushFilterLogService;
 import com.cn.eplat.service.IPushToHwService;
 import com.cn.eplat.utils.DateUtil;
+import com.cn.eplat.utils.MyListUtil;
 
 /**
  * 每天定时筛选打卡数据
@@ -63,7 +71,11 @@ public class FilterPunchCardDatas {
 	@Scheduled(cron = "${filter_punch_card_datas.schedule}")	// 通过读取配置文件中的参数设置定时任务
 //	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
-		System.out.println("执行定时筛选任务。。。");
+		System.out.println("执行定时筛选任务。。。, testdata = "+testdata);
+		
+		if(!Constants.TIMED_FILTER_FLAG){	// 如果定时筛选标志为false，则将其值设为true，表示正在执行定时筛选操作
+			Constants.TIMED_FILTER_FLAG=true;
+		}
 		
 		long start_time = System.currentTimeMillis();	// 记录筛选开始时间毫秒数
 		Date now_time = new Date();
@@ -132,7 +144,9 @@ public class FilterPunchCardDatas {
 			logger.info("已处理异常情况下的打卡数据，p2hw_abnormal = " + p2hw_abnormal);
 		}
 		
-		
+		if(Constants.TIMED_FILTER_FLAG){	// 定时筛选操作完成后，将其值设为false，表示定时筛选操作已执行完毕
+			Constants.TIMED_FILTER_FLAG=false;
+		}
 		
 		long end_time = System.currentTimeMillis();
 		long use_time = (end_time - start_time);
