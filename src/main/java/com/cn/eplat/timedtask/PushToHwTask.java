@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+//import java.util.TreeMap;
 
 import javax.annotation.Resource;
 
@@ -22,7 +22,7 @@ import com.cn.eplat.consts.Constants;
 import com.cn.eplat.dao.IEpUserDao;
 import com.cn.eplat.dao.IPushLogDao;
 import com.cn.eplat.dao.IPushToHwDao;
-import com.cn.eplat.model.EpUser;
+//import com.cn.eplat.model.EpUser;
 import com.cn.eplat.model.PushLog;
 import com.cn.eplat.model.PushToHw;
 import com.cn.eplat.utils.DateUtil;
@@ -52,8 +52,8 @@ public class PushToHwTask {
 	@Resource
 	private IEpUserDao epUserDao;
 	
-	@Resource
-	private FilterPunchCardDatas filterPunchCardDatas;
+//	@Resource
+//	private FilterPunchCardDatas filterPunchCardDatas;
 	
 	private List<PushToHw> pths;
 	
@@ -93,10 +93,10 @@ public class PushToHwTask {
 		long start_time = System.currentTimeMillis();	// 记录推送开始时间毫秒数
 		logger.info("本次推送到华为,开始时间   "+DateUtil.formatDate(2, new Date()));
 		
-		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
-		if(epus_valid==null||epus_valid.size()==0){
-			filterPunchCardDatas.refreshQcoaUsers(false);
-		}
+//		List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();	// 有效的人员信息数组列表
+//		if(epus_valid==null||epus_valid.size()==0){
+//			filterPunchCardDatas.refreshQcoaUsers(false);
+//		}
 //		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		
 		List<PushToHw> allNeedsDatas = getPths();
@@ -368,7 +368,7 @@ public class PushToHwTask {
 	public void dealResult(List<Map<String, String>> lists, boolean isSuccess, boolean realPush) {
 		if (lists == null || lists.isEmpty())  return;
 		List<PushLog> result = new ArrayList<PushLog>();
-		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
+//		TreeMap<Integer, EpUser> epus_valid_map = FilterPunchCardDatas.getQc_users();
 		if(!isSuccess){
 			logger.error("出现推送HW考勤系统失败的数据！push_hw_failed_lists = "+lists);
 		}
@@ -381,28 +381,28 @@ public class PushToHwTask {
 			log.setReal_push(realPush);
 			String ep_uid = map.get("ep_uid");
 			String workNum = "<UnKownWorkNo>";
-//			if(workNumMap.containsKey(ep_uid) && !TextUtils.isEmpty(workNumMap.get(ep_uid))){
-//				workNum = workNumMap.get(ep_uid);
-//			}else{
-//				workNum = epUserDao.queryWorkNumById(Integer.valueOf(ep_uid));
-//				workNumMap.put(ep_uid, workNum);
-//			}
-			if(epus_valid_map!=null){
-				EpUser epu=null;
-				try {
-					epu = epus_valid_map.get(Integer.parseInt(ep_uid));
-				} catch (NumberFormatException e) {
-					e.printStackTrace();
-					logger.error("转换ep_uid为整数时出现异常，error_info="+e.getLocalizedMessage());
-				}
-				if(epu!=null){
-					workNum=epu.getWork_no();
-				}else{
-					logger.error("根据ep_uid未找到用户信息异常！");
-				}
+			if(workNumMap.containsKey(ep_uid) && !TextUtils.isEmpty(workNumMap.get(ep_uid))){
+				workNum = workNumMap.get(ep_uid);
 			}else{
-				logger.error("出现epus_valid_map=null异常");
+				workNum = epUserDao.queryWorkNumById(Integer.valueOf(ep_uid));
+				workNumMap.put(ep_uid, workNum);
 			}
+//			if(epus_valid_map!=null){
+//				EpUser epu=null;
+//				try {
+//					epu = epus_valid_map.get(Integer.parseInt(ep_uid));
+//				} catch (NumberFormatException e) {
+//					e.printStackTrace();
+//					logger.error("转换ep_uid为整数时出现异常，error_info="+e.getLocalizedMessage());
+//				}
+//				if(epu!=null){
+//					workNum=epu.getWork_no();
+//				}else{
+//					logger.error("根据ep_uid未找到用户信息异常！");
+//				}
+//			}else{
+//				logger.error("出现epus_valid_map=null异常");
+//			}
 			log.setWork_no(workNum);
 			result.add(log);
 		}
