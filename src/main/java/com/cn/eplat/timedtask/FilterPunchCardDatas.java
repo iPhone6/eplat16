@@ -91,6 +91,10 @@ public class FilterPunchCardDatas {
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。, testdata = "+testdata);
 		
+		if(!Constants.TIMED_FILTER_FLAG){	// 如果定时筛选标志为false，则将其值设为true，表示正在执行定时筛选操作
+			Constants.TIMED_FILTER_FLAG=true;
+		}
+		
 		long start_time = System.currentTimeMillis();	// 记录筛选开始时间毫秒数
 		Date now_time = new Date();
 		FilterPunchCardDatas.addFilterTimes();
@@ -189,7 +193,9 @@ public class FilterPunchCardDatas {
 			logger.info("已处理异常情况下的打卡数据，p2hw_abnormal = " + p2hw_abnormal);
 		}
 		
-		
+		if(Constants.TIMED_FILTER_FLAG){	// 定时筛选操作完成后，将其值设为false，表示定时筛选操作已执行完毕
+			Constants.TIMED_FILTER_FLAG=false;
+		}
 		
 		long end_time = System.currentTimeMillis();
 		long use_time = (end_time - start_time);

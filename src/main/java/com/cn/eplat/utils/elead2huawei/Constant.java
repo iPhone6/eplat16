@@ -17,5 +17,5 @@ public class Constant {
 	//用于将考勤数据推送到华为方的供应商编码
 	public static final String COMPANY_CODE = "C29970";
 	//每次推送条数
-	public static final int COUNTS_PER_REQUEST = 1;
+	public static final int COUNTS_PER_REQUEST = 20;
 }
