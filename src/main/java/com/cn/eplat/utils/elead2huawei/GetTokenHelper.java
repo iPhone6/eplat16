@@ -149,7 +149,7 @@ public class GetTokenHelper {
 	public static String getToken() {
 		Date now=new Date();
 		if(last_token_time==null){	// 当上次获取token的时间为null时，表示是第一次获取token，需要获取新token
-			last_token_time=now;
+//			last_token_time=now;
 			current_token = getNewToken();
 			logger.info("当前是初次获取token，获取到的新token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time)+
 					", token有效时长：["+DateUtil.timeMills2ReadableStr(token_valid_time)+"]"+"token过期时间："+DateUtil.formatDate(2, token_expire_time));
@@ -164,7 +164,7 @@ public class GetTokenHelper {
 			if(current_token!=null){
 				old_token=new String(current_token);
 			}
-			last_token_time=now;
+//			last_token_time=now;
 			current_token = getNewToken();
 			logger.info("当前token为空或已失效，旧token = "+old_token+", 新获取到的token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time)+
 					", token有效时长：["+DateUtil.timeMills2ReadableStr(token_valid_time)+"]"+"token过期时间："+DateUtil.formatDate(2, token_expire_time));
@@ -177,6 +177,7 @@ public class GetTokenHelper {
 	 * @return
 	 */
 	public static String getNewToken(){
+		setLast_token_time(new Date());
 		// 计时获取新token所花费的时间
 		long getNewToken_start_time = System.currentTimeMillis();
 		String token = sendSoapRequest(getSOAPTokenRequestBody());
