@@ -75,10 +75,10 @@
 			<property name="password" value="elppm"></property>
 		-->
 		<!-- 新阿里云（124.27）服务器数据库连接配置
-			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+			<property name="url" value="jdbc:mysql://localhost:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
 				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 		-->
-			<property name="url" value="jdbc:mysql://localhost:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
 				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
@@ -124,10 +124,10 @@
 			<property name="password" value="elppm"></property>
 		 -->
 		 <!-- 新阿里云（124.27）服务器数据库连接配置
-			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-ms?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+			<property name="url" value="jdbc:mysql://localhost:3306/eplat-ms?useUnicode=true&amp;characterEncoding=UTF-8&amp;
 				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 		 -->
-			<property name="url" value="jdbc:mysql://localhost:3306/eplat-ms?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-ms?useUnicode=true&amp;characterEncoding=UTF-8&amp;
 				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>

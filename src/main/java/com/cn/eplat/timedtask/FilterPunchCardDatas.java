@@ -1,31 +1,31 @@
 package com.cn.eplat.timedtask;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.TreeMap;
+//import java.util.List;
+//import java.util.TreeMap;
 
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSON;
+//import com.alibaba.fastjson.JSON;
 import com.cn.eplat.consts.Constants;
 import com.cn.eplat.controller.EpDataController;
-import com.cn.eplat.model.EpUser;
+//import com.cn.eplat.model.EpUser;
 import com.cn.eplat.service.IEpAttenService;
 import com.cn.eplat.service.IEpUserService;
 import com.cn.eplat.service.IMachCheckInOutService;
 import com.cn.eplat.service.IPushFilterLogService;
 import com.cn.eplat.service.IPushToHwService;
 import com.cn.eplat.utils.DateUtil;
-import com.cn.eplat.utils.MyListUtil;
+//import com.cn.eplat.utils.MyListUtil;
 
 /**
  * 每天定时筛选打卡数据
@@ -53,6 +53,9 @@ public class FilterPunchCardDatas {
 	private EpDataController epDataController;
 	
 	private static int filter_times = 0;	// 筛选次数
+	
+//	@Value("#{testdata}")
+	public String testdata;
 	
 	public static void addFilterTimes() {	// 筛选次数加1
 		filter_times ++;
