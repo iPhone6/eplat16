@@ -28,6 +28,8 @@ public class GetTokenHelper {
 	
 	private static Date last_token_time = null;	// 上次获取token的时间
 	
+	private static Date token_expire_time = null;	// token失效时间
+	
 	private static long token_valid_time = Constants.TOKEN_VALID_TIME;	// 设置token有效时长为50分钟（实际有效期是1小时，设置一个小于1小时的有效期主要是为了防止token在未来不确定的异常情况下提前失效）
 	
 	private static Logger logger = Logger.getLogger(GetTokenHelper.class);
@@ -44,6 +46,12 @@ public class GetTokenHelper {
 	public static void setLast_token_time(Date last_token_time) {
 		GetTokenHelper.last_token_time = last_token_time;
 	}
+	public static Date getToken_expire_time() {
+		return token_expire_time;
+	}
+	public static void setToken_expire_time(Date token_expire_time) {
+		GetTokenHelper.token_expire_time = token_expire_time;
+	}
 	public static long getTokenValidTime() {
 		return token_valid_time;
 	}
@@ -53,6 +61,11 @@ public class GetTokenHelper {
 	}
 	public static void setToken_valid_time(long token_valid_time) {
 		GetTokenHelper.token_valid_time = token_valid_time;
+		if(last_token_time!=null){
+			GetTokenHelper.setToken_expire_time(DateUtil.calcDatePlusGivenTimeMills(last_token_time, token_valid_time));	// 计算得到token失效时间
+		}else{
+			logger.error("Trying to set token_expire_time encountered ===>[ last_token_time=null exception!!! ]<===");
+		}
 	}
 	
 	private static String sendSoapRequest(String requestBody) {
@@ -138,25 +151,23 @@ public class GetTokenHelper {
 		if(last_token_time==null){	// 当上次获取token的时间为null时，表示是第一次获取token，需要获取新token
 			last_token_time=now;
 			current_token = getNewToken();
-			logger.info("当前是初次获取token，获取到的新token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time));
+			logger.info("当前是初次获取token，获取到的新token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time)+
+					", token有效时长：["+DateUtil.timeMills2ReadableStr(token_valid_time)+"]"+"token过期时间："+DateUtil.formatDate(2, token_expire_time));
 			return current_token;
 		}
-		
-		Date token_expire_time= DateUtil.calcDatePlusGivenTimeMills(last_token_time, token_valid_time);	// 计算得到token失效时间
-		
 		if(StringUtils.isNotBlank(current_token)&&now.before(token_expire_time)){	// 如果当前token不为空，且token未失效，则直接返回当前已有token
-			logger.info("当前已有token且未失效，旧token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time));
+			logger.info("当前已有token且未失效，旧token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time)+
+					", token有效时长：["+DateUtil.timeMills2ReadableStr(token_valid_time)+"]"+"token过期时间："+DateUtil.formatDate(2, token_expire_time));
 			return current_token;
 		}else{
-//		String token = sendSoapRequest(getSOAPTokenRequestBody());
-//		return getInnerTextByTag(token, "access_token");
 			String old_token="<NULL_OLD_TOKEN>";
 			if(current_token!=null){
 				old_token=new String(current_token);
 			}
 			last_token_time=now;
 			current_token = getNewToken();
-			logger.info("当前token为空或已失效，旧token = "+old_token+", 新获取到的token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time));
+			logger.info("当前token为空或已失效，旧token = "+old_token+", 新获取到的token = "+current_token+", last_token_time = "+DateUtil.formatDate(2, last_token_time)+
+					", token有效时长：["+DateUtil.timeMills2ReadableStr(token_valid_time)+"]"+"token过期时间："+DateUtil.formatDate(2, token_expire_time));
 			return current_token;
 		}
 	}
@@ -172,13 +183,13 @@ public class GetTokenHelper {
 		long getNewToken_end_time = System.currentTimeMillis();
 		String ret_token= getInnerTextByTag(token, "access_token");
 		String expires_in_str= getInnerTextByTag(token, "expires_in");	// 得到Token失效时间（单位：秒）
-		long expires_in=1000l;
+		long expires_in=60000l;
 		try {
 			expires_in= Long.parseLong(expires_in_str)*1000;	// 转换为毫秒数
-			GetTokenHelper.setToken_valid_time(expires_in);	// 设置Token失效时间
 		} catch (Exception e) {
 			logger.error("转换Token失效时间出现异常,error_info="+e.getMessage());
 		}
+		GetTokenHelper.setToken_valid_time(expires_in);	// 设置Token失效时间
 		logger.info("本次获取新token(getNewToken方法)耗时："+DateUtil.timeMills2ReadableStr(getNewToken_end_time - getNewToken_start_time));
 		return ret_token;
 	}
