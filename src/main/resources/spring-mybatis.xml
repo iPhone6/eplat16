@@ -24,14 +24,16 @@
 		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
 		<!-- 打卡机的服务器数据库连接配置
 		 -->
-			<property name="url" value="jdbc:mysql://localhost:3306/eplat-uat?allowMultiQueries=true"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplat-uat?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="elead2017"></property>
 		
 		<!-- 本地数据库连接配置 
 				注：参数zeroDateTimeBehavior的可选值: convertToNull, round, exception
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy05?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy06?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatuat_copy05?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatpro_copy06?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		-->
@@ -47,7 +49,7 @@
 	<bean id="ds_partner" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
 		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
 		<property name="url"
-			value="jdbc:mysql://192.168.1.225:3306/eplat-uat?allowMultiQueries=true"></property>
+			value="jdbc:mysql://192.168.1.225:3306/eplat-uat?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true"></property>
 		<property name="username" value="zpxtdba"></property>
 		<property name="password" value="666666"></property>
 		<property name="validationQuery" value="SELECT 1" />
@@ -61,23 +63,28 @@
 	<bean id="ds_mop" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
 		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
 		<!-- 旧阿里云（190）服务器数据库连接配置
-			<property name="url" value="jdbc:mysql://120.77.50.190:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://120.77.50.190:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="@Elead2015"></property> 
 		-->
 		<!-- 新阿里云（90.77）服务器数据库连接配置
-			<property name="url" value="jdbc:mysql://39.108.90.77:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://39.108.90.77:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
 		-->
 		<!-- 新阿里云（124.27）服务器数据库连接配置
-			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
 		-->
 		<!-- 本地测试环境数据库连接配置
-			<property name="url" value="jdbc:mysql://202.105.98.211:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
-			<property name="url" value="jdbc:mysql://localhost:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://202.105.98.211:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		-->
@@ -101,29 +108,34 @@
 	<bean id="ds_ms" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" >
 		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
 		<!-- 旧阿里云（190）服务器上的微服务数据库
-			<property name="url" value="jdbc:mysql://120.77.50.190:3306/eplat-ms?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://120.77.50.190:3306/eplat-ms?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="@Elead2015"></property>
 		 -->
 		 <!-- 新阿里云（90.77）服务器数据库连接配置
-			<property name="url" value="jdbc:mysql://39.108.90.77:3306/eplat-pro?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://39.108.90.77:3306/eplat-pro?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
 		 -->
 		 <!-- 新阿里云（124.27）服务器数据库连接配置
-			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-ms?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://119.23.124.27:3306/eplat-ms?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
 		 -->
 		 <!-- 全程OA（98.211）服务器数据库连接配置
 		 -->
-			<property name="url" value="jdbc:mysql://202.105.98.211:3306/eplat-ms?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://202.105.98.211:3306/eplat-ms?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="elppm_user"></property>
 			<property name="password" value="elppm"></property>
 		
 		
 		<!-- 本地上的微服务数据库
-			<property name="url" value="jdbc:mysql://localhost:3306/eplatms_copy19?allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
+			<property name="url" value="jdbc:mysql://localhost:3306/eplatms_copy19?useUnicode=true&amp;characterEncoding=UTF-8&amp;
+				allowMultiQueries=true&amp;zeroDateTimeBehavior=convertToNull"></property>
 			<property name="username" value="root"></property>
 			<property name="password" value="111111"></property>
 		 -->

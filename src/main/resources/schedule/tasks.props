@@ -5,7 +5,7 @@ push_punch_card_datas.schedule=50/60 * * * * ?
 filter_punch_card_datas.schedule=0 15 1 * * ? 
 # 阿里云服务器上推送筛选后的考勤数据到华为考勤系统的定时任务配置
 # push_to_hw_task.schedule=0 30 1 * * ? 
-push_to_hw_task.schedule=0 15 2 * * ? 
+push_to_hw_task.schedule=0 30 2 * * ? 
 
 ##下面仅为测试用定时配置，无须修改，无视即可
 ##tasks.schedule=50/60 * * * * ? 
