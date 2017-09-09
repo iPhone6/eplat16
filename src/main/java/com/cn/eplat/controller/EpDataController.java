@@ -596,11 +596,12 @@ public class EpDataController {
 //			json_ret.put("ret_message", "重新筛选得到的结果为null异常");
 //			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 //		}
+		long end_tms = System.currentTimeMillis();	// 记录重新筛选操作结束时间毫秒数
 		
 		if(Constants.STOP_REFILTER_FLAG){	// 如果是由于用户主动停止了重筛操作，则返回相应提示信息
 			Constants.STOP_REFILTER_FLAG=false;	// 停止重筛操作后，再将停止重筛操作标志设为false，以防在执行每天定时筛选操作时，该标志导致定时筛选操作停止执行
 			json_ret.put("ret_code", -7);
-			json_ret.put("ret_message", "您已手动停止了重筛操作！");
+			json_ret.put("ret_message", "您已手动停止了重筛操作！proc_ret = " + ret_num + "，重新筛选操作总计耗时：" + DateUtil.timeMills2ReadableStr(end_tms-start_tms));
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
@@ -612,7 +613,6 @@ public class EpDataController {
 		
 //		int proc_ret = procPush2HWAttenDatas(results, epus_valid_map, need_dates);
 		
-		long end_tms = System.currentTimeMillis();	// 记录重新筛选操作结束时间毫秒数
 		if(ret_num > 0) {
 //			List<PushToHw> pths = pushToHwDao.findNotPushedDatas();
 //			pushToHwTask.setPths(pths);
