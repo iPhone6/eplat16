@@ -25,6 +25,8 @@ public class Constants {
 	
 	public static final long TOKEN_VALID_TIME = 50*60*1000l;	// 设置token有效时长为50分钟（实际有效期是1小时，设置一个小于1小时的有效期主要是为了防止token在未来不确定的异常情况下提前失效）
 	
+	public static final int RETRY_PUSH_TO_HW_TIMES = 2;	// 重试推送到HW考勤系统次数
+	
 	private static boolean busy_finding_missing_not_uploaded_punch_card_datas = false;
 
 	public static boolean isBusy_finding_missing_not_uploaded_punch_card_datas() {

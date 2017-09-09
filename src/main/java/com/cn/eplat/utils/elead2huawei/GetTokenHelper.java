@@ -28,7 +28,7 @@ public class GetTokenHelper {
 	
 	private static Date last_token_time = null;	// 上次获取token的时间
 	
-	private static final long token_valid_time = Constants.TOKEN_VALID_TIME;	// 设置token有效时长为50分钟（实际有效期是1小时，设置一个小于1小时的有效期主要是为了防止token在未来不确定的异常情况下提前失效）
+	private static long token_valid_time = Constants.TOKEN_VALID_TIME;	// 设置token有效时长为50分钟（实际有效期是1小时，设置一个小于1小时的有效期主要是为了防止token在未来不确定的异常情况下提前失效）
 	
 	private static Logger logger = Logger.getLogger(GetTokenHelper.class);
 	
@@ -46,6 +46,13 @@ public class GetTokenHelper {
 	}
 	public static long getTokenValidTime() {
 		return token_valid_time;
+	}
+	
+	public static long getToken_valid_time() {
+		return token_valid_time;
+	}
+	public static void setToken_valid_time(long token_valid_time) {
+		GetTokenHelper.token_valid_time = token_valid_time;
 	}
 	
 	private static String sendSoapRequest(String requestBody) {
@@ -158,12 +165,20 @@ public class GetTokenHelper {
 	 * 获取新Token的操作
 	 * @return
 	 */
-	private static String getNewToken(){
+	public static String getNewToken(){
 		// 计时获取新token所花费的时间
 		long getNewToken_start_time = System.currentTimeMillis();
 		String token = sendSoapRequest(getSOAPTokenRequestBody());
 		long getNewToken_end_time = System.currentTimeMillis();
 		String ret_token= getInnerTextByTag(token, "access_token");
+		String expires_in_str= getInnerTextByTag(token, "expires_in");	// 得到Token失效时间（单位：秒）
+		long expires_in=1000l;
+		try {
+			expires_in= Long.parseLong(expires_in_str)*1000;	// 转换为毫秒数
+			GetTokenHelper.setToken_valid_time(expires_in);	// 设置Token失效时间
+		} catch (Exception e) {
+			logger.error("转换Token失效时间出现异常,error_info="+e.getMessage());
+		}
 		logger.info("本次获取新token(getNewToken方法)耗时："+DateUtil.timeMills2ReadableStr(getNewToken_end_time - getNewToken_start_time));
 		return ret_token;
 	}
