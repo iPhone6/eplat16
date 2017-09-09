@@ -35,6 +35,7 @@ import org.apache.poi.sl.draw.DrawNotImplemented;
 import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
+import com.cn.eplat.consts.Constants;
 import com.cn.eplat.model.PushLog;
 import com.cn.eplat.model.PushToHw;
 import com.cn.eplat.timedtask.PushToHwTask;
@@ -256,7 +257,7 @@ public class ExportData2HWHelper {
 		
 		String body = combinBody(lists);
 		String result = send(token, body);
-		System.out.println(result);
+		logger.info("RequestResult = "+result);
 		
 		long end_time = System.currentTimeMillis();
 		logger.info("本次推送HW花费时间："+DateUtil.timeMills2ReadableStr(end_time - start_time));
@@ -268,16 +269,24 @@ public class ExportData2HWHelper {
 			resultFlag = GetTokenHelper.getInnerTextByTag(result, "resultFlag");
 			resultMessage = GetTokenHelper.getInnerTextByTag(result, "resultMessage");
 			resultMessage = StringEscapeUtils.unescapeXml(resultMessage);//unicode内码转换成中文
-			System.out.println(resultFlag);
-			System.out.println(resultMessage);
+			logger.info("resultFlag = "+resultFlag+", resultMessage = "+resultMessage);
 			if("S00".equalsIgnoreCase(resultFlag)){
 				isSuccess = true;
 			}else{
-//				logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage);
 			}
+		}else{	// 处理异常情况
+			// 如果返回Token失效信息，则重新获取新Token并重推数据
+			int repush_count=0;
+			do {
+				repush_count++;
+				isSuccess= insert2HW(lists, GetTokenHelper.getNewToken(), realPush);
+				logger.info("这是第【"+repush_count+"】次尝试重推数据，重推结果：isSuccess = "+isSuccess);
+			} while (!isSuccess|| repush_count<Constants.RETRY_PUSH_TO_HW_TIMES);
+//			if(result.contains("<ams:code>900901</ams:code>")||result.contains("<ams:message>Invalid Credentials</ams:message>")){
+//			}
 		}
 		if(!isSuccess){
-			logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage);
+			logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage+"result = "+result);
 		}
 		return isSuccess;
 	}
