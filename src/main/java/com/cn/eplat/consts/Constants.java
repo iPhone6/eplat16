@@ -27,9 +27,7 @@ public class Constants {
 	
 	public static final int RETRY_PUSH_TO_HW_TIMES = 2;	// 重试推送到HW考勤系统次数
 	
-	public static boolean STOP_REFILTER_FLAG = false;	// 停止重筛操作的标志（初值为false，表示不停止重筛操作，若其值被设为true，则立即停止重筛操作）
-	
-	public static boolean TIMED_FILTER_FLAG = false;	// 是否正在进行定时筛选操作（初值为false，表示没有正在进行定时筛选操作）
+	public static boolean STOP_FILTER_FLAG = false;	// 停止筛选操作的标志（初值为false，表示不停止筛选操作，若其值被设为true，则立即停止筛选操作）
 	
 	private static boolean busy_finding_missing_not_uploaded_punch_card_datas = false;
 

@@ -75,22 +75,14 @@ public class FilterPunchCardDatas {
 //	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。, testdata = "+testdata);
-		
-		if(!Constants.TIMED_FILTER_FLAG){	// 如果定时筛选标志为false，则将其值设为true，表示正在执行定时筛选操作
-			Constants.TIMED_FILTER_FLAG=true;
-		}
-		
 		long start_time = System.currentTimeMillis();	// 记录筛选开始时间毫秒数
 		Date now_time = new Date();
 		FilterPunchCardDatas.addFilterTimes();
 		logger.info("当前是第（" + FilterPunchCardDatas.getFilter_times() + "）次筛选考勤数据，开始时间：" + DateUtil.formatDate(2, now_time));
 		
-		/*
-		// TODO: 临时代码 (Start)
-		int ret = epDataController.filterPush2HwAttenOperation(null, null);
-		System.out.println("ret = " + ret);
-		// TODO: 临时代码 (End)
-		*/
+		if(Constants.STOP_FILTER_FLAG){	// 在定时筛选操作开始前，如果是否停止筛选操作的标志值为true，
+			Constants.STOP_FILTER_FLAG=false;	// 则首先将该标志变量的值设为false，以防后续定时筛选过程提前终止。
+		}
 		
 		// // 1. 正常情况下筛选打卡数据（正常情况下，只筛选前一天的打卡数据）
 		Date earliest_pfl_time = pushFilterLogService.getEarliestPushFilterLogTime();
@@ -122,12 +114,9 @@ public class FilterPunchCardDatas {
 				}
 			}
 		} else {
-//			Date two_days_ago = DateUtil.calcXDaysAfterADate(-2, now_time);
 			Date yesterday = DateUtil.calcXDaysAfterADate(-1, now_time);
-//			Date tomorrow = DateUtil.calcXDaysAfterADate(1, now_time);	// TODO: 临时测试用代码
 			
 			int new_filter_ret = epDataController.filterPush2HwAttenOperation(yesterday, yesterday);
-//			int new_filter_ret = epDataController.filterPush2HwAttenOperation(tomorrow, tomorrow);
 			
 			if(new_filter_ret > 0) {
 				logger.info("筛选准备推送华为的考勤数据（新数据）成功, new_filter_ret = " + new_filter_ret);
@@ -147,14 +136,15 @@ public class FilterPunchCardDatas {
 			logger.info("已处理异常情况下的打卡数据，p2hw_abnormal = " + p2hw_abnormal);
 		}
 		
-		if(Constants.TIMED_FILTER_FLAG){	// 定时筛选操作完成后，将其值设为false，表示定时筛选操作已执行完毕
-			Constants.TIMED_FILTER_FLAG=false;
+		if(Constants.STOP_FILTER_FLAG){	// 在定时筛选操作结束后，如果是否停止筛选操作的标志值为true，
+			Constants.STOP_FILTER_FLAG=false;	// 则首再次将该标志变量的值设为false，以防后续筛选过程提前终止。
 		}
 		
 		long end_time = System.currentTimeMillis();
 		long use_time = (end_time - start_time);
 		
-		System.out.println("第（" + FilterPunchCardDatas.getFilter_times() + "）次筛选考勤数据，结束时间：" + DateUtil.formatDate(2, new Date()) + "，本次筛选耗时：" + DateUtil.timeMills2ReadableStr(use_time) + " (over)");
+		System.out.println("第（" + FilterPunchCardDatas.getFilter_times() + "）次筛选考勤数据，结束时间：" + DateUtil.formatDate(2, new Date()) + 
+				"，本次筛选耗时：" + DateUtil.timeMills2ReadableStr(use_time) + " (over)");
 		
 		
 	}

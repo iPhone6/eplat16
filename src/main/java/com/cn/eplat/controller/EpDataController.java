@@ -447,15 +447,15 @@ public class EpDataController {
 	}
 	
 	/**
-	 * 停止重筛操作
+	 * 停止筛选操作
 	 * @return
 	 */
-	@RequestMapping(params = "stopRefilter", produces = "application/json; charset=UTF-8")
+	@RequestMapping(params = "stopFilter", produces = "application/json; charset=UTF-8")
 	@ResponseBody
 	public String stopReFilterPush2HwAttenOperation(HttpServletRequest request) {
 		JSONObject json_ret = new JSONObject();
-		if(Constants.STOP_REFILTER_FLAG==false){
-			Constants.STOP_REFILTER_FLAG=true;
+		if(!Constants.STOP_FILTER_FLAG){
+			Constants.STOP_FILTER_FLAG=true;
 			json_ret.put("ret_code", 1);
 			json_ret.put("ret_message", "已将停止重筛操作标志设为true");
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
@@ -478,8 +478,8 @@ public class EpDataController {
 		long start_tms = System.currentTimeMillis();	// 记录重新筛选操作开始时间毫秒数
 		JSONObject json_ret = new JSONObject();
 		
-		if(Constants.STOP_REFILTER_FLAG){	// 在重筛操作开始前，如果是否停止重筛操作的标志值为true，
-			Constants.STOP_REFILTER_FLAG=false;	// 则首先将该标志变量的值设为false，以防后续重筛过程提前终止。
+		if(Constants.STOP_FILTER_FLAG){	// 在重筛操作开始前，如果是否停止筛选操作的标志值为true，
+			Constants.STOP_FILTER_FLAG=false;	// 则首先将该标志变量的值设为false，以防后续重筛过程提前终止。
 		}
 		
 		// 从接收到的请求中获得传入参数
@@ -557,22 +557,11 @@ public class EpDataController {
 		List<Date> one_date;
 		do {
 			one_date = date_mlu.getNextNElements(date_num);
-//			if(one_date == null || one_date.size() == 0) {
-//				break;
-//			}
 			epu_mlu.setCurrentIndex(0);
 			List<EpUser> part_epus;
 			do {
-				if(Constants.STOP_REFILTER_FLAG) break;
+				if(Constants.STOP_FILTER_FLAG) break;
 				part_epus = epu_mlu.getNextNElements(part_num);
-//				if(part_epus == null || part_epus.size() == 0) {
-//					break;
-//				}
-//				for(EpUser epu:part_epus) {
-//					if(Arrays.asList(428, 479, 827, 644).contains(epu.getId())) {
-//						System.out.println("出现可疑目标。。。epu.id = " + epu.getId());
-//					}
-//				}
 				List<HashMap<String, Object>> part_results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epus);
 				if(part_results != null && part_results.size() > 0) {
 					results_count += part_results.size();
@@ -581,28 +570,19 @@ public class EpDataController {
 					int proc_ret = procPush2HWAttenDatas(part_results, epus_valid_map, one_date, true);
 					long push_end_time = System.currentTimeMillis();
 					logger.info("本次重筛并重推操作耗时："+DateUtil.timeMills2ReadableStr(push_end_time - push_start_time));
-					
 					ret_num += proc_ret==-11||proc_ret==-12?0:proc_ret;
 				}
 				
 			} while (part_epus != null && part_epus.size() > 0);
-			if(Constants.STOP_REFILTER_FLAG) break;
+			if(Constants.STOP_FILTER_FLAG) break;
 			int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
 			logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
-			
 		} while (one_date != null && one_date.size() > 0);
 		
-//		List<HashMap<String, Object>> results = epAttenService.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(need_dates, epus_valid);
-		
-//		if(results == null) {
-//			json_ret.put("ret_code", -7);
-//			json_ret.put("ret_message", "重新筛选得到的结果为null异常");
-//			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
-//		}
 		long end_tms = System.currentTimeMillis();	// 记录重新筛选操作结束时间毫秒数
 		
-		if(Constants.STOP_REFILTER_FLAG){	// 如果是由于用户主动停止了重筛操作，则返回相应提示信息
-			Constants.STOP_REFILTER_FLAG=false;	// 停止重筛操作后，再将停止重筛操作标志设为false，以防在执行每天定时筛选操作时，该标志导致定时筛选操作停止执行
+		if(Constants.STOP_FILTER_FLAG){	// 如果是由于用户主动停止了筛选操作，则返回相应提示信息
+			Constants.STOP_FILTER_FLAG=false;	// 停止筛选操作后，再将停止筛选操作标志设为false，以防在执行每天定时筛选操作时，该标志导致定时筛选操作停止执行
 			json_ret.put("ret_code", -7);
 			json_ret.put("ret_message", "您已手动停止了重筛操作！proc_ret = " + ret_num + "，重新筛选操作总计耗时：" + DateUtil.timeMills2ReadableStr(end_tms-start_tms));
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
@@ -614,13 +594,7 @@ public class EpDataController {
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
 		}
 		
-//		int proc_ret = procPush2HWAttenDatas(results, epus_valid_map, need_dates);
-		
 		if(ret_num > 0) {
-//			List<PushToHw> pths = pushToHwDao.findNotPushedDatas();
-//			pushToHwTask.setPths(pths);
-//			pushToHwTask.pushDatasToHw();
-			
 			json_ret.put("ret_code", 1);
 			json_ret.put("ret_message", "重新筛选成功，proc_ret = " + ret_num + "，重新筛选操作总计耗时：" + DateUtil.timeMills2ReadableStr(end_tms-start_tms));
 			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
@@ -662,17 +636,11 @@ public class EpDataController {
 			List<Date> one_date;
 			do {
 				one_date = date_mlu.getNextNElements(date_num);
-//				if(one_date == null || one_date.size() == 0) {
-//					break;
-//				}
 				List<Integer> part_epuids;
 				epu_mlu.setCurrentIndex(0);
 				do {
+					if(Constants.STOP_FILTER_FLAG) break;
 					part_epuids = epu_mlu.getNextNElements(part_num);
-//					if(part_epuids == null || part_epuids.size() == 0) {
-//						break;
-//					}
-					
 					List<HashMap<String, Object>> part_results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(one_date, part_epuids);
 					if(part_results != null && part_results.size() > 0) {
 						results_count += part_results.size();
@@ -681,21 +649,15 @@ public class EpDataController {
 					}
 					
 				} while (part_epuids != null && part_epuids.size() > 0);
-				
+				if(Constants.STOP_FILTER_FLAG) break;
 				int remain_count = epAttenDao.markRemainEpAttensByDates(one_date);
 				logger.info("成功标记剩余未做筛选成功标记的考勤数据条数：remain_count = " + remain_count);
-				
 			} while (one_date != null && one_date.size() > 0);
-			
-//			List<HashMap<String, Object>> results = epAttenDao.getFirstAndLastPunchTimeValidByDatesAndEpUidsBeforeToday(npe_dates, npe_epuids);
-//			ret_num += procPush2HWAttenDatas(results, epus_valid_map, npe_dates);
-			
 		} else {
 			// 当尚未做筛选处理的打卡数据个数为0时，直接返回0
 			logger.info("探测结果A：当尚未做筛选处理的打卡数据个数为0");
-//			return 0;
 		}
-		
+		if(Constants.STOP_FILTER_FLAG) return -7;
 		// 探测是否还有昨天之前已筛选出来在push_to_hw表中，但没有推送华为考勤系统的考勤数据，如果有则再次推送华为考勤系统
 		List<PushToHw> pths = pushToHwDao.findNotPushedDatasByActualConditioin();
 		if(pths != null && pths.size() > 0) {

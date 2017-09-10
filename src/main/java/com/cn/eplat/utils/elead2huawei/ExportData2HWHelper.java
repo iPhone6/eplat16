@@ -241,13 +241,6 @@ public class ExportData2HWHelper {
 	 * @return true-成功   false-失败
 	 */
 	public boolean insert2HW(ArrayList<Map<String, String>> lists,String token, boolean realPush){
-		
-		// TODO: 临时代码
-//		if(lists != null) {
-//			return true;
-//		}
-		// TODO: 临时代码
-		
 		if(!realPush){	// 如果是假推送，则直接返回true
 			return true;
 		}
@@ -282,8 +275,6 @@ public class ExportData2HWHelper {
 				isSuccess= insert2HW(lists, GetTokenHelper.getNewToken(), realPush);
 				logger.info("这是第【"+repush_count+"】次尝试重推数据，重推结果：isSuccess = "+isSuccess);
 			} while (!isSuccess|| repush_count<Constants.RETRY_PUSH_TO_HW_TIMES);
-//			if(result.contains("<ams:code>900901</ams:code>")||result.contains("<ams:message>Invalid Credentials</ams:message>")){
-//			}
 		}
 		if(!isSuccess){
 			logger.error("推送HW考勤系统时出现异常, isSuccess = " + isSuccess + ", resultFlag = " + resultFlag + ", resultMessage = " + resultMessage+"result = "+result);
