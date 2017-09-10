@@ -10,40 +10,19 @@
 <script type="text/javascript" src="<%=path%>/js/jquery-1.7.1.js"></script>
 <script type="text/javascript">
 	function start_refilter(btn){
-		//debugger;
 		btn.disabled=true;
 		btn.value='请稍等片刻...';
-		if($("#stop_refilter_btn").prop("disabled")==true){
-			$("#stop_refilter_btn").attr("disabled",false);
-			$("#stop_refilter_btn").attr("value","停止重筛");
+		if($("#stop_filter_btn").prop("disabled")==true){
+			$("#stop_filter_btn").attr("disabled",false);
+			$("#stop_filter_btn").attr("value","停止筛选");
 		}
 		document.getElementById('label_okrf').style='display:block';
 		document.form_okrf.submit();
 	}
-	function stop_refilter() {
+	function stop_filter() {
 		$.ajax({
 			type : "GET",
-			url : "epDataController.do?stopRefilter",
-			data : {
-				//username : $("#name").val()
-			},
-			statusCode : {
-				404 : function() {
-					alert('page not found');
-				}
-			},
-			success : function(data, textStatus) {
-				debugger;
-				$("#stop_refilter_btn").attr("disabled",true);
-				$("#stop_refilter_btn").attr("value","已停止重筛！");
-				alert(data);
-			}
-		});
-	}
-	function stop_timed_filter() {
-		$.ajax({
-			type : "GET",
-			url : "epDataController.do?stopTimedfilter",
+			url : "epDataController.do?stopFilter",
 			data : {
 			},
 			statusCode : {
@@ -52,10 +31,9 @@
 				}
 			},
 			success : function(data, textStatus) {
-				debugger;
-				$("#stop_timed_filter_btn").attr("disabled",true);
-				$("#stop_timed_filter_btn").attr("value","已停止定时筛选！");
-				alert(data);
+				$("#stop_filter_btn").attr("disabled",true);
+				$("#stop_filter_btn").attr("value","已停止筛选！");
+				alert(data.ret_message);
 			}
 		});
 	}
@@ -80,8 +58,7 @@
 		<p/>
 		<label id="label_okrf" style="display:none" > <font color="red">请稍等片刻，待筛选操作完成后，再刷新本页面~~~</font> </label>
 		<p/>
-		<input id="stop_refilter_btn" type="button" value="停止重筛" onclick="stop_refilter();" />
-		<input id="stop_timed_filter_btn" type="button" value="停止定时筛选" onclick="stop_timed_filter();" style="display:none" />
+		<input id="stop_filter_btn" type="button" value="停止筛选" onclick="stop_filter();" />
 	</form>
 	<hr>
 

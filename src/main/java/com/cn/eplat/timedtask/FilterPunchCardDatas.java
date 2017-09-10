@@ -90,15 +90,14 @@ public class FilterPunchCardDatas {
 //	@Scheduled(cron = "0/5 * * * * ? ")	// （快速测试用定时设置。。。）
 	public void filter() {
 		System.out.println("执行定时筛选任务。。。, testdata = "+testdata);
-		
-		if(!Constants.TIMED_FILTER_FLAG){	// 如果定时筛选标志为false，则将其值设为true，表示正在执行定时筛选操作
-			Constants.TIMED_FILTER_FLAG=true;
-		}
-		
 		long start_time = System.currentTimeMillis();	// 记录筛选开始时间毫秒数
 		Date now_time = new Date();
 		FilterPunchCardDatas.addFilterTimes();
 		logger.info("当前是第（" + FilterPunchCardDatas.getFilter_times() + "）次筛选考勤数据，开始时间：" + DateUtil.formatDate(2, now_time));
+		
+		if(Constants.STOP_FILTER_FLAG){	// 在定时筛选操作开始前，如果是否停止筛选操作的标志值为true，
+			Constants.STOP_FILTER_FLAG=false;	// 则首先将该标志变量的值设为false，以防后续定时筛选过程提前终止。
+		}
 		
 		// 从全程OA系统中获取最新用户信息，并硬更新到本地MySQL数据库中
 		List<EpUser> epus_valid = refreshQcoaUsers(true);
@@ -160,11 +159,8 @@ public class FilterPunchCardDatas {
 			logger.info("已处理异常情况下的打卡数据，p2hw_abnormal = " + p2hw_abnormal);
 		}
 		
-		if(Constants.TIMED_FILTER_FLAG){	// 定时筛选操作完成后，将其值设为false，表示定时筛选操作已执行完毕
-			Constants.TIMED_FILTER_FLAG=false;
-		}
-		if(Constants.STOP_TIMED_FILTER_FLAG){	// 如果手动停止了定时筛选，则在停止之后将是否停止定时筛选的标志还原为false
-			Constants.STOP_TIMED_FILTER_FLAG=false;
+		if(Constants.STOP_FILTER_FLAG){	// 在定时筛选操作结束后，如果是否停止筛选操作的标志值为true，
+			Constants.STOP_FILTER_FLAG=false;	// 则首再次将该标志变量的值设为false，以防后续筛选过程提前终止。
 		}
 		
 		long end_time = System.currentTimeMillis();

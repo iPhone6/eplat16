@@ -88,8 +88,6 @@ public class PushToHwTask {
 		List<PushToHw> allNeedsDatas = getPths();
 		if(allNeedsDatas == null || allNeedsDatas.size() == 0) {
 			allNeedsDatas = getAllNeedsDatas();
-		} else {
-			// 
 		}
 		
 		boolean realPush=true;
@@ -103,13 +101,6 @@ public class PushToHwTask {
 		List<ArrayList<Map<String, String>>> fail_lists = new ArrayList<>();
 		
 		if (allNeedsDatas != null && !allNeedsDatas.isEmpty()) {
-			// 计时获取用于推送HW考勤数据的token操作所花费的时间
-//			long getToken_start_time = System.currentTimeMillis();
-//			String token = GetTokenHelper.getToken();
-//			logger.info("本次获取到的token为：token = "+token);
-//			long getToken_end_time = System.currentTimeMillis();
-//			logger.info("本次获取用于推送HW考勤数据的token耗时："+DateUtil.timeMills2ReadableStr(getToken_end_time - getToken_start_time));
-			
 			// 首先推送考勤数据到TimeSheet系统
 			logger.info("开始推送考勤数据到TimeSheet系统-Start-");
 			try {
@@ -121,16 +112,10 @@ public class PushToHwTask {
 			
 			// 然后推送考勤数据到华为考勤系统
 			ArrayList<Map<String, String>> lists = new ArrayList<>();
-//			int count = 0;
 			for (PushToHw pushToHw : allNeedsDatas) {
-				if(Constants.STOP_REFILTER_FLAG&&!Constants.TIMED_FILTER_FLAG){
+				if(Constants.STOP_FILTER_FLAG){
 					lists.clear();
-					logger.info("用户停止重筛操作--User stopped refilter operation");
-					break;
-				}
-				if(Constants.STOP_TIMED_FILTER_FLAG&&Constants.TIMED_FILTER_FLAG){
-					lists.clear();
-					logger.info("用户停止定时筛选操作--User stopped timed filter operation");
+					logger.info("用户停止筛选操作--User stopped filter operation");
 					break;
 				}
 				if (pushToHw.getOn_duty_time() != null) {
@@ -176,7 +161,7 @@ public class PushToHwTask {
 		}
 		
 		// 对批量推送过程中失败的数据列表进行一次（每次只推送一条数据的）重推操作
-		if(fail_lists.size()>0&&!Constants.STOP_REFILTER_FLAG&&!Constants.STOP_TIMED_FILTER_FLAG){
+		if(fail_lists.size()>0&&!Constants.STOP_FILTER_FLAG){
 			logger.info("本次批量推送HW过程中推送失败的数据条数为：fail_lists.size() = "+fail_lists.size());
 			if(Constant.COUNTS_PER_REQUEST>1){	// 如果每次推送的数据条数大于1，则需要对推送失败的数据进行一次重推操作（一条条地重推）
 				for(ArrayList<Map<String, String>> lists:fail_lists){
@@ -240,15 +225,7 @@ public class PushToHwTask {
 	//获取所有需要推送的数据
 	public List<PushToHw> getAllNeedsDatas() {
 		List<PushToHw> result = new ArrayList<PushToHw>();
-		
-		/*
-		String name = "符边正";
-		name = "康贺梁";
-		result = pushToHwDao.findPushToHwsByName(name);
-		*/
-		
 		Date time = pushLogDao.getLatestPushLogTime();
-		
 		if (time == null) {
 			List<PushToHw> allDatas = pushToHwDao.getPushToHwsByDate(null,null);// 获取所有的数据
 			if (allDatas != null) {
@@ -264,17 +241,7 @@ public class PushToHwTask {
 					result.addAll(failDatas);
 				}
 			}
-
 			// 2.获取待推送的数据(截至到昨天)
-			/*
-			Date startDate = DateUtil.parse2date(1, DateUtil.formatDate(1, time));
-			Date date = new Date();
-			Date simpleDate = DateUtil.parse2date(2, (DateUtil.formatDate(1, date)+" 23:59:59"));
-			Date endDate = DateUtil.calcXDaysAfterADate(-1, simpleDate);
-			
-			List<PushToHw> waitingDatas = pushToHwDao.getPushToHwsByDate(startDate,endDate);
-			*/
-			
 			Date now_date = new Date();
 			String yesterday_start_str = DateUtil.formatDate(1, DateUtil.calcXDaysAfterADate(-1, now_date));
 			String yesterday_end_str = yesterday_start_str + " 23:59:59.999";
@@ -286,8 +253,6 @@ public class PushToHwTask {
 				result.addAll(waitingDatas);
 			}
 		}
-		
-		
 		return result;
 	}
 
