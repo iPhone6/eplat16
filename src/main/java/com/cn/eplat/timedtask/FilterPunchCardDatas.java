@@ -100,42 +100,12 @@ public class FilterPunchCardDatas {
 		FilterPunchCardDatas.addFilterTimes();
 		logger.info("当前是第（" + FilterPunchCardDatas.getFilter_times() + "）次筛选考勤数据，开始时间：" + DateUtil.formatDate(2, now_time));
 		
-		/*
-		// TODO: 临时代码 (Start)
-		int ret = epDataController.filterPush2HwAttenOperation(null, null);
-		System.out.println("ret = " + ret);
-		// TODO: 临时代码 (End)
-		*/
-		
 		// 从全程OA系统中获取最新用户信息，并硬更新到本地MySQL数据库中
 		List<EpUser> epus_valid = refreshQcoaUsers(true);
 		if(epus_valid!=null&& epus_valid.size()>0){
-//			int del_count = epUserService.deleteAllEpUsers();	// 清空本地MySQL数据库中的全部用户信息
-			
-//			int part_num = Constants.QCOA_PART_EPU_NUM;
-//			MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
-//			List<EpUser> part_epus=null;
-//			epu_mlu.setCurrentIndex(0);
-//			
-//			int insert_count=0;
-//			boolean flag=false;	// 标志是否还有需要写入本地MySQL数据库中的用户信息数据
-//			do {
-//				part_epus = epu_mlu.getNextNElements(part_num);
-//				flag=part_epus != null && part_epus.size() > 0;
-//				if(flag){
-//					insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
-//				}
-//			}while (flag);
-//			
-//			logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
 		}else{
-			try {
-				throw new Exception("全程OA系统用户信息条数为0");
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error("全程OA系统用户信息条数为0");
-				return;
-			}
+			logger.error("全程OA系统用户信息条数为0");
+			return;
 		}
 		
 		// // 1. 正常情况下筛选打卡数据（正常情况下，只筛选前一天的打卡数据）
@@ -168,12 +138,9 @@ public class FilterPunchCardDatas {
 				}
 			}
 		} else {
-//			Date two_days_ago = DateUtil.calcXDaysAfterADate(-2, now_time);
 			Date yesterday = DateUtil.calcXDaysAfterADate(-1, now_time);
-//			Date tomorrow = DateUtil.calcXDaysAfterADate(1, now_time);	// TODO: 临时测试用代码
 			
 			int new_filter_ret = epDataController.filterPush2HwAttenOperation(yesterday, yesterday);
-//			int new_filter_ret = epDataController.filterPush2HwAttenOperation(tomorrow, tomorrow);
 			
 			if(new_filter_ret > 0) {
 				logger.info("筛选准备推送华为的考勤数据（新数据）成功, new_filter_ret = " + new_filter_ret);
@@ -195,6 +162,9 @@ public class FilterPunchCardDatas {
 		
 		if(Constants.TIMED_FILTER_FLAG){	// 定时筛选操作完成后，将其值设为false，表示定时筛选操作已执行完毕
 			Constants.TIMED_FILTER_FLAG=false;
+		}
+		if(Constants.STOP_TIMED_FILTER_FLAG){	// 如果手动停止了定时筛选，则在停止之后将是否停止定时筛选的标志还原为false
+			Constants.STOP_TIMED_FILTER_FLAG=false;
 		}
 		
 		long end_time = System.currentTimeMillis();
@@ -223,12 +193,6 @@ public class FilterPunchCardDatas {
 		if(hardRefresh){
 			hardRefreshQcoaUsers2LocalMySqlDb(epus_valid);
 		}else{
-//			List<EpUser> epus_valid = FilterPunchCardDatas.getEpus_valid();
-//			if(epus_valid==null||epus_valid.size()==0){
-//				TreeMap<Integer, EpUser> qc_users = epDataController.getEpusValidQCOA(epus_valid);
-//				FilterPunchCardDatas.setEpus_valid(epus_valid);
-//				FilterPunchCardDatas.setQc_users(qc_users);
-//			}
 		}
 		return epus_valid;
 	}
@@ -241,7 +205,6 @@ public class FilterPunchCardDatas {
 		int del_count = epUserService.deleteAllEpUsers();	// 清空本地MySQL数据库中的全部用户信息
 		logger.info("已删除"+del_count+"条用户信息");
 		int part_num = Constants.QCOA_PART_EPU_NUM;
-//		part_num=1;	// TODO: 临时设置的值，用于调试程序之用
 		MyListUtil<EpUser> epu_mlu = new MyListUtil<EpUser>(epus_valid);
 		List<EpUser> part_epus=null;
 		epu_mlu.setCurrentIndex(0);
@@ -255,7 +218,6 @@ public class FilterPunchCardDatas {
 				try {
 					insert_count += epUserService.batchInsertEpUsersQCOA(part_epus);	// 把查出的最新用户信息写入本地MySQL数据库
 				} catch (Exception e) {
-//					e.printStackTrace();
 					System.err.println("error_part_epus = "+JSON.toJSONString(part_epus) );
 					logger.error("将用户信息写入MySQL数据库时出现异常，error_info = "+e.getMessage());
 				}
@@ -265,6 +227,5 @@ public class FilterPunchCardDatas {
 		logger.info("======== qc_users.size() = "+qc_users.size()+", del_count = "+del_count+", insert_count = "+insert_count+" ========");
 		
 	}
-	
 	
 }

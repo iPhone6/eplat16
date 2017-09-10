@@ -31,6 +31,8 @@ public class Constants {
 	
 	public static boolean TIMED_FILTER_FLAG = false;	// 是否正在进行定时筛选操作（初值为false，表示没有正在进行定时筛选操作）
 	
+	public static boolean STOP_TIMED_FILTER_FLAG = false;	// 是否停止定时筛选操作（初值为false，表示不停止定时筛选操作，true表示要停止定时筛选操作）
+	
 	private static boolean busy_finding_missing_not_uploaded_punch_card_datas = false;
 
 	public static boolean isBusy_finding_missing_not_uploaded_punch_card_datas() {

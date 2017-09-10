@@ -33,8 +33,29 @@
 				}
 			},
 			success : function(data, textStatus) {
+				debugger;
 				$("#stop_refilter_btn").attr("disabled",true);
 				$("#stop_refilter_btn").attr("value","已停止重筛！");
+				alert(data);
+			}
+		});
+	}
+	function stop_timed_filter() {
+		$.ajax({
+			type : "GET",
+			url : "epDataController.do?stopTimedfilter",
+			data : {
+			},
+			statusCode : {
+				404 : function() {
+					alert('page not found');
+				}
+			},
+			success : function(data, textStatus) {
+				debugger;
+				$("#stop_timed_filter_btn").attr("disabled",true);
+				$("#stop_timed_filter_btn").attr("value","已停止定时筛选！");
+				alert(data);
 			}
 		});
 	}
@@ -60,6 +81,7 @@
 		<label id="label_okrf" style="display:none" > <font color="red">请稍等片刻，待筛选操作完成后，再刷新本页面~~~</font> </label>
 		<p/>
 		<input id="stop_refilter_btn" type="button" value="停止重筛" onclick="stop_refilter();" />
+		<input id="stop_timed_filter_btn" type="button" value="停止定时筛选" onclick="stop_timed_filter();" style="display:none" />
 	</form>
 	<hr>
 

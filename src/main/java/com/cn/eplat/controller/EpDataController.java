@@ -444,6 +444,26 @@ public class EpDataController {
 	}
 	
 	/**
+	 * 停止定时筛选操作
+	 * @return
+	 */
+	@RequestMapping(params = "stopTimedfilter", produces = "application/json; charset=UTF-8")
+	@ResponseBody
+	public String stopTimedFilterPush2HwAttenOperation(HttpServletRequest request) {
+		JSONObject json_ret = new JSONObject();
+		if(!Constants.STOP_TIMED_FILTER_FLAG){
+			Constants.STOP_TIMED_FILTER_FLAG=true;
+			json_ret.put("ret_code", 1);
+			json_ret.put("ret_message", "已将停止定时筛选操作标志设为true");
+			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
+		}else{
+			json_ret.put("ret_code", 0);
+			json_ret.put("ret_message", "定时筛选操作停止标志已为true");
+			return JSONObject.toJSONString(json_ret, SerializerFeature.WriteMapNullValue);
+		}
+	}
+	
+	/**
 	 * 停止重筛操作
 	 * @return
 	 */
@@ -451,7 +471,7 @@ public class EpDataController {
 	@ResponseBody
 	public String stopReFilterPush2HwAttenOperation(HttpServletRequest request) {
 		JSONObject json_ret = new JSONObject();
-		if(Constants.STOP_REFILTER_FLAG==false){
+		if(!Constants.STOP_REFILTER_FLAG){
 			Constants.STOP_REFILTER_FLAG=true;
 			json_ret.put("ret_code", 1);
 			json_ret.put("ret_message", "已将停止重筛操作标志设为true");

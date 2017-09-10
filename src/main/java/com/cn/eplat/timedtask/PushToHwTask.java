@@ -52,9 +52,6 @@ public class PushToHwTask {
 	
 	private List<PushToHw> pths;
 	
-	// 用于存放批量推送HW时失败的数据列表（该列表中的数据已拆分成多个单条数据的ArrayList，以便重推失败数据时可以一条条地重推）
-	private List<ArrayList<Map<String, String>>> fail_lists = new ArrayList<>();
-	
 	public static String real_push=Constants.REAL_PUSH;	// 表示是否开启真推送HW考勤数据（1表示开启真推送，0表示开启假推送）
 										// TODO: 后面会用properties配置文件的方式来设置这个参数
 	
@@ -102,43 +99,16 @@ public class PushToHwTask {
 			realPush=false;
 		}
 		
-		/*
-		// TODO: 临时代码
-		List<PushToHw> allNeedsDatas = null;
-		try {
-			allNeedsDatas = pushToHwDao.getPushToHwsByIdSeq(2208l, null);
-		} catch (Exception e) {
-			System.err.println("获取数据异常，error info = " + e.getMessage());
-		}
-		*/
-		
-		/*
-		// TODO: 临时代码
-		List<PushToHw> allNeedsDatas = new ArrayList<PushToHw>();
-		PushToHw ptw1 = new PushToHw();
-//		PushToHw ptw2 = new PushToHw();
-		
-		ptw1.setId(1000l);
-		ptw1.setEp_uid(566);
-		ptw1.setName("肖海涛");
-		ptw1.setId_no("410311197901125016");
-		ptw1.setDayof_date(DateUtil.parse2date(1, "2017-02-14"));
-		ptw1.setDayof_week("2");
-		ptw1.setOn_duty_time(DateUtil.parse2date(2, "2017-02-14 07:55:45"));	//2017-02-14 07:55:45
-		ptw1.setOff_duty_time(DateUtil.parse2date(2, "2017-02-14 18:10:57"));
-		
-		allNeedsDatas.add(ptw1);
-		*/
+		// 用于存放批量推送HW时失败的数据列表（该列表中的数据已拆分成多个单条数据的ArrayList，以便重推失败数据时可以一条条地重推）
+		List<ArrayList<Map<String, String>>> fail_lists = new ArrayList<>();
 		
 		if (allNeedsDatas != null && !allNeedsDatas.isEmpty()) {
-			
 			// 计时获取用于推送HW考勤数据的token操作所花费的时间
-			long getToken_start_time = System.currentTimeMillis();
-			String token = GetTokenHelper.getToken();
-			logger.info("本次获取到的token为：token = "+token);
-//			String token="test_token";	// 临时测试假Token
-			long getToken_end_time = System.currentTimeMillis();
-			logger.info("本次获取用于推送HW考勤数据的token耗时："+DateUtil.timeMills2ReadableStr(getToken_end_time - getToken_start_time));
+//			long getToken_start_time = System.currentTimeMillis();
+//			String token = GetTokenHelper.getToken();
+//			logger.info("本次获取到的token为：token = "+token);
+//			long getToken_end_time = System.currentTimeMillis();
+//			logger.info("本次获取用于推送HW考勤数据的token耗时："+DateUtil.timeMills2ReadableStr(getToken_end_time - getToken_start_time));
 			
 			// 首先推送考勤数据到TimeSheet系统
 			logger.info("开始推送考勤数据到TimeSheet系统-Start-");
@@ -158,12 +128,12 @@ public class PushToHwTask {
 					logger.info("用户停止重筛操作--User stopped refilter operation");
 					break;
 				}
+				if(Constants.STOP_TIMED_FILTER_FLAG&&Constants.TIMED_FILTER_FLAG){
+					lists.clear();
+					logger.info("用户停止定时筛选操作--User stopped timed filter operation");
+					break;
+				}
 				if (pushToHw.getOn_duty_time() != null) {
-//					Long ep_uid = pushToHw.getId();
-//					if(ep_uid==1097||ep_uid==1107){
-//						logger.info("发现推送异常的工号");
-//						System.out.println(pushToHw);
-//					}
 					Map<String, String> map = new HashMap<String, String>();
 					map.put("staffIdNo", pushToHw.getId_no());
 					map.put("staffName", pushToHw.getName());
@@ -177,24 +147,10 @@ public class PushToHwTask {
 				}
 
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
-					pushLists(lists,realPush,true);
-//					addPushTimes();
-//					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
-//					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
-//					if(isSuccess){
-//						dealResult(lists, isSuccess, realPush);
-//					}else{
-//						dealWithFailedLists(lists);
-//					}
-//					lists.clear();
+					pushLists(lists,fail_lists,realPush,true);
 				}
 				
 				if (pushToHw.getOff_duty_time() != null) {
-//					Long ep_uid = pushToHw.getId();
-//					if(ep_uid==1097||ep_uid==1107){
-//						logger.info("发现推送异常的工号");
-//						System.out.println(pushToHw);
-//					}
 					Map<String, String> map = new HashMap<String, String>();
 					map.put("staffIdNo", pushToHw.getId_no());
 					map.put("staffName", pushToHw.getName());
@@ -208,41 +164,23 @@ public class PushToHwTask {
 				}
 
 				if (lists.size() == Constant.COUNTS_PER_REQUEST) {// 满足推送条数就推送出去
-					pushLists(lists,realPush,true);
-//					addPushTimes();
-//					logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+Constant.COUNTS_PER_REQUEST+"    条数据");
-//					boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
-//					if(isSuccess){
-//						dealResult(lists, isSuccess, realPush);
-//					}else{
-//						dealWithFailedLists(lists);
-//					}
-//					lists.clear();
+					pushLists(lists,fail_lists,realPush,true);
 				}
 			}
 			
 			if (!lists.isEmpty()) {
-				pushLists(lists,realPush,true);
-//				addPushTimes();
-//				logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
-//				boolean isSuccess = ExportData2HWHelper.getInstance().insert2HW(lists, GetTokenHelper.getToken(), realPush);
-//				if(isSuccess){
-//					dealResult(lists, isSuccess, realPush);
-//				}else{
-//					dealWithFailedLists(lists);
-//				}
-//				lists.clear();
+				pushLists(lists,fail_lists,realPush,true);
 			}
 		}else{
 			logger.info("没有更多数据需要推送");
 		}
 		
 		// 对批量推送过程中失败的数据列表进行一次（每次只推送一条数据的）重推操作
-		if(fail_lists.size()>0){
+		if(fail_lists.size()>0&&!Constants.STOP_REFILTER_FLAG&&!Constants.STOP_TIMED_FILTER_FLAG){
 			logger.info("本次批量推送HW过程中推送失败的数据条数为：fail_lists.size() = "+fail_lists.size());
 			if(Constant.COUNTS_PER_REQUEST>1){	// 如果每次推送的数据条数大于1，则需要对推送失败的数据进行一次重推操作（一条条地重推）
 				for(ArrayList<Map<String, String>> lists:fail_lists){
-					pushLists(lists,realPush,false);
+					pushLists(lists,fail_lists,realPush,false);
 				}
 			}else{
 				logger.info("推送失败的数据已经是一条条推送了，无须再次重新推送！");
@@ -267,7 +205,7 @@ public class PushToHwTask {
 	 * @param realPush
 	 * @param addFail	是否需要将推送失败的数据添加到失败列表中去的标志
 	 */
-	private void pushLists(ArrayList<Map<String, String>> lists, boolean realPush, boolean addFail){
+	private void pushLists(ArrayList<Map<String, String>> lists, List<ArrayList<Map<String, String>>> fail_lists, boolean realPush, boolean addFail){
 		if(lists==null||lists.isEmpty()) return;
 		addPushTimes();
 		logger.info("这是第    "+getPush_times()+"    次推送到华为，共推送   "+lists.size()+"    条数据");
@@ -276,7 +214,7 @@ public class PushToHwTask {
 			dealResult(lists, isSuccess, realPush);
 		}else{
 			if(addFail){
-				dealWithFailedLists(lists);
+				dealWithFailedLists(lists,fail_lists);
 			}else{
 				dealResult(lists, isSuccess, realPush);
 			}
@@ -288,7 +226,7 @@ public class PushToHwTask {
 	 * 处理推送失败的数据列表
 	 * @param lists
 	 */
-	private void dealWithFailedLists(ArrayList<Map<String, String>> lists){
+	private void dealWithFailedLists(ArrayList<Map<String, String>> lists,List<ArrayList<Map<String, String>>> fail_lists){
 		if(lists==null||lists.isEmpty()){
 			return;
 		}
