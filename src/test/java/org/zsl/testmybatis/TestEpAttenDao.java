@@ -18,6 +18,7 @@ import com.cn.eplat.dao.IEpAttenDao;
 import com.cn.eplat.dao.IEpUserDao;
 import com.cn.eplat.model.EpAtten;
 import com.cn.eplat.model.EpUser;
+import com.cn.eplat.model.PushToHw;
 import com.cn.eplat.utils.DateUtil;
 import com.cn.eplat.utils.LocationUtil;
 
@@ -35,6 +36,39 @@ public class TestEpAttenDao {
 	
 	
 	
+	
+	
+	
+	
+	@Test
+	public void testFindSourceAttenByPthData(){
+		PushToHw pth=new PushToHw();
+		pth.setEp_uid(187);
+		pth.setOn_duty_time(DateUtil.parse2date(2, "2017-06-08 18:11:34"));
+		
+		List<EpAtten> find1 = epAttenDao.findSourceAttenByPthData(pth, 1);
+		List<EpAtten> find2= epAttenDao.findSourceAttenByPthData(pth, 2);
+		List<EpAtten> find3= epAttenDao.findSourceAttenByPthData(pth, 3);
+		
+		System.out.println("---1-start---");
+		for(EpAtten epa:find1){
+			System.out.println(epa);
+		}
+		System.out.println("---1-end-----\n");
+		
+		System.out.println("---2-start---");
+		for(EpAtten epa:find2){
+			System.out.println(epa);
+		}
+		System.out.println("---2-end-----\n");
+		
+		System.out.println("---3-start---");
+		for(EpAtten epa:find3){
+			System.out.println(epa);
+		}
+		System.out.println("---3-end-----\n");
+		
+	}
 	
 	
 	

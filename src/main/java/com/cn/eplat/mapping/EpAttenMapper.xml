@@ -472,5 +472,27 @@
 			</if>
 	</update>
 	
+	<select id="findSourceAttenByPthData" resultType="com.cn.eplat.model.EpAtten" >
+		SELECT * FROM ep_attendance att
+		WHERE att.`ep_uid`=#{pth.ep_uid} 
+			AND att.`time`=
+			<!-- <if test="on_off==1">
+				#{pth.on_duty_time}
+			</if>
+			<if test="on_off==2">
+				#{pth.off_duty_time}
+			</if> -->
+			<choose>
+				<when test="on_off==1">
+					#{pth.on_duty_time}
+				</when>
+				<when test="on_off==2">
+					#{pth.off_duty_time}
+				</when>
+				<otherwise>
+					'2020-02-02 02:02:02'
+				</otherwise>
+			</choose>
+	</select>
 	
 </mapper>

@@ -40,6 +40,7 @@ import com.cn.eplat.datasource.DataSourceType;
 import com.cn.eplat.model.DeptClue;
 import com.cn.eplat.model.DeptIdClue;
 import com.cn.eplat.model.DeptUser;
+import com.cn.eplat.model.EpAtten;
 import com.cn.eplat.model.EpData;
 import com.cn.eplat.model.EpDept;
 import com.cn.eplat.model.EpUser;
@@ -740,8 +741,15 @@ public class EpDataController {
 							pthw.setId_no(epu_id_no);
 							// 星期几。。。
 							pthw.setDayof_week(DateUtil.getDayOfWeekByDate(punch_date, 1));
-//						pthw.setCompany_code(company_code);
+//							pthw.setCompany_code(company_code);
 							pthw.setCompany_code(epu_company_code);	// 直接从用户信息中得到公司编号
+							
+							// 反向回溯查找所筛选出来的考勤数据对应的原始打卡数据（即找出考勤数据来源，包括上班卡(1)和下班卡(2)两个数据的来源）
+							List<EpAtten> source1 = epAttenDao.findSourceAttenByPthData(pthw, 1);
+							List<EpAtten> source2 = epAttenDao.findSourceAttenByPthData(pthw, 2);
+							pthw.setOn_duty_source(source1.size()>0?source1.get(0).getPlatform()+","+source1.get(0).getMach_sn():"");	// TODO: 数据来源所取的字段待定
+							pthw.setOff_duty_source(source2.size()>0?source2.get(0).getPlatform()+","+source2.get(0).getMach_sn():"");	// TODO: 数据来源所取的字段待定
+							
 							pthws.add(pthw);
 							
 							pfl.setStatus("filter_success");

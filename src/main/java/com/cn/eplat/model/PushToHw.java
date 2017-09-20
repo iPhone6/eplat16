@@ -19,7 +19,8 @@ public class PushToHw {
 	private Date on_duty_time;	// 上班打卡时间
 	private Date off_duty_time;	// 下班打卡时间
 	private String company_code;//公司编码
-	
+	private String on_duty_source;//上班卡数据来源
+	private String off_duty_source;//下班卡数据来源
 	
 	public Long getId() {
 		return id;
@@ -75,16 +76,28 @@ public class PushToHw {
 	public void setOff_duty_time(Date off_duty_time) {
 		this.off_duty_time = off_duty_time;
 	}
-	
 	public String getCompany_code() {
 		return company_code;
 	}
 	public void setCompany_code(String company_code) {
 		this.company_code = company_code;
 	}
+	public String getOn_duty_source() {
+		return on_duty_source;
+	}
+	public void setOn_duty_source(String on_duty_source) {
+		this.on_duty_source = on_duty_source;
+	}
+	public String getOff_duty_source() {
+		return off_duty_source;
+	}
+	public void setOff_duty_source(String off_duty_source) {
+		this.off_duty_source = off_duty_source;
+	}
 	@Override
 	public String toString() {
 		return "PushToHw [id=" + id + ", ep_uid=" + ep_uid + ", work_no=" + work_no + ", name=" + name + ", id_no=" + id_no + ", dayof_date=" + dayof_date + ", dayof_week="
-				+ dayof_week + ", on_duty_time=" + on_duty_time + ", off_duty_time=" + off_duty_time + ", company_code=" + company_code + "]";
+				+ dayof_week + ", on_duty_time=" + on_duty_time + ", off_duty_time=" + off_duty_time + ", company_code=" + company_code + 
+				", on_duty_source=" + on_duty_source + ", off_duty_source=" + off_duty_source + "]";
 	}
 }

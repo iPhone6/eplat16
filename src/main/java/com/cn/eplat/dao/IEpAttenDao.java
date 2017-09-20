@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import com.cn.eplat.model.EpAtten;
 import com.cn.eplat.model.EpAttenExport;
 import com.cn.eplat.model.EpUser;
+import com.cn.eplat.model.PushToHw;
 
 public interface IEpAttenDao {
 	// 添加一条打卡记录
@@ -110,5 +111,13 @@ public interface IEpAttenDao {
 	 * @return
 	 */
 	int markRemainEpAttensByDates(@Param("dates") List<Date> dates);
+	
+	/**
+	 * 根据筛选出来的考勤数据反向回溯找出数据来源
+	 * @param pth 筛选出来的考勤数据
+	 * @param on_off 要找的是上班卡或下班卡数据来源的区分变量（上班卡：1,下班卡：2）
+	 * @return
+	 */
+	List<EpAtten> findSourceAttenByPthData(@Param("pth") PushToHw pth, @Param("on_off") int on_off);
 	
 }
