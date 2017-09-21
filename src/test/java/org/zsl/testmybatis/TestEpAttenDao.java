@@ -1,9 +1,12 @@
 package org.zsl.testmybatis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -36,6 +39,18 @@ public class TestEpAttenDao {
 	
 	
 	
+	
+	
+	
+	
+	
+	@Test
+	public void testQueryEpAttenListByIds(){
+		Set<Integer> ids=new HashSet<>();
+		ids.addAll(Arrays.asList(new Integer[]{99,199,299,399,499,5999,705060,705061,705064,705149,705330,699534,699533}));
+		List<EpAtten> atts = epAttenDao.queryEpAttenListByIds(ids);
+		System.out.println(atts);
+	}
 	
 	
 	

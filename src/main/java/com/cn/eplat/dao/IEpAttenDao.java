@@ -3,6 +3,7 @@ package com.cn.eplat.dao;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -20,6 +21,8 @@ public interface IEpAttenDao {
 	public List<EpAtten> queryEpAttenByUidAndDayRange(@Param("uid") int uid, @Param("day_range") int day_range);
 	// 根据打卡记录id查询打卡记录
 	public EpAtten queryEpAttenById(Long id);
+	// 根据打卡记录id集合查询打卡记录
+	public List<EpAtten> queryEpAttenListByIds(@Param("ids") Set ids);
 	
 	//导出指定员工,指定日期范围内的考勤数据
 	public List<EpAttenExport> queryAllEpAttenExportDatas(@Param("datas") List<String> emails,@Param("startDate") Date startDdate,@Param("endDate") Date endDate);

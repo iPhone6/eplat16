@@ -9,8 +9,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -749,6 +751,19 @@ public class EpDataController {
 							List<EpAtten> source2 = epAttenDao.findSourceAttenByPthData(pthw, 2);
 							pthw.setOn_duty_source(source1.size()>0?source1.get(0).getPlatform()+","+source1.get(0).getMach_sn():"");	// TODO: 数据来源所取的字段待定
 							pthw.setOff_duty_source(source2.size()>0?source2.get(0).getPlatform()+","+source2.get(0).getMach_sn():"");	// TODO: 数据来源所取的字段待定
+							// 下面开始获取来源数据详情
+							Set<Long> source1_ids=new TreeSet<>();
+							Set<Long> source2_ids=new TreeSet<>();
+							for(EpAtten s1:source1){
+								source1_ids.add(s1.getId());
+							}
+							for(EpAtten s2:source2){
+								source2_ids.add(s2.getId());
+							}
+							List<EpAtten> on_infos = epAttenDao.queryEpAttenListByIds(source1_ids);
+							pthw.setOn_infos(on_infos.toString());
+							List<EpAtten> off_infos = epAttenDao.queryEpAttenListByIds(source2_ids);
+							pthw.setOff_infos(off_infos.toString());
 							
 							pthws.add(pthw);
 							

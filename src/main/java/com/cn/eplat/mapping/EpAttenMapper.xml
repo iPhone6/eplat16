@@ -69,7 +69,16 @@
 		from ep_attendance
 		where id = #{id}
 	</select>
-
+	
+	<select id="queryEpAttenListByIds" resultType="com.cn.eplat.model.EpAtten" >
+		select <include refid="all_fields"></include>
+		from ep_attendance
+		where id in
+		<foreach collection="ids" item="item" index="index" open="(" separator="," close=")" >
+			#{item}
+		</foreach>
+	</select>
+	
 	<select id="queryAllEpAttenExportDatas" resultType="com.cn.eplat.model.EpAttenExport">
 		select
 		epu.name,epa.type, epa.latitude, epa.longtitude, epa.wifi_name,
