@@ -760,10 +760,14 @@ public class EpDataController {
 							for(EpAtten s2:source2){
 								source2_ids.add(s2.getId());
 							}
-							List<EpAtten> on_infos = epAttenDao.queryEpAttenListByIds(source1_ids);
-							pthw.setOn_infos(on_infos.toString());
-							List<EpAtten> off_infos = epAttenDao.queryEpAttenListByIds(source2_ids);
-							pthw.setOff_infos(off_infos.toString());
+							if(!source1_ids.isEmpty()){
+								List<EpAtten> on_infos = epAttenDao.queryEpAttenListByIds(source1_ids);
+								pthw.setOn_infos(JSON.toJSONString(on_infos, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,SerializerFeature.WriteDateUseDateFormat));
+							}
+							if(!source2_ids.isEmpty()){
+								List<EpAtten> off_infos = epAttenDao.queryEpAttenListByIds(source2_ids);
+								pthw.setOff_infos(JSON.toJSONString(off_infos, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,SerializerFeature.WriteDateUseDateFormat));
+							}
 							
 							pthws.add(pthw);
 							

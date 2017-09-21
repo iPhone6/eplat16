@@ -4,16 +4,16 @@
 	
 	
 	<sql id="all_fields">
-		id, ep_uid, name, id_no, dayof_date, dayof_week, on_duty_time, off_duty_time, company_code,on_duty_source,off_duty_source
+		id, ep_uid, name, id_no, dayof_date, dayof_week, on_duty_time, off_duty_time, company_code,on_duty_source,off_duty_source,on_infos,off_infos
 	</sql>
 	
 	<sql id="all_fields_except_id">
-		ep_uid, name, id_no, dayof_date, dayof_week, on_duty_time, off_duty_time, company_code,on_duty_source,off_duty_source
+		ep_uid, name, id_no, dayof_date, dayof_week, on_duty_time, off_duty_time, company_code,on_duty_source,off_duty_source,on_infos,off_infos
 	</sql>
 	
 	<sql id="all_fields_except_id_sharp_item">
 		#{item.ep_uid}, #{item.name}, #{item.id_no}, #{item.dayof_date}, #{item.dayof_week}, #{item.on_duty_time}, #{item.off_duty_time}, 
-		#{item.company_code},#{item.on_duty_source},#{item.off_duty_source}
+		#{item.company_code},#{item.on_duty_source},#{item.off_duty_source},#{item.on_infos},#{item.off_infos}
 	</sql>
 	
 	<insert id="batchInsertPushToHws" parameterType="com.cn.eplat.model.PushToHw" useGeneratedKeys="true" keyProperty="id" >
