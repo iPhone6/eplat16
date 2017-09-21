@@ -9,8 +9,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +42,7 @@ import com.cn.eplat.datasource.DataSourceType;
 import com.cn.eplat.model.DeptClue;
 import com.cn.eplat.model.DeptIdClue;
 import com.cn.eplat.model.DeptUser;
+import com.cn.eplat.model.EpAtten;
 import com.cn.eplat.model.EpData;
 import com.cn.eplat.model.EpDept;
 import com.cn.eplat.model.EpUser;
@@ -736,8 +739,32 @@ public class EpDataController {
 							pthw.setId_no(epu_id_no);
 							// 星期几。。。
 							pthw.setDayof_week(DateUtil.getDayOfWeekByDate(punch_date, 1));
-//						pthw.setCompany_code(company_code);
+//							pthw.setCompany_code(company_code);
 							pthw.setCompany_code(epu_company_code);	// 直接从用户信息中得到公司编号
+							
+							// 反向回溯查找所筛选出来的考勤数据对应的原始打卡数据（即找出考勤数据来源，包括上班卡(1)和下班卡(2)两个数据的来源）
+							List<EpAtten> source1 = epAttenDao.findSourceAttenByPthData(pthw, 1);
+							List<EpAtten> source2 = epAttenDao.findSourceAttenByPthData(pthw, 2);
+							pthw.setOn_duty_source(source1.size()>0?source1.get(0).getPlatform()+","+source1.get(0).getMach_sn():"");	// TODO: 数据来源所取的字段待定
+							pthw.setOff_duty_source(source2.size()>0?source2.get(0).getPlatform()+","+source2.get(0).getMach_sn():"");	// TODO: 数据来源所取的字段待定
+							// 下面开始获取来源数据详情
+							Set<Long> source1_ids=new TreeSet<>();
+							Set<Long> source2_ids=new TreeSet<>();
+							for(EpAtten s1:source1){
+								source1_ids.add(s1.getId());
+							}
+							for(EpAtten s2:source2){
+								source2_ids.add(s2.getId());
+							}
+							if(!source1_ids.isEmpty()){
+								List<EpAtten> on_infos = epAttenDao.queryEpAttenListByIds(source1_ids);
+								pthw.setOn_infos(JSON.toJSONString(on_infos, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,SerializerFeature.WriteDateUseDateFormat));
+							}
+							if(!source2_ids.isEmpty()){
+								List<EpAtten> off_infos = epAttenDao.queryEpAttenListByIds(source2_ids);
+								pthw.setOff_infos(JSON.toJSONString(off_infos, SerializerFeature.PrettyFormat, SerializerFeature.WriteMapNullValue,SerializerFeature.WriteDateUseDateFormat));
+							}
+							
 							pthws.add(pthw);
 							
 							pfl.setStatus("filter_success");

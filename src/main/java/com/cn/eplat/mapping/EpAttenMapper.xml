@@ -69,7 +69,16 @@
 		from ep_attendance
 		where id = #{id}
 	</select>
-
+	
+	<select id="queryEpAttenListByIds" resultType="com.cn.eplat.model.EpAtten" >
+		select <include refid="all_fields"></include>
+		from ep_attendance
+		where id in
+		<foreach collection="ids" item="item" index="index" open="(" separator="," close=")" >
+			#{item}
+		</foreach>
+	</select>
+	
 	<select id="queryAllEpAttenExportDatas" resultType="com.cn.eplat.model.EpAttenExport">
 		select
 		epu.name,epa.type, epa.latitude, epa.longtitude, epa.wifi_name,
@@ -472,5 +481,27 @@
 			</if>
 	</update>
 	
+	<select id="findSourceAttenByPthData" resultType="com.cn.eplat.model.EpAtten" >
+		SELECT * FROM ep_attendance att
+		WHERE att.`ep_uid`=#{pth.ep_uid} 
+			AND att.`time`=
+			<!-- <if test="on_off==1">
+				#{pth.on_duty_time}
+			</if>
+			<if test="on_off==2">
+				#{pth.off_duty_time}
+			</if> -->
+			<choose>
+				<when test="on_off==1">
+					#{pth.on_duty_time}
+				</when>
+				<when test="on_off==2">
+					#{pth.off_duty_time}
+				</when>
+				<otherwise>
+					'2020-02-02 02:02:02'
+				</otherwise>
+			</choose>
+	</select>
 	
 </mapper>

@@ -126,9 +126,12 @@ public interface IMachCheckInOutDao {
 	// 删除全部打卡机Access打卡数据在MySQL数据库中的拷贝（即清空mach_chkio_copy表中的数据）
 	public int deleteAllAccessCheckInOutsCopyInMySQL();
 	
-	
-	
-	
+	/**
+	 * 将最近一个月内推送时出现工号异常的打卡数据的推送状态末尾添加"_failed"标记（用于及时自动补救性重新推送这部分异常打卡数据）
+	 * @return
+	 */
+	// 将最近一个月内推送时出现工号异常的打卡数据的推送状态末尾添加"_failed"标记（用于及时自动补救性重新推送这部分异常打卡数据）
+	int appendFailedLabelToRecentMonthInvalidMachCheckInOuts();
 	
 	
 	// // 对远程MySQL数据库进行操作	// // TODO: 配置文件中会暴露服务器上的数据库用户名和密码配置参数。。。

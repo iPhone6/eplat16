@@ -3,12 +3,14 @@ package com.cn.eplat.dao;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.cn.eplat.model.EpAtten;
 import com.cn.eplat.model.EpAttenExport;
 import com.cn.eplat.model.EpUser;
+import com.cn.eplat.model.PushToHw;
 
 public interface IEpAttenDao {
 	// 添加一条打卡记录
@@ -19,6 +21,8 @@ public interface IEpAttenDao {
 	public List<EpAtten> queryEpAttenByUidAndDayRange(@Param("uid") int uid, @Param("day_range") int day_range);
 	// 根据打卡记录id查询打卡记录
 	public EpAtten queryEpAttenById(Long id);
+	// 根据打卡记录id集合查询打卡记录
+	public List<EpAtten> queryEpAttenListByIds(@Param("ids") Set<Long> ids);
 	
 	//导出指定员工,指定日期范围内的考勤数据
 	public List<EpAttenExport> queryAllEpAttenExportDatas(@Param("datas") List<String> emails,@Param("startDate") Date startDdate,@Param("endDate") Date endDate);
@@ -110,5 +114,13 @@ public interface IEpAttenDao {
 	 * @return
 	 */
 	int markRemainEpAttensByDates(@Param("dates") List<Date> dates);
+	
+	/**
+	 * 根据筛选出来的考勤数据反向回溯找出数据来源
+	 * @param pth 筛选出来的考勤数据
+	 * @param on_off 要找的是上班卡或下班卡数据来源的区分变量（上班卡：1,下班卡：2）
+	 * @return
+	 */
+	List<EpAtten> findSourceAttenByPthData(@Param("pth") PushToHw pth, @Param("on_off") int on_off);
 	
 }

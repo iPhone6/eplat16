@@ -1,9 +1,7 @@
 package elead.service.client;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.cn.eplat.model.PushToHw;
 import com.cn.eplat.utils.DateUtil;
@@ -21,16 +19,18 @@ public class ServiceClient {
 		for (PushToHw pushToHw : allNeedsDatas) {
 			if (pushToHw.getOn_duty_time() != null) {
 				Timesheet ts = new Timesheet();
-				ts.setStaffCardNo(pushToHw.getId_no());
-				ts.setStaffName(pushToHw.getName());
-				ts.setSwipeTime(DateUtil.formatDate(2, pushToHw.getOn_duty_time()));
+				ts.setStaffIdNo(pushToHw.getId_no());	//身份证号
+				ts.setStaffName(pushToHw.getName());	//姓名
+				ts.setSwipeTime(DateUtil.formatDate(2, pushToHw.getOn_duty_time()));	//打卡时间
+				ts.setSource(pushToHw.getOn_duty_source());	//打卡来源
 				listTS.add(ts);
 			}
 			if (pushToHw.getOff_duty_time() != null) {
 				Timesheet ts = new Timesheet();
-				ts.setStaffCardNo(pushToHw.getId_no());
+				ts.setStaffIdNo(pushToHw.getId_no());
 				ts.setStaffName(pushToHw.getName());
 				ts.setSwipeTime(DateUtil.formatDate(2, pushToHw.getOff_duty_time()));
+				ts.setSource(pushToHw.getOff_duty_source());
 				listTS.add(ts);
 			}
 		}
