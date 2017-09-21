@@ -46,8 +46,8 @@ public class TestEpAttenDao {
 	
 	@Test
 	public void testQueryEpAttenListByIds(){
-		Set<Integer> ids=new HashSet<>();
-		ids.addAll(Arrays.asList(new Integer[]{99,199,299,399,499,5999,705060,705061,705064,705149,705330,699534,699533}));
+		Set<Long> ids=new HashSet<>();
+		ids.addAll(Arrays.asList(new Long[]{99l,199l,299l,399l,499l,5999l,705060l,705061l,705064l,705149l,705330l,699534l,699533l}));
 		List<EpAtten> atts = epAttenDao.queryEpAttenListByIds(ids);
 		System.out.println(atts);
 	}
