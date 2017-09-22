@@ -104,7 +104,10 @@ public class PushToHwTask {
 			// 首先推送考勤数据到TimeSheet系统
 			logger.info("开始推送考勤数据到TimeSheet系统-Start-");
 			try {
+				long push_timesheet_start_time = System.currentTimeMillis();	// 记录推送TimeSheet开始时间毫秒数
 				ServiceClient.invokeElead(allNeedsDatas);	// 推送至华为业务运营系统
+				long push_timesheet_end_time = System.currentTimeMillis();	// 记录推送TimeSheet结束时间毫秒数
+				logger.info("本次推送TimeSheet系统共花费："+DateUtil.timeMills2ReadableStr(push_timesheet_end_time-push_timesheet_start_time));
 			} catch (Exception e) {
 				logger.error("推送至华为业务运营系统出现异常：error_info="+e.getMessage());
 			}
