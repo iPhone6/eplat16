@@ -28,7 +28,8 @@
 	</insert>
 	
 	<select id="getPushToHwsByDate" resultType="com.cn.eplat.model.PushToHw">
-			select *  from push_to_hw where  1= 1 
+			select *  from push_to_hw 
+			where on_duty_source is not null <!-- 只推送数据来源字段信息不为NULL的筛选后的考勤数据 -->
 			<if test="startdate != null  and enddate != null">
 				and dayof_date between #{startdate} and #{enddate}
 			</if>

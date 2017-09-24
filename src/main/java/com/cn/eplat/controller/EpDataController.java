@@ -378,6 +378,10 @@ public class EpDataController {
 		*/
 		
 		List<Date> need_dates = DateUtil.calcDatesExcludeGivenDatesByStartEndDate(filtered_dates, start, end);
+		// TODO: 临时测试环境用-Start-
+		need_dates = DateUtil.calcDatesExcludeGivenDatesByStartEndDate(null, start, end);
+//		List<Date> need_dates = DateUtil.getDatesBetweenTwoDates(start, end);
+		// TODO: 临时测试环境用- End -
 		
 		if(need_dates == null) {
 			return -5;
